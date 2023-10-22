@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:icon="@drawable/ic_sort"
+        android:title="@string/item_sort"
+        app:showAsAction="ifRoom">
+
+        <menu>
+
+            <item
+                android:id="@+id/action_sort_by_name"
+                android:title="@string/sort_by_name" />
+
+            <item
+                android:id="@+id/action_sort_by_importance_priority"
+                android:title="@string/sort_by_importance_priority" />
+        </menu>
+
+    </item>
+
+    <item
+        android:id="@+id/action_hide_completed_tasks"
+        android:checkable="true"
+        android:title="@string/hide_completed"
+        app:showAsAction="never" />
+</menu>

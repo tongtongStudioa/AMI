@@ -1,0 +1,144 @@
+<resources>
+    <string name="app_name" translatable="false">AMI</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="main_text_chronometer">Work Time</string>
+    <string name="menu_drawer_today_s_tasks">My day</string>
+    <string name="menu_drawer_others_tasks">Upcoming</string>
+    <string name="menu_drawer_all_projects">My projects</string>
+    <string name="menu_drawer_all_events">My events</string>
+    <string name="date_picker_menu_today">Today</string>
+    <string name="date_picker_menu_tomorrow">Tomorrow</string>
+    <string name="menu_personalized">Personalized</string>
+    <string name="repeatable_menu_every_days">Every days</string>
+    <string name="repeatable_menu_every_week">Every week</string>
+    <string name="sort_by_name">Sort by name</string>
+    <string name="sort_by_importance_priority">Sort by importance priority</string>
+    <string name="sort_by_deadline">Sort by deadline</string>
+    <string name="hide_completed">Hide completed</string>
+    <string name="hide_priority">Hide priority</string>
+    <string name="item_sort">Sort</string>
+    <string name="first_fragment_title">Today</string>
+    <string name="Fragment_title_projects">Projects</string>
+    <string name="fragment_title_events">Events</string>
+    <string name="fragment_title_completed">Completed</string>
+    <string name="fragment_title_chronometer">Time tracking work</string>
+    <string name="fragment_title_other_tasks">Upcoming</string>
+    <string name="menu_drawer_accomplishment">Insights</string>
+    <string name="fragment_title_add_thing_to_do">New thingToDo</string>
+    <string name="fragment_title_edit_thing_to_do">Edit SubTask</string>
+    <string name="msg_sub_task_deleted">Sub Task deleted</string>
+    <string name="msg_action_undo">UNDO</string>
+    <string name="fab_add_description">Add new thing to do</string>
+    <string name="msg_thing_to_do_deleted">Thing to do deleted</string>
+    <string name="thing_to_do_title">Title</string>
+    <string name="project">Project</string>
+    <string name="event">Event</string>
+    <string name="task">Task</string>
+    <string name="importance_priority_1_9">Priority scale 1–9</string>
+    <string name="repeat">Repeat</string>
+    <string name="event_is_spread">Is event spread ?</string>
+    <string name="validate_updates">Validate updates</string>
+    <string name="day">Day</string>
+    <string name="week">Week</string>
+    <string name="month">Month</string>
+    <string name="year">Year</string>
+    <string name="text_created_date">Created : %s</string>
+    <!-- todo : add translation for male female definition -->
+    <string-array name="thing_to_do_deleted">
+        <item>Task deleted</item>
+        <item>Event deleted</item>
+        <item>Project deleted</item>
+    </string-array>
+    <string-array name="thing_to_do_added">
+        <item>Task added</item>
+        <item>Event added</item>
+        <item>Project added</item>
+    </string-array>
+    <string-array name="thing_to_do_updated">
+        <item>Task updated</item>
+        <item>Event updated</item>
+        <item>Project updated</item>
+    </string-array>
+    <string name="text_validate_link_subtask">Sub task linked to selected project</string>
+    <string name="invalidate_text_link_subtask">Project not selected</string>
+    <string name="estimated_time_info">%1$dh%2$s estimated</string>
+    <string name="importance_thing_to_do">Priority : %d</string>
+    <string-array name="period_list">
+        <item>@string/day</item>
+        <item>@string/week</item>
+        <item>@string/month</item>
+        <item>@string/year</item>
+    </string-array>
+    <string name="each_days">Daily</string>
+    <string name="each_weeks">Weekly</string>
+    <string name="each_months">Monthly</string>
+    <string name="each_years">Yearly</string>
+    <string name="every_x_days">Every %d  days</string>
+    <string name="every_x_weeks">Every %d  weeks</string>
+    <string name="every_x_months">Every %d  months</string>
+    <string name="every_x_years">Every %d years</string>
+    <string name="thing_to_do_deleted">%$s deleted</string>
+    <string name="thing_to_do_added">%$s added</string>
+    <string name="thing_to_do_updated">%$s updated</string>
+    <string name="repeat_text">Repeat</string>
+    <string name="repeat_every_title">Repeat every…</string>
+    <string name="select_date">Select date</string>
+    <string name="Select_two_date_to_spread_event">Select beginning and ending event date</string>
+    <string name="description_notification_channel">description channel notifications : todo</string>
+    <string name="title_notification_channel">Task notifications channel</string>
+    <string name="set_reminder">Set reminder</string>
+    <string name="nb_sub_tasks_project">%1$s/%2$s sub tasks completed</string>
+    <string name="fragment_title_achievements">My Insights</string>
+    <string name="no_information">_</string>
+    <string name="no_estimated_work_time">No estimated work time</string>
+    <string name="times_completed">Times completed</string>
+    <string name="maximum_streak">Maximum streak</string>
+    <string name="project_total_work_time">Total work time</string>
+    <string name="fragment_title_local_project_stats">Project\'s Statistics</string>
+    <string name="nb_tasks_completed">Tasks completed</string>
+    <string name="projects_completed_information">Projects completed</string>
+    <string name="average_time_completion_information">Average Time Completion</string>
+    <string name="projects_achievement_rate_information">Projects achievements rate</string>
+    <string name="estimation_time_accuracy_information">Estimation time accuracy</string>
+    <string name="on_time_completion_rate_information">On-time completion rate</string>
+    <string name="error_no_name">Name cannot be empty</string>
+    <string name="error_no_priority">Priority cannot be empty</string>
+    <string name="error_no_date">Choose due date at least</string>
+    <string name="for_later">Later</string>
+    <string name="for_next_week">Next week</string>
+    <string name="for_tomorrow">Tomorrow</string>
+    <string name="filter">Filter</string>
+    <string name="nb_projects_info">%d projects</string>
+    <string name="nb_job_completed_info">%d jobs completed</string>
+    <string name="nb_future_tasks_info">%d future assignments</string>
+    <string name="sub_pages_title">Sub pages</string>
+    <string name="menu_title_achievements">Achievements</string>
+    <string name="menu_title_principals">Principals</string>
+    <string name="text_explication_no_tasks_completed">No completed\'s things to do</string>
+    <string name="text_action_no_tasks_completed">Add somethings to do or go working !</string>
+    <string name="text_explication_no_tasks_today">No things to do today !</string>
+    <string name="text_action_no_tasks">Add somethings to do or go to nap :)</string>
+    <string name="text_action_no_tasks_today">%d tasks upcoming \n Add somethings to do or go to nap :)</string>
+    <string name="set_estimated_time">Set estimated work time</string>
+    <string name="text_explication_no_projects">No projects</string>
+    <string name="text_action_no_projects">Add projects</string>
+    <string name="text_explication_no_events">No events</string>
+    <string name="text_action_no_events">Add events</string>
+    <string name="text_explication_no_tasks_tomorrow">Nothing to do tomorrow</string>
+    <string name="text_explication_no_tasks_next_week">Nothing to do next week</string>
+    <string name="text_explication_no_tasks_later">Nothing upcoming</string>
+    <string name="fab_text_add">Add</string>
+    <string name="set_start_date">Set Start Date</string>
+    <string name="set_deadline">Set Deadline</string>
+    <string name="set_recurring_end">Set recurring end</string>
+    <string name="text_nb_missed_recurring_tasks">You have missed %d tasks!</string>
+    <string name="task_description_view">Task\'s description</string>
+    <string name="task_s_evaluation">Task\'s evaluation</string>
+    <string name="current_streak">Current Streak</string>
+    <string name="productivity_sum_up">Productivity sum up</string>
+    <string name="tasks_completed">Tasks completed</string>
+    <string name="time_statistics">Time Statistics</string>
+    <string name="streak_and_habit_improvement">Streak and habit improvement</string>
+    <string name="focus_on_project">Focus on Project</string>
+</resources>

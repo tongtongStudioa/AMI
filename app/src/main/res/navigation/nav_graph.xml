@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation_graph"
+    android:label="Nav Graph"
+    app:startDestination="@id/todayTasksFragment">
+
+    <fragment
+        android:id="@+id/addEditTaskFragment"
+        android:name="com.tongtongstudio.ami.ui.edit.AddEditTaskFragment"
+        android:label="{title}"
+        tools:layout="@layout/add_edit_task_fragment">
+        <argument
+            android:name="thingToDo"
+            android:defaultValue="@null"
+            app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo"
+            app:nullable="true" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/othersTasksFragment"
+        android:name="com.tongtongstudio.ami.ui.otherstasks.OthersTasksFragment"
+        android:label="@string/fragment_title_other_tasks"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_othersTasksFragment_to_addEditTaskFragment"
+            app:destination="@id/addEditTaskFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/todayTasksFragment"
+        android:name="com.tongtongstudio.ami.ui.todaytasks.TodayTasksFragment"
+        android:label="@string/first_fragment_title"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_todayTasksFragment_to_addEditTaskFragment"
+            app:destination="@id/addEditTaskFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"
+            app:popEnterAnim="@android:anim/fade_in"
+            app:popExitAnim="@android:anim/fade_out" />
+        <action
+            android:id="@+id/action_todayTasksFragment_to_chronometerFragment"
+            app:destination="@id/trackingFragment" />
+        <action
+            android:id="@+id/action_todayTasksFragment_to_localProjectStatsFragment2"
+            app:destination="@id/localProjectStatsFragment2" />
+        <action
+            android:id="@+id/action_todayTasksFragment_to_missedRecurringTasksDialogFragment"
+            app:destination="@id/missedRecurringTasksDialogFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/projectFragment"
+        android:name="com.tongtongstudio.ami.ui.projects.ProjectFragment"
+        android:label="@string/Fragment_title_projects"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_projectFragment_to_addEditTaskFragment"
+            app:destination="@id/addEditTaskFragment" />
+        <action
+            android:id="@+id/action_projectFragment_to_chronometerFragment"
+            app:destination="@id/trackingFragment" />
+        <action
+            android:id="@+id/action_projectFragment_to_localProjectStatsFragment2"
+            app:destination="@id/localProjectStatsFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/eventFragment"
+        android:name="com.tongtongstudio.ami.ui.events.EventFragment"
+        android:label="@string/fragment_title_events"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_eventFragment_to_addEditTaskFragment"
+            app:destination="@id/addEditTaskFragment" />
+    </fragment>
+    <fragment
+        tools:layout="@layout/fragment_main"
+        android:id="@+id/completedThingToDoFragment"
+        android:name="com.tongtongstudio.ami.ui.completed.CompletedThingToDoFragment"
+        android:label="@string/fragment_title_completed" />
+    <dialog
+        android:id="@+id/recurringChoiceDialogFragment"
+        android:name="com.tongtongstudio.ami.ui.dialog.RecurringChoiceDialogFragment"
+        android:label="RecurringChoiceDialogFragment"
+        tools:layout="@layout/dialog_select_recurring_protocol" />
+    <fragment
+        android:id="@+id/trackingFragment"
+        android:name="com.tongtongstudio.ami.ui.monitoring.trackingtime.TrackingTimeAndDetailsFragment"
+        android:label="@string/fragment_title_chronometer"
+        tools:layout="@layout/task_tracking_fragment">
+        <argument
+            android:name="task"
+            app:argType="com.tongtongstudio.ami.data.datatables.Task" />
+    </fragment>
+    <fragment
+        android:id="@+id/achievementsFragment"
+        android:name="com.tongtongstudio.ami.ui.insights.InsightsFragment"
+        android:label="@string/fragment_title_achievements"
+        tools:layout="@layout/productivity_insights_fragment" />
+    <fragment
+        android:id="@+id/localProjectStatsFragment2"
+        android:name="com.tongtongstudio.ami.ui.monitoring.projectStats.LocalProjectStatsFragment"
+        android:label="@string/fragment_title_local_project_stats"
+        tools:layout="@layout/project_stats_fragment">
+        <argument
+            android:name="project"
+            app:argType="com.tongtongstudio.ami.data.datatables.ProjectWithSubTasks" />
+    </fragment>
+    <dialog
+        android:id="@+id/estimatedTimeDialogFragment"
+        android:name="com.tongtongstudio.ami.ui.dialog.EstimatedTimeDialogFragment"
+        android:label="EstimatedTimeDialogFragment" />
+    <dialog
+        android:id="@+id/missedRecurringTasksDialogFragment"
+        tools:layout="@layout/dialog_information_missed_recurring_tasks"
+        android:name="com.tongtongstudio.ami.ui.dialog.MissedRecurringTasksDialogFragment"
+        android:label="Recurring tasks missed" >
+        <argument
+            android:name="missedRecurringTasks"
+            app:argType="com.tongtongstudio.ami.data.datatables.Task[]" />
+    </dialog>
+</navigation>

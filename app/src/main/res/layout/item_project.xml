@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <androidx.cardview.widget.CardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/project_card_view"
+        style="@style/CardView.Light"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="7dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="7dp"
+        android:layout_marginBottom="5dp"
+        app:cardCornerRadius="@dimen/corner_radius_item_card_view"
+        app:cardElevation="@dimen/custom_card_elevation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- for all elements in card view -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/global_item"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/colorPrimaryContainer">
+
+            <!-- main card view  with project details, fixed part-->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/main_card_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="5dp"
+                app:cardElevation="10dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_project_name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:textAppearance="@style/TextAppearance.Ami.Subtitle2.Day"
+                        app:layout_constraintEnd_toStartOf="@id/btn_add_sub_task"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="Project" />
+
+                    <ImageButton
+                        android:id="@+id/btn_add_sub_task"
+                        android:layout_width="48dp"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_add"
+                        android:background="@android:color/transparent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="?attr/colorOnSurface" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_nature"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.Ami.Body2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tv_project_name"
+                        tools:text="PROJECT" />
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:id="@+id/divider"
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        app:layout_constraintTop_toBottomOf="@id/tv_nature" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_deadline"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="@drawable/baseline_calendar_24"
+                        android:drawablePadding="7dp"
+                        android:gravity="center"
+                        android:padding="3dp"
+                        android:textAppearance="@style/TextAppearance.Ami.Caption"
+                        app:drawableTint="?attr/colorOnPrimaryContainer"
+                        app:layout_constraintStart_toEndOf="@id/tv_start_date"
+                        app:layout_constraintTop_toBottomOf="@id/divider"
+                        tools:text="15/07/2022" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_start_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="@drawable/ic_baseline_schedule_24"
+                        android:drawablePadding="7dp"
+                        android:gravity="center"
+                        android:padding="3dp"
+                        android:textAppearance="@style/TextAppearance.Ami.Caption"
+                        android:paddingEnd="5dp"
+                        app:drawableTint="?attr/colorOnPrimaryContainer"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/tv_deadline"
+                        tools:text="Sun 04/06" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_number_priority"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="@drawable/ic_priority_high_24"
+                        android:drawablePadding="7dp"
+                        android:gravity="center"
+                        android:textAppearance="@style/TextAppearance.Ami.Caption"
+                        android:padding="3dp"
+                        android:textAlignment="center"
+                        app:drawableTint="?attr/colorOnPrimaryContainer"
+                        app:layout_constraintStart_toEndOf="@+id/tv_deadline"
+                        app:layout_constraintTop_toTopOf="@+id/tv_deadline"
+                        tools:text="@string/importance_thing_to_do" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- sub card view with sub tasks details -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/sub_card_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                app:layout_constraintTop_toBottomOf="@id/main_card_view">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/main_part_sub_card_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_nb_sub_tasks"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/colorOnPrimaryContainer"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="8 sub tasks" />
+
+                    <ImageButton
+                        android:id="@+id/btn_expand_collapse"
+                        android:layout_width="48dp"
+                        android:layout_height="wrap_content"
+                        android:background="#00000000"
+                        android:tint="?attr/colorOnPrimaryContainer"
+                        android:src="@drawable/ic_baseline_expand_more_24"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/tv_nb_sub_tasks" />
+
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- expandable part of card view -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_sub_tasks"
+                    android:padding="3dp"
+                    android:visibility="gone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@id/main_part_sub_card_view"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:listitem="@layout/item_task" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>

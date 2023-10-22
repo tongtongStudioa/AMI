@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/filter"
+        android:icon="@drawable/ic_baseline_filter_list_24"
+        android:title="@string/filter"
+        app:showAsAction="ifRoom">
+
+        <menu>
+            <item
+                android:id="@+id/action_filter_for_tomorrow"
+                android:title="@string/for_tomorrow" />
+            <item
+                android:id="@+id/action_filter_for_next_week"
+                android:title="@string/for_next_week" />
+            <item
+                android:id="@+id/action_filter_all_later_things"
+                android:title="@string/for_later" />
+        </menu>
+
+    </item>
+
+</menu>

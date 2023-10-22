@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/CardView"
+    android:layout_marginStart="7dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginEnd="7dp"
+    android:layout_marginBottom="5dp"
+    app:cardCornerRadius="@dimen/corner_radius_item_card_view"
+    app:cardElevation="@dimen/custom_card_elevation"
+    app:cardMaxElevation="12dp"
+    app:cardPreventCornerOverlap="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/tv_task_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:textAppearance="@style/TextAppearance.Ami.Subtitle2.Day"
+            android:gravity="center_vertical"
+            app:layout_constraintEnd_toStartOf="@+id/tv_missed_count"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Task title" />
+
+        <TextView
+            android:id="@+id/tv_nature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_task_name"
+            android:layout_alignStart="@id/tv_task_name"
+            android:textAppearance="@style/TextAppearance.Ami.Body2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_task_name"
+            tools:text="@string/task" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_missed_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Ami.Caption"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_task_name"
+            tools:text="2 times missed" />
+
+        <!--android:textAppearance="@style/TextAppearance.Ami.Subtitle2.Day"-->
+
+
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/divider"
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_nature" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_deadline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/baseline_calendar_24"
+            android:drawablePadding="7dp"
+            android:gravity="center"
+            android:padding="3dp"
+            android:textAppearance="@style/TextAppearance.Ami.Caption"
+            android:textAlignment="center"
+            app:drawableTint="@color/md_theme_light_onPrimaryContainer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider"
+            tools:text="15/07/2022" />
+        <!--android:textAppearance="@style/TextAppearance.Ami.Caption"-->
+
+        <!--<ImageView
+           android:id="@+id/ic_priority"
+           android:layout_width="16dp"
+           android:layout_height="wrap_content"
+           android:layout_below="@id/divider"
+           android:layout_alignBottom="@id/tv_number_priority"
+           android:layout_marginEnd="@dimen/margin_end_ic"
+           android:layout_toEndOf="@id/tv_deadline"
+           android:src="@drawable/ic_priority_high_24"
+           app:tint="@color/dove_grey" />-->
+
+        <!--<com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_start_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_baseline_schedule_24"
+            android:drawablePadding="8dp"
+            android:gravity="center"
+            android:paddingEnd="5dp"
+            android:fontFamily="@font/montserrat_medium"
+            android:padding="3dp"
+            tools:text="Sun 04/06"
+            app:drawableTint="@color/dove_grey"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_deadline" />-->
+
+        <!--<com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_number_priority"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_priority_high_24"
+            android:drawablePadding="8dp"
+            android:gravity="center"
+            android:maxLines="1"
+            android:padding="3dp"
+            android:layout_marginStart="5dp"
+            android:textAlignment="center"
+            android:fontFamily="@font/montserrat_medium"
+            app:drawableTint="@color/dove_grey"
+            app:layout_constraintStart_toEndOf="@+id/tv_deadline"
+            app:layout_constraintTop_toTopOf="@+id/tv_deadline"
+            tools:text="8" />-->
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

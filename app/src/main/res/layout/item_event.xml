@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="@dimen/corner_radius_item_card_view"
+    android:layout_marginStart="7dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginEnd="7dp"
+    android:layout_marginBottom="5dp"
+    app:cardElevation="@dimen/custom_card_elevation"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_event_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:textAppearance="@style/TextAppearance.Ami.Subtitle2.Day"
+            app:layout_constraintEnd_toStartOf="@+id/tv_nature"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Event title" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_nature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Ami.Body2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@string/event" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="396dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="4dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_event_name" />
+
+        <ImageView
+            android:id="@+id/ic_calendar"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginTop="4dp"
+            android:src="@drawable/baseline_calendar_24"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/divider"
+            app:tint="@color/dove_grey" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_deadline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_end_ic"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.Ami.Caption"
+            app:layout_constraintBottom_toBottomOf="@id/ic_calendar"
+            app:layout_constraintStart_toEndOf="@id/ic_calendar"
+            app:layout_constraintTop_toTopOf="@+id/ic_calendar"
+            tools:text="July 15, 2022" />
+
+        <ImageView
+            android:id="@+id/ic_priority"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_alignBottom="@id/tv_number_priority"
+            android:layout_marginStart="@dimen/width_between_two_ic"
+            android:src="@drawable/ic_priority_high_24"
+            app:layout_constraintBottom_toBottomOf="@id/ic_calendar"
+            app:layout_constraintStart_toEndOf="@id/tv_deadline"
+            app:tint="@color/dove_grey" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_number_priority"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_end_ic"
+            android:maxLines="1"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.Ami.Caption"
+            app:layout_constraintBottom_toBottomOf="@id/ic_priority"
+            app:layout_constraintStart_toEndOf="@id/ic_priority"
+            app:layout_constraintTop_toTopOf="@id/ic_priority"
+            tools:text="8" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

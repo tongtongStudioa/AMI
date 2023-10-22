@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:title="@string/date_picker_menu_today"
+        android:id="@+id/action_today"
+        />
+    <item
+        android:title="@string/date_picker_menu_tomorrow"
+        android:id="@+id/action_tomorrow"
+        />
+    <item
+        android:id="@+id/action_personalized"
+        android:title="@string/menu_personalized"
+        />
+</menu>

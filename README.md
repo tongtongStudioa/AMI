@@ -10,3 +10,7 @@ Up coming :
 - tasks automatic scheduler
 - more categories possible 
 - beautiful ui and ux :)
+
+
+Download on PlayStore :
+https://play.google.com/store/apps/details?id=com.tongtongstudio.ami 

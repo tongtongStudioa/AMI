@@ -8,7 +8,8 @@ Smart todo list android app :
 Up coming :
 - task efficiency evaluation 
 - tasks automatic scheduler
-- more categories possible 
+- more categories possible
+- calendar view of tasks
 - beautiful ui and ux :)
 
 

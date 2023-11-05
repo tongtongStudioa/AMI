@@ -2,7 +2,7 @@ package com.tongtongstudio.ami.dependenciesInjection
 
 import android.app.Application
 import androidx.room.Room
-import com.tongtongstudio.ami.data.ThingToDoDatabase
+import com.tongtongstudio.ami.data.ThingToDoDatabase1
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,20 +19,20 @@ object AppModule {
     @Singleton
     fun provideDatabase(
         app: Application,
-        callback: ThingToDoDatabase.Callback
-    ) = Room.databaseBuilder(app, ThingToDoDatabase::class.java, "thing_to_do_database")
+        callback: ThingToDoDatabase1.Callback
+    ) = Room.databaseBuilder(app, ThingToDoDatabase1::class.java, "thing_to_do_database")
         .fallbackToDestructiveMigration()
         .addCallback(callback)
         .build()
 
     @Provides
-    fun provideTaskDao(db: ThingToDoDatabase) = db.taskDao()
+    fun provideTaskDao(db: ThingToDoDatabase1) = db.taskDao()
 
     @Provides
-    fun provideEventDao(db: ThingToDoDatabase) = db.eventDao()
+    fun provideEventDao(db: ThingToDoDatabase1) = db.eventDao()
 
     @Provides
-    fun provideProjectDao(db: ThingToDoDatabase) = db.projectDao()
+    fun provideProjectDao(db: ThingToDoDatabase1) = db.projectDao()
 
     @ApplicationScope
     @Provides

@@ -8,7 +8,7 @@ interface ThingToDoListener {
     fun onItemThingToDoClicked(thingToDo: ThingToDo)
 
     // TODO: initialize function member : shared view model and sound when check
-    fun onCheckBoxClick(task: Task, isChecked: Boolean,position: Int)
+    fun onCheckBoxClick(task: Task, isChecked: Boolean, position: Int)
     fun onItemTaskSwiped(subTask: Task, dir: Int)
 
     //fun onItemEventSwiped(event: Event, dir: Int)

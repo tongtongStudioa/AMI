@@ -133,14 +133,16 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
             if (it.isEmpty()) {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = true
                 binding.mainRecyclerView.isVisible = false
-                binding.emptyRecyclerView.textViewExplication.text = getString(R.string.text_explication_no_tasks_completed)
-                binding.emptyRecyclerView.textViewActionText.text = getString(R.string.text_action_no_tasks_completed)
-                binding.textSup.text = getString(R.string.nb_job_completed_info,0)
+                binding.emptyRecyclerView.textViewExplication.text =
+                    getString(R.string.text_explication_no_tasks_completed)
+                binding.emptyRecyclerView.textViewActionText.text =
+                    getString(R.string.text_action_no_tasks_completed)
+                binding.textSup.text = getString(R.string.nb_job_completed_info, 0)
             } else {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
                 completedAdapter.swapData(it)
-                binding.textSup.text = getString(R.string.nb_job_completed_info,it.size)
+                binding.textSup.text = getString(R.string.nb_job_completed_info, it.size)
             }
         }
     }

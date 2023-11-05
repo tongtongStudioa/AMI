@@ -16,7 +16,7 @@ import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.databinding.DialogInformationMissedRecurringTasksBinding
 import com.tongtongstudio.ami.ui.MainViewModel
 
-class MissedRecurringTasksDialogFragment: DialogFragment() {
+class MissedRecurringTasksDialogFragment : DialogFragment() {
 
     private lateinit var binding: DialogInformationMissedRecurringTasksBinding
     private lateinit var sharedViewModel: MainViewModel
@@ -59,7 +59,8 @@ class MissedRecurringTasksDialogFragment: DialogFragment() {
             setHasFixedSize(true)
         }
         if (missedTasks != null) {
-            binding.information.text = getString(R.string.text_nb_missed_recurring_tasks,missedTasks!!.size)
+            binding.information.text =
+                getString(R.string.text_nb_missed_recurring_tasks, missedTasks!!.size)
             dialogAdapter.swapData(missedTasks!!.toList())
         }
         return binding.root
@@ -69,6 +70,7 @@ class MissedRecurringTasksDialogFragment: DialogFragment() {
         super.onDismiss(dialog)
         sharedViewModel.updateRecurringTasksMissed(missedTasks!!.toList())
     }
+
     private fun onDialogPositiveClick(dialog: MissedRecurringTasksDialogFragment) {
         dialog.dismiss()
     }

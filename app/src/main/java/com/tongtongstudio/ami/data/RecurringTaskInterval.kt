@@ -10,7 +10,7 @@ class Converters {
         val codeList = codeRef.split("/")
         val times = codeList[0].toInt()
         val period = codeList[1]
-        val daysOfWeek: List<Int>? = if (codeList.size >2) {
+        val daysOfWeek: List<Int>? = if (codeList.size > 2) {
             val daysOfWeekString = codeList[2].split(";")
             val daysOfWeekInt = ArrayList<Int>()
             for (string in daysOfWeekString) {
@@ -18,7 +18,7 @@ class Converters {
             }
             daysOfWeekInt
         } else null
-        return RecurringTaskInterval(times,period,daysOfWeek)
+        return RecurringTaskInterval(times, period, daysOfWeek)
     }
 
     @TypeConverter
@@ -36,7 +36,7 @@ class Converters {
                         daysOfWeekString += string
                         if (string != interval.daysOfWeek.last())
                             daysOfWeekString += ';'
-                        }
+                    }
                     daysOfWeekString
                 } else ""
 
@@ -44,8 +44,10 @@ class Converters {
         } else null
     }
 }
+
 @Parcelize
-class RecurringTaskInterval(val times: Int, // every 1, 2, 3 or 18 ...
-                            val period: String, // ... (hours?), days, week, month, year.
-                            val daysOfWeek: List<Int>? = null // on Monday and Wednesday for example
+class RecurringTaskInterval(
+    val times: Int, // every 1, 2, 3 or 18 ...
+    val period: String, // ... (hours?), days, week, month, year.
+    val daysOfWeek: List<Int>? = null // on Monday and Wednesday for example
 ) : Parcelable

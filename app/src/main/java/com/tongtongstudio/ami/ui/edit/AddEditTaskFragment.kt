@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.PopupMenu
-import androidx.annotation.RequiresApi
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.os.bundleOf
@@ -248,7 +247,11 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 // create the calendar constraint builder
                 val calendarConstraintBuilder = CalendarConstraints.Builder()
                 if (viewModel.deadline != null)
-                    calendarConstraintBuilder.setValidator(DateValidatorPointBackward.before(viewModel.deadline!!))
+                    calendarConstraintBuilder.setValidator(
+                        DateValidatorPointBackward.before(
+                            viewModel.deadline!!
+                        )
+                    )
                 val datePicker = showDatePickerMaterial(
                     viewModel.deadline,
                     calendarConstraintBuilder.build()
@@ -292,13 +295,14 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 when (it.itemId) {
                     R.id.action_every_day -> {
                         viewModel.isRecurring = true
-                        viewModel.recurringTaskInterval = RecurringTaskInterval(1,Period.DAYS.name)
+                        viewModel.recurringTaskInterval = RecurringTaskInterval(1, Period.DAYS.name)
                         updatePeriodRecurringTask()
                         true
                     }
                     R.id.action_every_week -> {
                         viewModel.isRecurring = true
-                        viewModel.recurringTaskInterval = RecurringTaskInterval(1,Period.WEEKS.name)
+                        viewModel.recurringTaskInterval =
+                            RecurringTaskInterval(1, Period.WEEKS.name)
                         updatePeriodRecurringTask()
                         true
                     }
@@ -446,7 +450,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             calendarConstraintBuilder.setValidator(DateValidatorPointBackward.before(viewModel.deadline!!))
         }
 
-        val datePicker = showDatePickerMaterial(deadline,calendarConstraintBuilder.build())
+        val datePicker = showDatePickerMaterial(deadline, calendarConstraintBuilder.build())
         datePicker.addOnPositiveButtonClickListener {
             viewModel.evaluationTaskDate = it
             binding.setEvaluationDate.text = DateFormat.getDateInstance().format(it)
@@ -530,7 +534,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
 
     // TODO: 11/02/2023 delete this method to free up space
     private fun getStringFromLong(long: Long): String {
-        return SimpleDateFormat(PATTERN_FORMAT_DATE,Locale.getDefault()).format(long)
+        return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(long)
     }
 
     private fun pickCustomStartDate(startDate: Long?) {
@@ -538,7 +542,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         val calendarConstraintBuilder = CalendarConstraints.Builder()
         if (viewModel.deadline != null)
             calendarConstraintBuilder.setValidator(DateValidatorPointBackward.before(viewModel.deadline!!))
-        val datePicker = showDatePickerMaterial(startDate,calendarConstraintBuilder.build())
+        val datePicker = showDatePickerMaterial(startDate, calendarConstraintBuilder.build())
         datePicker.addOnPositiveButtonClickListener {
             viewModel.startDate = it
             updateBtnStartDateText()
@@ -583,7 +587,8 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             }
             val notifyPendingIntent =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    PendingIntent.getBroadcast(context, 0, notifyIntent,
+                    PendingIntent.getBroadcast(
+                        context, 0, notifyIntent,
                         PendingIntent.FLAG_IMMUTABLE
                     )
                 } else {
@@ -630,11 +635,17 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
     private fun showRepeatableCyclePicker() {
         val newFragment = RecurringChoiceDialogFragment()
         val result = Bundle().apply {
-            putInt(TIMES_KEY,viewModel.recurringTaskInterval?.times ?: 0)
-            putString(PERIOD_KEY,viewModel.recurringTaskInterval?.period ?: NO_VALUE)
-            putIntArray(DAYS_OF_THE_WEEKS_KEY,viewModel.recurringTaskInterval?.daysOfWeek?.toIntArray() ?: IntArray(1))
-            putString(DEADLINE, if (viewModel.deadline != null) getStringFromLong(viewModel.deadline!!) else NO_VALUE )
-            putLong(START_DATE,if (viewModel.startDate != null) viewModel.startDate!! else 0L)
+            putInt(TIMES_KEY, viewModel.recurringTaskInterval?.times ?: 0)
+            putString(PERIOD_KEY, viewModel.recurringTaskInterval?.period ?: NO_VALUE)
+            putIntArray(
+                DAYS_OF_THE_WEEKS_KEY,
+                viewModel.recurringTaskInterval?.daysOfWeek?.toIntArray() ?: IntArray(1)
+            )
+            putString(
+                DEADLINE,
+                if (viewModel.deadline != null) getStringFromLong(viewModel.deadline!!) else NO_VALUE
+            )
+            putLong(START_DATE, if (viewModel.startDate != null) viewModel.startDate!! else 0L)
         }
         setFragmentResult(CURRENT_RECURRING_INFO_REQUEST_KEY, result)
         newFragment.show(parentFragmentManager, RECURRING_SELECTION_DIALOG_TAG)
@@ -648,14 +659,14 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 binding.removeRepeatedChoice.isVisible = true
                 binding.btnRepeatTask.setIconTintResource(R.color.french_blue)
                 binding.btnRepeatTask.setTextColor(getColor(requireContext(), R.color.french_blue))
-                if ( recurringInfo.times == 1 && recurringInfo.daysOfWeek == null) {
-                    when (recurringInfo.period){
-                      Period.DAYS.name-> getString(R.string.each_days)
-                      Period.WEEKS.name -> getString(R.string.each_weeks)
-                      Period.MONTHS.name -> getString(R.string.each_months)
-                      Period.YEARS.name -> getString(R.string.each_years)
-                      else -> getString(R.string.each_days)
-                  }
+                if (recurringInfo.times == 1 && recurringInfo.daysOfWeek == null) {
+                    when (recurringInfo.period) {
+                        Period.DAYS.name -> getString(R.string.each_days)
+                        Period.WEEKS.name -> getString(R.string.each_weeks)
+                        Period.MONTHS.name -> getString(R.string.each_months)
+                        Period.YEARS.name -> getString(R.string.each_years)
+                        else -> getString(R.string.each_days)
+                    }
                 } else if (recurringInfo.daysOfWeek != null) { // TODO: change this to best integration
                     if (recurringInfo.times == 1) {
                         "Weekly on " + recurringInfo.daysOfWeek
@@ -665,7 +676,10 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                     when (recurringInfo.period) {
                         Period.DAYS.name -> getString(R.string.every_x_days, recurringInfo.times)
                         Period.WEEKS.name -> getString(R.string.every_x_weeks, recurringInfo.times)
-                        Period.MONTHS.name -> getString(R.string.every_x_months, recurringInfo.times)
+                        Period.MONTHS.name -> getString(
+                            R.string.every_x_months,
+                            recurringInfo.times
+                        )
                         Period.YEARS.name -> getString(R.string.every_x_years, recurringInfo.times)
                         else -> getString(R.string.every_x_days, recurringInfo.times)
                     }
@@ -678,7 +692,10 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             }
     }
 
-    private fun showDatePickerMaterial(selection: Long?, constraints: CalendarConstraints): MaterialDatePicker<Long> {
+    private fun showDatePickerMaterial(
+        selection: Long?,
+        constraints: CalendarConstraints
+    ): MaterialDatePicker<Long> {
         viewModel.eventIsSpread = false
         val datePicker =
             MaterialDatePicker.Builder.datePicker()

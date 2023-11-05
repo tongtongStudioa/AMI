@@ -117,7 +117,7 @@
         android:id="@+id/missedRecurringTasksDialogFragment"
         tools:layout="@layout/dialog_information_missed_recurring_tasks"
         android:name="com.tongtongstudio.ami.ui.dialog.MissedRecurringTasksDialogFragment"
-        android:label="Recurring tasks missed" >
+        android:label="Recurring tasks missed">
         <argument
             android:name="missedRecurringTasks"
             app:argType="com.tongtongstudio.ami.data.datatables.Task[]" />

@@ -16,7 +16,7 @@ import com.tongtongstudio.ami.data.RecurringTaskInterval
 import com.tongtongstudio.ami.databinding.DialogSelectRecurringProtocolBinding
 import java.util.*
 
-enum class Period {DAYS, WEEKS, MONTHS, YEARS}
+enum class Period { DAYS, WEEKS, MONTHS, YEARS }
 
 const val RECURRING_SELECTION_DIALOG_TAG = "recurring_selection_tag"
 const val RECURRING_RESULT_KEY = "recurring_selection_resul_key"
@@ -64,7 +64,7 @@ class RecurringChoiceDialogFragment : DialogFragment() {
             } else 1
         val period = getPeriod(selection)
         val recurrenceDays = getDaysOfWeek()
-        val recurringTaskInterval = RecurringTaskInterval(nDays,period,recurrenceDays)
+        val recurringTaskInterval = RecurringTaskInterval(nDays, period, recurrenceDays)
         val result = Bundle().apply {
             putParcelable(RECURRING_RESULT_KEY, recurringTaskInterval)
         }
@@ -81,7 +81,7 @@ class RecurringChoiceDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        stringItems  = resources.getStringArray(R.array.period_list)
+        stringItems = resources.getStringArray(R.array.period_list)
         val adapter = ArrayAdapter(requireContext(), R.layout.list_options, stringItems)
 
         binding.apply {
@@ -100,7 +100,8 @@ class RecurringChoiceDialogFragment : DialogFragment() {
             val startDate = bundle.getLong(START_DATE)
             // populate data
             selection = getSelection(period)
-            binding.deadlineTextView.text = if (deadline == null || deadline == NO_VALUE) getString(R.string.set_recurring_end) else deadline
+            binding.deadlineTextView.text =
+                if (deadline == null || deadline == NO_VALUE) getString(R.string.set_recurring_end) else deadline
             binding.inputLayoutUserChoice.editText?.setText(if (times != 0) times.toString() else "1")
             // TODO: change text display with which period is already selected
             //binding.exposedDropdownMenu.editText?.setText(setPeriod(period))
@@ -123,16 +124,16 @@ class RecurringChoiceDialogFragment : DialogFragment() {
     }
 
     private fun updateCheckBoxes(daysOfWeek: IntArray?, startDate: Long) {
-        if (daysOfWeek != null ) {
+        if (daysOfWeek != null) {
             for (day in daysOfWeek) {
                 when (day) {
                     Calendar.MONDAY -> binding.mondayCheckBox.isChecked = true
-                    Calendar.TUESDAY-> binding.tuesdayCheckBox.isChecked = true
+                    Calendar.TUESDAY -> binding.tuesdayCheckBox.isChecked = true
                     Calendar.WEDNESDAY -> binding.wednesdayCheckBox.isChecked = true
                     Calendar.THURSDAY -> binding.thursdayCheckBox.isChecked = true
                     Calendar.FRIDAY -> binding.fridayCheckBox.isChecked = true
                     Calendar.SATURDAY -> binding.saturdayCheckBox.isChecked = true
-                    Calendar.SUNDAY-> binding.sundayCheckBox.isChecked = true
+                    Calendar.SUNDAY -> binding.sundayCheckBox.isChecked = true
                 }
             }
         } else if (startDate != 0L) {
@@ -141,18 +142,18 @@ class RecurringChoiceDialogFragment : DialogFragment() {
                 get(Calendar.DAY_OF_WEEK)
             }) {
                 Calendar.MONDAY -> binding.mondayCheckBox.isChecked = true
-                Calendar.TUESDAY-> binding.tuesdayCheckBox.isChecked = true
+                Calendar.TUESDAY -> binding.tuesdayCheckBox.isChecked = true
                 Calendar.WEDNESDAY -> binding.wednesdayCheckBox.isChecked = true
                 Calendar.THURSDAY -> binding.thursdayCheckBox.isChecked = true
                 Calendar.FRIDAY -> binding.fridayCheckBox.isChecked = true
                 Calendar.SATURDAY -> binding.saturdayCheckBox.isChecked = true
-                Calendar.SUNDAY-> binding.sundayCheckBox.isChecked = true
+                Calendar.SUNDAY -> binding.sundayCheckBox.isChecked = true
             }
         }
     }
 
     private fun getPeriod(listSelection: Int): String {
-        return when(listSelection) {
+        return when (listSelection) {
             0 -> Period.DAYS.name
             1 -> Period.WEEKS.name
             2 -> Period.MONTHS.name

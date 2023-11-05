@@ -136,14 +136,15 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener 
             if (it.isEmpty()) {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = true
                 binding.mainRecyclerView.isVisible = false
-                binding.textSup.text = getString(R.string.nb_future_tasks_info,0)
+                binding.textSup.text = getString(R.string.nb_future_tasks_info, 0)
                 binding.emptyRecyclerView.textViewExplication.text = textExplication
-                binding.emptyRecyclerView.textViewActionText.text = getString(R.string.text_action_no_tasks)
+                binding.emptyRecyclerView.textViewActionText.text =
+                    getString(R.string.text_action_no_tasks)
             } else {
                 mainAdapter.swapData(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
-                binding.textSup.text = getString(R.string.nb_future_tasks_info,it.size)
+                binding.textSup.text = getString(R.string.nb_future_tasks_info, it.size)
             }
         }
 

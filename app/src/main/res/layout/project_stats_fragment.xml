@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/thing_to_do_title"/>
+            app:title="@string/thing_to_do_title" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

@@ -53,7 +53,7 @@ class TrackingTimeAndDetailsFragment : Fragment(R.layout.task_tracking_fragment)
         } else {
             SoundPool(6, AudioManager.STREAM_MUSIC, 0)
         }
-        soundID = soundPool.load(this.context, R.raw.success_1,1)
+        soundID = soundPool.load(this.context, R.raw.success_1, 1)
 
         // binding elements layout
         binding.apply {
@@ -69,7 +69,10 @@ class TrackingTimeAndDetailsFragment : Fragment(R.layout.task_tracking_fragment)
                 if (viewModel.thingToDo!!.taskEvaluationDescription != null) {
                     taskEvaluationDescription.text =
                         viewModel.thingToDo!!.taskEvaluationDescription ?: ""
-                    tvEvaluationDate.text = if (viewModel.thingToDo!!.taskEvaluationDate != null) DateFormat.getDateInstance(DateFormat.SHORT).format(viewModel.thingToDo!!.taskEvaluationDate!!) else ""
+                    tvEvaluationDate.text =
+                        if (viewModel.thingToDo!!.taskEvaluationDate != null) DateFormat.getDateInstance(
+                            DateFormat.SHORT
+                        ).format(viewModel.thingToDo!!.taskEvaluationDate!!) else ""
 
                 } else taskEvaluation.isVisible = false
             }
@@ -175,7 +178,7 @@ class TrackingTimeAndDetailsFragment : Fragment(R.layout.task_tracking_fragment)
 
     private fun playAlertSound(): Boolean {
         if (soundID != 0)
-            soundPool.play(soundID, 0.1F, 0.1F,0, 0,1.1F)
+            soundPool.play(soundID, 0.1F, 0.1F, 0, 0, 1.1F)
         return true
     }
 }

@@ -15,8 +15,8 @@ android {
         applicationId "com.tongtongstudio.ami"
         minSdkVersion 19
         targetSdkVersion 33
-        versionCode 5
-        versionName "1.9.8-aplha"
+        versionCode 6
+        versionName "1.9.9-aplha"
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }

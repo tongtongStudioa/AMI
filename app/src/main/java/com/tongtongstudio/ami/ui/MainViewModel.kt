@@ -6,7 +6,6 @@ import android.media.SoundPool
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.LaterFilter
 import com.tongtongstudio.ami.data.PreferencesManager
 import com.tongtongstudio.ami.data.Repository
@@ -109,7 +108,8 @@ class MainViewModel @Inject constructor(
     private suspend fun updateTask(task: Task, checked: Boolean) {
         val cloneTask: Task
         if (checked && task.isRecurring && task.taskStartDate != null && task.recurringTaskInterval != null) {
-            val recurrenceDays = task.recurringTaskInterval.daysOfWeek // Custom recurrence days for this task
+            val recurrenceDays =
+                task.recurringTaskInterval.daysOfWeek // Custom recurrence days for this task
             var isTaskEnding = false
             val newStartDate = if (recurrenceDays != null) {
                 // Set the new due date to the next occurrence of the task's due day
@@ -119,7 +119,7 @@ class MainViewModel @Inject constructor(
                         add(Calendar.DAY_OF_WEEK, 1)
                         val nextDeadlineDay = get(Calendar.DAY_OF_WEEK)
                         if (get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) { // if we change of week so add intervalWeek if interval > 2 week
-                            add(Calendar.DAY_OF_MONTH,(task.recurringTaskInterval.times - 1) * 7)
+                            add(Calendar.DAY_OF_MONTH, (task.recurringTaskInterval.times - 1) * 7)
                         }
                     } while (!recurrenceDays.contains(nextDeadlineDay)) // if list of recurrence days contains next deadline's day so set this deadline
                     timeInMillis
@@ -153,13 +153,13 @@ class MainViewModel @Inject constructor(
             //val isCompleted = if (checked) 1 else 0
             val lastStartDate = Calendar.getInstance().run {
                 timeInMillis = task.deadline!!
-                set(Calendar.HOUR_OF_DAY,0)
-                set(Calendar.MINUTE,0)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
                 time
             }
             val completedDate = Calendar.getInstance().run {
-                set(Calendar.HOUR_OF_DAY,0)
-                set(Calendar.MINUTE,0)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
                 time
             }
             val currentStreak = if (lastStartDate >= completedDate) {
@@ -308,7 +308,7 @@ class MainViewModel @Inject constructor(
 
     fun lookForMissedRecurringTasks() = viewModelScope.launch {
         val todayDate = Calendar.getInstance().run {
-            set(Calendar.HOUR_OF_DAY,0)
+            set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
             timeInMillis
         }
@@ -320,8 +320,8 @@ class MainViewModel @Inject constructor(
 
     fun updateRecurringTasksMissed(missedTasks: List<Task>) = viewModelScope.launch {
         val todayTimeInMillis = Calendar.getInstance().run {
-            set(Calendar.HOUR_OF_DAY,0)
-            set(Calendar.MINUTE,0)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
             timeInMillis
         }
         for (task in missedTasks) {
@@ -336,7 +336,7 @@ class MainViewModel @Inject constructor(
                     timeInMillis = task.taskStartDate!!
                     do {
                         if (recurrenceDays.contains(get(Calendar.DAY_OF_WEEK)))
-                            timesSkipped ++
+                            timesSkipped++
                         add(Calendar.DAY_OF_WEEK, 1)
                         val nextStartDateDay = get(Calendar.DAY_OF_WEEK)
                         if (get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) { // if we change of week so add intervalWeek if interval > 2 week
@@ -346,7 +346,7 @@ class MainViewModel @Inject constructor(
                     // if list of recurrence days contains next startDate's day and it's not before today so set new start date
                     timeInMillis
                 }
-            }  else {
+            } else {
                 Calendar.getInstance().run {
                     timeInMillis = task.taskStartDate!!
                     do {
@@ -369,12 +369,12 @@ class MainViewModel @Inject constructor(
                             )
                             else -> add(Calendar.DAY_OF_MONTH, 0)
                         }
-                        timesSkipped ++
+                        timesSkipped++
                     } while (timeInMillis < todayTimeInMillis)
                     timeInMillis
                 }
             }
-            if (newStartDate > task.deadline!!)
+            if (newStartDate > (task.deadline ?: todayTimeInMillis))
                 isCompleted = true
             val cloneTask = task.copy(
                 isTaskCompleted = isCompleted,
@@ -399,6 +399,7 @@ class MainViewModel @Inject constructor(
         data class ShowTaskSavedConfirmationMessage(val msg: String) : SharedEvent()
         data class ShowUndoDeleteTaskMessage(val textShow: String, val thingToDo: ThingToDo) :
             SharedEvent()
+
         data class ShowMissedRecurringTaskDialog(val missedTasks: List<Task>) : SharedEvent()
     }
 }

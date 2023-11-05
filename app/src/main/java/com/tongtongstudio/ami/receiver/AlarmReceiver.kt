@@ -27,7 +27,12 @@ class AlarmReceiver : BroadcastReceiver() {
         }
         val pendingIntent: PendingIntent =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                PendingIntent.getActivity(context, 0, intentDestination, PendingIntent.FLAG_IMMUTABLE)
+                PendingIntent.getActivity(
+                    context,
+                    0,
+                    intentDestination,
+                    PendingIntent.FLAG_IMMUTABLE
+                )
             } else {
                 PendingIntent.getActivity(context, 0, intentDestination, 0)
             }

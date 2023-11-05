@@ -6,35 +6,35 @@
                 <item
                     android:id="@+id/todayTasksFragment"
                     android:title="@string/menu_drawer_today_s_tasks"
-                    android:icon="@drawable/ic_baseline_today_24"/>
+                    android:icon="@drawable/ic_baseline_today_24" />
                 <item
                     android:id="@+id/othersTasksFragment"
                     android:title="@string/menu_drawer_others_tasks"
-                    android:icon="@drawable/baseline_pending_actions_24"/>
+                    android:icon="@drawable/baseline_pending_actions_24" />
             </group>
         </menu>
     </item>
-        <item android:title="@string/sub_pages_title">
-            <menu>
-                <group android:checkableBehavior="single">
+    <item android:title="@string/sub_pages_title">
+        <menu>
+            <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/projectFragment"
                     android:title="@string/menu_drawer_all_projects"
-                    android:icon="@drawable/ic_project_24"/>
+                    android:icon="@drawable/ic_project_24" />
                 <item
                     android:id="@+id/eventFragment"
                     android:title="@string/menu_drawer_all_events"
-                    android:icon="@drawable/baseline_calendar_24"/>
-                </group>
-            </menu>
-        </item>
+                    android:icon="@drawable/baseline_calendar_24" />
+            </group>
+        </menu>
+    </item>
     <item android:title="@string/menu_title_achievements">
         <menu>
             <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/completedThingToDoFragment"
                     android:title="@string/fragment_title_completed"
-                    android:icon="@drawable/ic_baseline_checklist_24"/>
+                    android:icon="@drawable/ic_baseline_checklist_24" />
                 <item
                     android:title="@string/menu_drawer_accomplishment"
                     android:id="@id/achievementsFragment"

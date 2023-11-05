@@ -14,7 +14,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 enum class SortOrder { BY_NAME, BY_IMPORTANCE_PRIORITY, BY_DEADLINE }
-enum class LaterFilter {TOMORROW, NEXT_WEEK, LATER}
+enum class LaterFilter { TOMORROW, NEXT_WEEK, LATER }
 
 data class FilterPreferences(
     val sortOrder: SortOrder,
@@ -31,6 +31,7 @@ class PreferencesManager @Inject constructor(@ApplicationContext context: Contex
         name = USER_PREFERENCES_NAME
     )
     private val dataStore = context.dataStore
+
     // where preferences are stocked
     val preferencesFlow = context.dataStore.data
         .catch { exception ->
@@ -46,7 +47,8 @@ class PreferencesManager @Inject constructor(@ApplicationContext context: Contex
             )
             val hideCompleted = preferences[PreferencesKeys.HIDE_COMPLETED] ?: false
 
-            val filter = LaterFilter.valueOf(preferences[PreferencesKeys.FILTER] ?: LaterFilter.LATER.name
+            val filter = LaterFilter.valueOf(
+                preferences[PreferencesKeys.FILTER] ?: LaterFilter.LATER.name
             )
 
             FilterPreferences(sortOrder, hideCompleted, filter)

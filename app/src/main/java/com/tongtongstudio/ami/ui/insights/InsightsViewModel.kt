@@ -32,7 +32,7 @@ class InsightsViewModel @Inject constructor(
             if (tasksCompleted.isEmpty() || (taskNoCount - tasksCompleted.size) == 0)
                 null
             else
-                    (sum.toFloat() / (tasksCompleted.size - taskNoCount)).toLong()
+                (sum.toFloat() / (tasksCompleted.size - taskNoCount)).toLong()
         return averageTimeCompletion
     }
 
@@ -74,7 +74,7 @@ class InsightsViewModel @Inject constructor(
             if (!task.isRecurring) { // no count of recurring task (maybe later)
                 val completedDateInMillis = task.taskCompletedDate!!
                 val completedDate = calendar.run {
-                    timeInMillis = task.taskCompletedDate!!
+                    timeInMillis = task.taskCompletedDate
                     time
                 }
                 // task's deadline mustn't be null !! --> edit fragment: save method
@@ -83,8 +83,8 @@ class InsightsViewModel @Inject constructor(
                 } else {
                     val deadlineDate = calendar.run {
                         timeInMillis = task.deadline
-                        set(Calendar.HOUR_OF_DAY,23)
-                        set(Calendar.MINUTE,59)
+                        set(Calendar.HOUR_OF_DAY, 23)
+                        set(Calendar.MINUTE, 59)
                         time
                     }
                     val wasCompletedOnTime: Boolean =

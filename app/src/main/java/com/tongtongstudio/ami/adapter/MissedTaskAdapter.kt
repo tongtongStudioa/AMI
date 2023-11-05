@@ -40,7 +40,8 @@ class MissedTaskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         (holder as TaskMissedViewHolder).bind(task as Task)
     }
 
-    class TaskMissedViewHolder(val binding: ItemMissedTaskBinding): RecyclerView.ViewHolder(binding.root) {
+    class TaskMissedViewHolder(val binding: ItemMissedTaskBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         fun bind(thingToDo: Task) {
             binding.apply {
                 tvTaskName.text = thingToDo.taskName

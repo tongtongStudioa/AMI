@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 const val PATTERN_FORMAT_DATE = "E dd/MM"
+
 enum class Nature { PROJECT, TASK, EVENT }
 
 @Parcelize
@@ -23,6 +24,7 @@ open class ThingToDo(
     open fun getStartDateFormatted(): String? {
         return null
     }
+
     open fun getDeadlineFormatted(): String? {
         return if (deadline != null) {
             SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(deadline)

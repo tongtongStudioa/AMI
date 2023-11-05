@@ -128,13 +128,15 @@ class ProjectFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
             if (it.isEmpty()) {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = true
                 binding.mainRecyclerView.isVisible = false
-                binding.emptyRecyclerView.textViewExplication.text = getString(R.string.text_explication_no_projects)
-                binding.emptyRecyclerView.textViewActionText.text = getString(R.string.text_action_no_projects)
+                binding.emptyRecyclerView.textViewExplication.text =
+                    getString(R.string.text_explication_no_projects)
+                binding.emptyRecyclerView.textViewActionText.text =
+                    getString(R.string.text_action_no_projects)
             } else {
                 mainAdapter.swapData(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
-                binding.textSup.text = getString(R.string.nb_projects_info,it.size)
+                binding.textSup.text = getString(R.string.nb_projects_info, it.size)
             }
         }
 

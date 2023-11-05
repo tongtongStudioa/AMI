@@ -36,7 +36,8 @@ class Repository @Inject constructor(
         }.map { allThingsToDo ->
             when (sortOrder) {
                 SortOrder.BY_IMPORTANCE_PRIORITY ->
-                    allThingsToDo.sortedWith(compareBy<ThingToDo> { it.isCompleted() }.thenBy { it.priority }.thenBy { it.getEstimatedTime() })
+                    allThingsToDo.sortedWith(compareBy<ThingToDo> { it.isCompleted() }.thenBy { it.priority }
+                        .thenBy { it.getEstimatedTime() })
                 SortOrder.BY_NAME -> allThingsToDo.sortedBy { it.name }
                 //SortOrder.BY_DEADLINE -> allThingsToDo.sortedByDescending { it.deadline }
                 else -> allThingsToDo.sortedWith(compareBy<ThingToDo> { it.priority }.thenBy { it.name })
@@ -45,12 +46,28 @@ class Repository @Inject constructor(
     }
 
     fun getAllLaterThingsToDo(endOfToday: Long, enOfDayFilter: Long?): Flow<List<ThingToDo>> {
-        val tasksFlow: Flow<List<ThingToDo>> = if (enOfDayFilter != null) taskDao.getLaterTasksFilter(endOfToday,enOfDayFilter) else taskDao.getLaterTasks(endOfToday)
-        val eventsFlow: Flow<List<ThingToDo>> = if (enOfDayFilter != null) eventDao.getLaterEventsFilter(endOfToday,enOfDayFilter) else eventDao.getLaterEvents(endOfToday)
-        val projectsWithSubTasksFlow: Flow<List<ThingToDo>> = if (enOfDayFilter != null) projectDao.getLaterProjectsFilter(endOfToday,enOfDayFilter) else projectDao.getLaterProjects(endOfToday)
+        val tasksFlow: Flow<List<ThingToDo>> =
+            if (enOfDayFilter != null) taskDao.getLaterTasksFilter(
+                endOfToday,
+                enOfDayFilter
+            ) else taskDao.getLaterTasks(endOfToday)
+        val eventsFlow: Flow<List<ThingToDo>> =
+            if (enOfDayFilter != null) eventDao.getLaterEventsFilter(
+                endOfToday,
+                enOfDayFilter
+            ) else eventDao.getLaterEvents(endOfToday)
+        val projectsWithSubTasksFlow: Flow<List<ThingToDo>> =
+            if (enOfDayFilter != null) projectDao.getLaterProjectsFilter(
+                endOfToday,
+                enOfDayFilter
+            ) else projectDao.getLaterProjects(endOfToday)
 
         //val thingsToDo: List<ThingToDo> = projectsWithSubtasks + events + tasks
-        return combine(tasksFlow, eventsFlow, projectsWithSubTasksFlow) { tasks, events, projectsWithSubTasks ->
+        return combine(
+            tasksFlow,
+            eventsFlow,
+            projectsWithSubTasksFlow
+        ) { tasks, events, projectsWithSubTasks ->
             tasks + events + projectsWithSubTasks
         }.map { allThingsToDo ->
             allThingsToDo.sortedWith(compareBy<ThingToDo> { it.getStartDate() }.thenBy { it.priority }
@@ -70,13 +87,16 @@ class Repository @Inject constructor(
     }
 
     suspend fun getCountUpcomingTasks(endOfToday: Long): Int {
-        return taskDao.getUpcomingTasksCount(endOfToday) + eventDao.getUpcomingEventsCount(endOfToday) + projectDao.getUpcomingProjectsCount(endOfToday)
+        return taskDao.getUpcomingTasksCount(endOfToday) + eventDao.getUpcomingEventsCount(
+            endOfToday
+        ) + projectDao.getUpcomingProjectsCount(endOfToday)
     }
 
     // task
     suspend fun getMissedRecurringTasks(todayDate: Long): List<Task> {
         return taskDao.getMissedRecurringTasks(todayDate)
     }
+
     suspend fun insertAllSubTask(listSubTasks: List<Task>) {
         taskDao.insertUndoDeletedSubTasks(listSubTasks)
     }

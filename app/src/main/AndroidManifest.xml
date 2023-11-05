@@ -12,16 +12,18 @@
         android:roundIcon="@mipmap/ic_launcher_simple_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AMI.Seed">
-        <activity android:name=".ui.MainActivity"
+        <activity
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"
-                    android:windowSoftInputMode="adjustResize"/>
+                <action
+                    android:name="android.intent.action.MAIN"
+                    android:windowSoftInputMode="adjustResize" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".receiver.AlarmReceiver"/>
+        <receiver android:name=".receiver.AlarmReceiver" />
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

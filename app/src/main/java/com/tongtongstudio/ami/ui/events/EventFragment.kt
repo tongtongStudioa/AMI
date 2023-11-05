@@ -183,8 +183,10 @@ class EventFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
             if (it.isEmpty()) {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = true
                 binding.mainRecyclerView.isVisible = false
-                binding.emptyRecyclerView.textViewExplication.text = getString(R.string.text_explication_no_events)
-                binding.emptyRecyclerView.textViewActionText.text = getString(R.string.text_action_no_events)
+                binding.emptyRecyclerView.textViewExplication.text =
+                    getString(R.string.text_explication_no_events)
+                binding.emptyRecyclerView.textViewActionText.text =
+                    getString(R.string.text_action_no_events)
             } else {
                 mainAdapter.swapData(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false

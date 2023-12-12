@@ -12,6 +12,5 @@ class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
         assertEquals(4, 2 + 2)
-        "9 Feb 2023" == "8 Feb 2023"
     }
 }

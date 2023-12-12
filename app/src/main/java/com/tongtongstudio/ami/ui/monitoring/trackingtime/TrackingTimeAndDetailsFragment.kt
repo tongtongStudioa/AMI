@@ -16,20 +16,18 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.databinding.TaskTrackingFragmentBinding
 import com.tongtongstudio.ami.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
-import java.text.DateFormat
 
 @AndroidEntryPoint
 class TrackingTimeAndDetailsFragment : Fragment(R.layout.task_tracking_fragment) {
 
     lateinit var binding: TaskTrackingFragmentBinding
     private val viewModel: TrackingTimeAndDetailsViewModel by viewModels()
-    lateinit var chronometer: Chronometer
+    private lateinit var chronometer: Chronometer
     private lateinit var soundPool: SoundPool
-    var soundID: Int = 0
+    private var soundID: Int = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,23 +56,26 @@ class TrackingTimeAndDetailsFragment : Fragment(R.layout.task_tracking_fragment)
         // binding elements layout
         binding.apply {
             // task info
-            if (viewModel.thingToDo != null && viewModel.thingToDo is Task) {
-                taskName.text = viewModel.thingToDo!!.taskName
-                taskDescription.text = viewModel.thingToDo!!.taskDescription
-                if (viewModel.thingToDo!!.taskStartDate != null) {
-                    taskStartDate.text = viewModel.thingToDo!!.getStartDateFormatted() ?: ""
+            if (viewModel.task != null) {
+                taskName.text = viewModel.task!!.title
+                taskDescription.text = viewModel.task!!.description
+                if (viewModel.task!!.startDate != null) {
+                    taskStartDate.text =
+                        viewModel.task!!.getDateFormatted(viewModel.task!!.startDate) ?: ""
                     taskStartDate.isVisible = true
                 } else taskStartDate.isVisible = false
-                taskDeadline.text = viewModel.thingToDo!!.getDeadlineFormatted() ?: ""
-                if (viewModel.thingToDo!!.taskEvaluationDescription != null) {
+                taskDeadline.text =
+                    viewModel.task!!.getDateFormatted(viewModel.task!!.dueDate) ?: ""
+                /*if (viewModel.task!!.taskEvaluationDescription != null) {
                     taskEvaluationDescription.text =
-                        viewModel.thingToDo!!.taskEvaluationDescription ?: ""
+                        viewModel.task!!.taskEvaluationDescription ?: ""
                     tvEvaluationDate.text =
-                        if (viewModel.thingToDo!!.taskEvaluationDate != null) DateFormat.getDateInstance(
+                        if (viewModel.task!!.taskEvaluationDate != null) DateFormat.getDateInstance(
                             DateFormat.SHORT
-                        ).format(viewModel.thingToDo!!.taskEvaluationDate!!) else ""
+                        ).format(viewModel.task!!.taskEvaluationDate!!) else ""
 
-                } else taskEvaluation.isVisible = false
+                } else taskEvaluation.isVisible = false*/
+                taskEvaluation.isVisible = false
             }
             // estimated work time view
             val estimatedWorkTime = viewModel.retrieveEstimatedTime()
@@ -91,11 +92,11 @@ class TrackingTimeAndDetailsFragment : Fragment(R.layout.task_tracking_fragment)
 
 
             // stats view
-            if (viewModel.streak == null && viewModel.nbCompleted == null)
+            if (viewModel.streak == null && viewModel.successCount == null)
                 statsView.isVisible = false
 
-            tvNbCompleted.text = if (viewModel.nbCompleted == null)
-                viewModel.nbCompleted.toString()
+            tvNbCompleted.text = if (viewModel.successCount == null)
+                viewModel.successCount.toString()
             else getString(R.string.no_information)
             binding.tvStreak.text =
                 if (viewModel.streak != null)
@@ -112,7 +113,7 @@ class TrackingTimeAndDetailsFragment : Fragment(R.layout.task_tracking_fragment)
                 onFabStopClicked()
             }
 
-            var haveBeenPlayed: Boolean = false
+            var haveBeenPlayed = false
             if (estimatedWorkTime != null && estimatedWorkTime != 0L && viewModel.timerCount < estimatedWorkTime * 60 * 1000) {
                 val beginningBase = chronometer.base
                 chronometer.setOnChronometerTickListener {

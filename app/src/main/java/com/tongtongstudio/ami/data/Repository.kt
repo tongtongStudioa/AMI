@@ -1,8 +1,6 @@
 package com.tongtongstudio.ami.data
 
-import com.tongtongstudio.ami.data.dao.EventDao
-import com.tongtongstudio.ami.data.dao.ProjectDao
-import com.tongtongstudio.ami.data.dao.TaskDao
+import com.tongtongstudio.ami.data.dao.*
 import com.tongtongstudio.ami.data.datatables.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -12,8 +10,96 @@ import javax.inject.Inject
 class Repository @Inject constructor(
     private val projectDao: ProjectDao,
     private val taskDao: TaskDao,
-    private val eventDao: EventDao
+    private val eventDao: EventDao,
+    private val ttdDao: TtdDao,
+    private val categoryDao: CategoryDao,
+    private val reminderDao: ReminderDao,
+    private val assessmentDao: AssessmentDao
 ) {
+
+    fun getThingsToDoToday(
+        sortOrder: SortOrder,
+        hideCompleted: Boolean,
+        startOfToday: Long,
+        endOfToday: Long,
+    ): Flow<List<TaskWithSubTasks>> {
+        // TODO: Change sorOrder class (add ordering rules)
+        return ttdDao.getTodayTasks(sortOrder.name, hideCompleted, startOfToday, endOfToday)
+    }
+
+    fun getLaterThingsToDo(
+        endDayDate: Long,
+        endDayFilter: Long?,
+        sortOrder: SortOrder? = null,
+    ): Flow<List<TaskWithSubTasks>> {
+        return if (endDayFilter != null) {
+            ttdDao.getLaterTasksFilter(endDayDate, endDayFilter)
+        } else ttdDao.getLaterTasks(endDayDate)
+    }
+
+    fun getCompletedTasks(): Flow<List<TaskWithSubTasks>> {
+        return ttdDao.getCompletedTasks()
+    }
+
+    suspend fun getTask(id: Long): Ttd {
+        return ttdDao.getTask(id)
+    }
+
+    suspend fun insertTask(task: Ttd) {
+        ttdDao.insert(task)
+    }
+
+    suspend fun updateTask(task: Ttd) {
+        ttdDao.update(task)
+    }
+
+    suspend fun deleteTask(task: Ttd) {
+        ttdDao.delete(task)
+    }
+
+    suspend fun getMissedRecurringTasks(todayDate: Long): List<Ttd> {
+        return ttdDao.getMissedRecurringTasks(todayDate)
+    }
+
+    suspend fun getCategory(id: Long): Category {
+        return categoryDao.get(id)
+    }
+
+    fun getCategories(): Flow<List<Category>> {
+        return categoryDao.getCategories()
+    }
+
+    suspend fun insertCategory(category: Category) {
+        categoryDao.insert(category)
+    }
+
+    suspend fun updateCategory(category: Category) {
+        categoryDao.update(category)
+    }
+
+    suspend fun deleteCategory(category: Category) {
+        categoryDao.delete(category)
+    }
+
+    suspend fun getAssessment(id: Long): Assessment {
+        return assessmentDao.get(id)
+    }
+
+    fun getTasksAssessments(taskId: Long): Flow<List<Assessment>> {
+        return assessmentDao.getTaskAssessments(taskId)
+    }
+
+    suspend fun insertAssessment(newAssessment: Assessment) {
+        assessmentDao.insert(newAssessment)
+    }
+
+    suspend fun updateAssessment(assessment: Assessment) {
+        assessmentDao.update(assessment)
+    }
+
+    suspend fun deleteAssessment(assessment: Assessment) {
+        assessmentDao.delete(assessment)
+    }
 
     // TODO: 04/02/2023 add comparative sorting for same name, deadline, etc, case
     fun getAllThingToDoToday(
@@ -93,24 +179,9 @@ class Repository @Inject constructor(
     }
 
     // task
-    suspend fun getMissedRecurringTasks(todayDate: Long): List<Task> {
-        return taskDao.getMissedRecurringTasks(todayDate)
-    }
 
     suspend fun insertAllSubTask(listSubTasks: List<Task>) {
         taskDao.insertUndoDeletedSubTasks(listSubTasks)
-    }
-
-    suspend fun insertTask(task: Task) {
-        taskDao.insert(task)
-    }
-
-    suspend fun updateTask(task: Task) {
-        taskDao.update(task)
-    }
-
-    suspend fun deleteTask(task: Task) {
-        taskDao.delete(task)
     }
 
     suspend fun deleteSubTasks(subTasks: List<Task>) {

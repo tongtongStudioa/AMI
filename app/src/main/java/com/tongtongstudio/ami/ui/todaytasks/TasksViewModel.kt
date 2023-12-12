@@ -36,7 +36,7 @@ class TasksViewModel @Inject constructor(
 
     private val todayThingsToDoFlow = preferencesFlow
         .flatMapLatest { filterPreferences ->
-            repository.getAllThingToDoToday(
+            repository.getThingsToDoToday(
                 filterPreferences.sortOrder,
                 filterPreferences.hideCompleted,
                 startOfToday,

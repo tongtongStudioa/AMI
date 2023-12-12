@@ -6,7 +6,8 @@
                 <item
                     android:id="@+id/todayTasksFragment"
                     android:title="@string/menu_drawer_today_s_tasks"
-                    android:icon="@drawable/ic_baseline_today_24" />
+                    android:icon="@drawable/ic_baseline_today_24"
+                    android:checked="true" />
                 <item
                     android:id="@+id/othersTasksFragment"
                     android:title="@string/menu_drawer_others_tasks"

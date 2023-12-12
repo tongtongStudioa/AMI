@@ -23,7 +23,6 @@ class LocalProjectStatsFragment : Fragment(R.layout.project_stats_fragment) {
 
         setUpToolbar()
 
-        // TODO: change this page with placeholders
         binding.estimatedTime.text =
             getDurationFromLong(viewModel.estimatedTime) ?: getText(R.string.no_information)
         binding.totalWorkTime.text =

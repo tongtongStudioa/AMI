@@ -25,7 +25,7 @@ import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
-import com.tongtongstudio.todolistami.util.exhaustive
+import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
@@ -70,10 +70,10 @@ class EventFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val thingToDo = mainAdapter.data[viewHolder.adapterPosition]
                     if (direction == ItemTouchHelper.RIGHT) {
-                        sharedViewModel.onThingToDoRightSwiped(thingToDo)
+                        //sharedViewModel.onThingToDoRightSwiped(thingToDo)
                         loadEvents()
                     } else if (direction == ItemTouchHelper.LEFT) {
-                        sharedViewModel.onThingToDoLeftSwiped(thingToDo)
+                        //sharedViewModel.onThingToDoLeftSwiped(thingToDo)
                     }
                 }
 

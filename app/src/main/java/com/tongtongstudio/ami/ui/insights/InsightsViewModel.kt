@@ -17,6 +17,7 @@ class InsightsViewModel @Inject constructor(
     val tasksCompletedLD = repository.getTasksCompletedStats().asLiveData()
     val projectsLD = repository.getProjectCompletedStats().asLiveData()
 
+    // TODO: sql queries can get this faster
     fun getAverageTimeCompletion(tasksCompleted: List<Task>): Long? {
         var sum = 0L
         var taskNoCount = 0
@@ -36,6 +37,7 @@ class InsightsViewModel @Inject constructor(
         return averageTimeCompletion
     }
 
+    // TODO: remove this method : display achievement rate in the project stat view or display with SQL queries advancement off project in their whole
     fun getProjectAchievementRate(projectsList: List<Project>): Float? {
         var sumSubTasks = 0
         var sumSubTasksCompleted = 0
@@ -46,6 +48,7 @@ class InsightsViewModel @Inject constructor(
         return if (sumSubTasks == 0) null else sumSubTasksCompleted / sumSubTasks.toFloat() * 100
     }
 
+    // TODO: displace this method in Ttd class and use sql queries with adapted class StatFinishedTask(estimatedTime, actualWorkTime, ...)
     fun retrieveEstimationWorkTimeAccuracyRate(tasksCompleted: List<Task>): Float? {
         var tasksStudied = 0
         var rateSum = 0F
@@ -66,6 +69,7 @@ class InsightsViewModel @Inject constructor(
         return if (tasksCompleted.isEmpty() || tasksStudied == 0) null else rateSum / tasksStudied * 100
     }
 
+    // TODO: sql queries
     fun retrieveOnTimeCompletionRate(tasksCompleted: List<Task>): Float? {
         val calendar = Calendar.getInstance()
         var nbCompletedOnTime = 0
@@ -96,6 +100,7 @@ class InsightsViewModel @Inject constructor(
         return if (tasksCompleted.isEmpty() || tasksNoStudied == tasksCompleted.size) null else nbCompletedOnTime / tasksCompleted.size.toFloat() * 100
     }
 
+    // TODO: sql queries
     fun getProjectsCompleted(projectsList: List<Project>): Int {
         val projectCompleted = ArrayList<Project>()
         projectsList.forEach {

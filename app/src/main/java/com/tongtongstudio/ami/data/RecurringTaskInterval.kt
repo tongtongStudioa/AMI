@@ -2,7 +2,11 @@ package com.tongtongstudio.ami.data
 
 import android.os.Parcelable
 import androidx.room.TypeConverter
+import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.ui.dialog.Period
 import kotlinx.parcelize.Parcelize
+import java.util.*
+import kotlin.math.pow
 
 
 class Converters {
@@ -50,4 +54,128 @@ class RecurringTaskInterval(
     val times: Int, // every 1, 2, 3 or 18 ...
     val period: String, // ... (hours?), days, week, month, year.
     val daysOfWeek: List<Int>? = null // on Monday and Wednesday for example
-) : Parcelable
+) : Parcelable {
+
+    /**
+     * Create a new interval with user's feedback to increase or decrease last recurring interval.
+     * @param userFeedback
+     * @return RecurringTaskInterval
+     */
+    fun createNewInterval(userFeedback: Boolean): RecurringTaskInterval {
+        return if (userFeedback) increaseInterval() else decreaseInterval()
+    }
+
+    private fun increaseInterval(): RecurringTaskInterval {
+        // TODO: find a correct way to increase interval
+        val newTimes = times.toDouble().pow(2).toInt()
+        return RecurringTaskInterval(newTimes, period, daysOfWeek)
+    }
+
+    private fun decreaseInterval(): RecurringTaskInterval {
+        val newTimes = times - 1
+        return RecurringTaskInterval(newTimes, period, daysOfWeek)
+    }
+
+    fun updateRecurringTask(ttd: Ttd, checked: Boolean): Ttd {
+        val oldStartDate = ttd.startDate!!
+        val updatedStartDate = if (daysOfWeek != null) {
+            findNextOccurrenceDay(oldStartDate, checked)
+        } else {
+            findNextStartDate(oldStartDate, checked)
+        }
+        val newStartDate = updatedStartDate.newStartDate
+        val timesSkipped = updatedStartDate.timesSkipped
+
+        // TODO: 25/10/2022 how dismiss a miss check ? how count when task were completed or not ?
+        //val isCompleted = if (checked) 1 else 0
+        /*val lastStartDate = Calendar.getInstance().run {
+            timeInMillis = ttd.deadline!!
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            time
+        }
+        val completedDate = Calendar.getInstance().run {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            time
+        }*/
+
+        // all attributes to update
+        val isTaskEnding = newStartDate > ttd.deadline!!
+        val newCurrentStreak = if (timesSkipped == 0) { // if no skipped task
+            ttd.currentStreak + 1 // add one day of streak
+        } else 0 // else reset current streak
+        val newSuccessCount = ttd.successCount + if (checked) 1 else 0
+        val newMaxStreak = if (newCurrentStreak > ttd.maxStreak) newCurrentStreak else ttd.maxStreak
+        val newCountRepetition =
+            ttd.totalRepetitionCount + if (timesSkipped > 0) timesSkipped else 1
+
+        val updatedTask = ttd.copy(
+            isCompleted = isTaskEnding,
+            startDate = if (isTaskEnding) ttd.deadline else newStartDate,
+            currentStreak = newCurrentStreak,
+            successCount = newSuccessCount,
+            timesMissed = ttd.timesMissed + timesSkipped,
+            maxStreak = newMaxStreak,
+            totalRepetitionCount = newCountRepetition
+        )
+        return updatedTask
+    }
+
+    private fun findNextOccurrenceDay(oldStartDate: Long, checked: Boolean): UpdatedStartDate {
+        var timesSkipped = 0
+        val newStartDate = Calendar.getInstance().run {
+            val todayTimeInMillis = timeInMillis
+            timeInMillis = oldStartDate
+            do {
+                if (daysOfWeek!!.contains(get(Calendar.DAY_OF_WEEK)) && checked)
+                    timesSkipped++
+                add(Calendar.DAY_OF_WEEK, 1)
+                val nextDay = get(Calendar.DAY_OF_WEEK)
+                if (get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) { // if we change of week so add intervalWeek if interval > 2 week
+                    add(Calendar.DAY_OF_MONTH, (times - 1) * 7)
+                }
+            } while (!daysOfWeek!!.contains(nextDay) && todayTimeInMillis > timeInMillis) // if list of recurrence days contains next deadline's day so set this deadline
+            timeInMillis
+        }
+        return UpdatedStartDate(newStartDate, timesSkipped)
+    }
+
+    private fun findNextStartDate(oldStartDate: Long, checked: Boolean): UpdatedStartDate {
+        var timesSkipped = 0
+        var todayTimeInMillis: Long
+        val newStartDate = Calendar.getInstance().run {
+            todayTimeInMillis = timeInMillis
+            // Set the new due date to the next occurrence of the task's due day
+            timeInMillis = oldStartDate
+            do {
+                when (period) {
+                    Period.DAYS.name -> add(
+                        Calendar.DAY_OF_MONTH,
+                        times * 1
+                    )
+                    Period.WEEKS.name -> add(
+                        Calendar.DAY_OF_MONTH,
+                        times * 7
+                    )
+                    Period.MONTHS.name -> add(
+                        Calendar.MONTH,
+                        times * 1
+                    )
+                    Period.YEARS.name -> add(
+                        Calendar.YEAR,
+                        times * 1
+                    )
+                    else -> add(Calendar.DAY_OF_MONTH, 0)
+                }
+                if (checked)
+                    timesSkipped++
+            } while (timeInMillis < todayTimeInMillis)
+            timeInMillis
+        }
+        return UpdatedStartDate(newStartDate, timesSkipped)
+    }
+
+}
+
+class UpdatedStartDate(val newStartDate: Long, val timesSkipped: Int = 0)

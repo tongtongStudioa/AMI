@@ -9,7 +9,6 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.PopupMenu
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.content.ContextCompat.getColor
@@ -45,7 +44,7 @@ import com.tongtongstudio.ami.receiver.TTD_DESCRIPTION
 import com.tongtongstudio.ami.receiver.TTD_NAME
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.dialog.*
-import com.tongtongstudio.todolistami.util.exhaustive
+import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.InternalCoroutinesApi
 import java.text.DateFormat
@@ -82,22 +81,23 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         updateBtnDeadlineText()
         updateBtnStartDateText()
         updateBtnEstimatedTimeText()
-        updateBtnReminderText()
+        //updateBtnReminderText()
         updatePeriodRecurringTask()
 
         binding.apply {
 
             radioGroupChoiceNature.check(
                 when (viewModel.ttdNature) {
-                    Nature.PROJECT -> {
+                    Nature.PROJECT.name -> {
                         rbProject.id
                     }
-                    Nature.EVENT -> {
+                    Nature.EVENT.name -> {
                         rbEvent.id
                     }
-                    Nature.TASK -> {
+                    Nature.TASK.name -> {
                         rbTask.id
                     }
+                    else -> rbTask.id
                 }
             )
             radioGroupChoiceNature.jumpDrawablesToCurrentState()
@@ -105,15 +105,15 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             radioGroupChoiceNature.setOnCheckedChangeListener { group, checkedId ->
                 when (checkedId) {
                     rbEvent.id -> {
-                        viewModel.ttdNature = Nature.EVENT
+                        viewModel.ttdNature = Nature.EVENT.name
                         evaluationView.isVisible = false
                     }
                     rbTask.id -> {
-                        viewModel.ttdNature = Nature.TASK
+                        viewModel.ttdNature = Nature.TASK.name
                         evaluationView.isVisible = false
                     }
                     rbProject.id -> {
-                        viewModel.ttdNature = Nature.PROJECT
+                        viewModel.ttdNature = Nature.PROJECT.name
                         evaluationView.isVisible = false
                     }
                 }
@@ -125,10 +125,10 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 getString(R.string.text_created_date, viewModel.createdDateFormatted) else ""
 
             // edit name
-            editTextName.setText(viewModel.name)
+            editTextName.setText(viewModel.title)
             editTextName.addTextChangedListener {
                 val name = it.toString()
-                viewModel.name = if (name != "") name.replaceFirst(
+                viewModel.title = if (name != "") name.replaceFirst(
                     name.first(),
                     name.first().uppercaseChar()
                 ) else ""
@@ -141,6 +141,8 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             }
 
             // edit category
+            // TODO: get category of the task
+            /*
             if (viewModel.category != null)
                 autocompleteTextCategory.setText(viewModel.category)
             val categoryOptions = arrayOf("No category", "Professional", "Learning", "Personal")
@@ -152,6 +154,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                     viewModel.category = text.toString()
                 else viewModel.category = null
             }
+             */
 
             // set start date
             val dropDownMenuStartDate = PopupMenu(context, btnSetStartDate)
@@ -242,6 +245,8 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             }
 
             // set reminder
+            // TODO: get all reminders of the task
+            /*
             btnSetReminder.setOnClickListener {
                 var reminderTriggerTime: Long
                 // create the calendar constraint builder
@@ -279,7 +284,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 viewModel.reminder = null
                 updateBtnReminderText()
             }
-
+             */
             // set repeatable task
             // TODO: create a custom interval for learning category tasks
             // TODO: update start date and stop on deadline
@@ -335,6 +340,8 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 viewModel.description = text.toString()
             }
 
+            // TODO: Add a dialog to create and modify specified Assessment tuples
+            /*
             // evaluation description
             if (viewModel.evaluationTaskDescription != null)
                 inputLayoutEvaluation.editText?.setText(viewModel.evaluationTaskDescription)
@@ -365,6 +372,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             setEvaluationDate.setOnClickListener {
                 pickCustomEvaluationDate(viewModel.deadline)
             }
+            */
 
             // save thing to do
             fabSaveTask.setOnClickListener {
@@ -452,13 +460,13 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
 
         val datePicker = showDatePickerMaterial(deadline, calendarConstraintBuilder.build())
         datePicker.addOnPositiveButtonClickListener {
-            viewModel.evaluationTaskDate = it
+            //viewModel.evaluationTaskDate = it
             binding.setEvaluationDate.text = DateFormat.getDateInstance().format(it)
         }
     }
 
     // TODO: change color text when dark mode is activated
-    private fun updateBtnReminderText() {
+    /*private fun updateBtnReminderText() {
         binding.apply {
             if (viewModel.reminder != null) {
                 btnSetReminder.setIconTintResource(R.color.french_blue)
@@ -473,7 +481,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 removeReminder.isVisible = false
             }
         }
-    }
+    }*/
 
     private fun updateBtnEstimatedTimeText() {
         binding.apply {
@@ -562,7 +570,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
     }
 
     private fun safeSave() {
-        if (viewModel.name.isBlank()) {
+        if (viewModel.title.isBlank()) {
             //binding.inputLayoutName.error = "Name !"
             viewModel.showInvalidInputMessage(getString(R.string.error_no_name))
             return
@@ -573,7 +581,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             viewModel.showInvalidInputMessage(getString(R.string.error_no_date))
             return
         }
-        scheduleReminder(viewModel.reminder)
+        //scheduleReminder(viewModel.reminder)
         viewModel.onSaveClick()
     }
 
@@ -582,7 +590,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             val alarmManager =
                 activity?.application?.getSystemService(Application.ALARM_SERVICE) as AlarmManager
             val notifyIntent = Intent(context, AlarmReceiver::class.java).apply {
-                putExtra(TTD_NAME, viewModel.name)
+                putExtra(TTD_NAME, viewModel.title)
                 putExtra(TTD_DESCRIPTION, getStringFromLong(viewModel.deadline!!))
             }
             val notifyPendingIntent =
@@ -696,7 +704,6 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         selection: Long?,
         constraints: CalendarConstraints
     ): MaterialDatePicker<Long> {
-        viewModel.eventIsSpread = false
         val datePicker =
             MaterialDatePicker.Builder.datePicker()
                 .setTitleText(getString(R.string.select_date))
@@ -723,7 +730,6 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
     }
 
     private fun showDateRangePickerMaterial(): MaterialDatePicker<Pair<Long, Long>> {
-        viewModel.eventIsSpread = true
         val dateRangePicker =
             MaterialDatePicker.Builder.dateRangePicker()
                 .setTitleText(getString(R.string.Select_two_date_to_spread_event))
@@ -733,6 +739,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         return dateRangePicker
     }
 
+    // TODO: move this method in another class
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
@@ -750,6 +757,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         }
     }
 
+    // TODO: find best way to display that toolbar
     // function to set up toolbar with collapse toolbar and link to drawer layout
     private fun setUpToolbar() {
         val mainActivity = activity as MainActivity

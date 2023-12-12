@@ -42,9 +42,9 @@ class OthersTasksViewModel @Inject constructor(
     private val thingsToDoFlow = preferencesFlow
         .flatMapLatest { filterPreferences ->
             when (filterPreferences.filter) {
-                LaterFilter.TOMORROW -> repository.getAllLaterThingsToDo(endOfToday, endOfTomorrow)
-                LaterFilter.NEXT_WEEK -> repository.getAllLaterThingsToDo(endOfToday, endOfWeek)
-                LaterFilter.LATER -> repository.getAllLaterThingsToDo(endOfToday, null)
+                LaterFilter.TOMORROW -> repository.getLaterThingsToDo(endOfToday, endOfTomorrow)
+                LaterFilter.NEXT_WEEK -> repository.getLaterThingsToDo(endOfToday, endOfWeek)
+                LaterFilter.LATER -> repository.getLaterThingsToDo(endOfToday, null)
             }
 
         }

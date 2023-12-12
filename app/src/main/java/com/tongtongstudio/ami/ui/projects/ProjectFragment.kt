@@ -31,7 +31,7 @@ import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
-import com.tongtongstudio.todolistami.util.exhaustive
+import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.coroutines.flow.first
@@ -79,9 +79,9 @@ class ProjectFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val thingToDo = mainAdapter.data[viewHolder.adapterPosition]
                     if (direction == ItemTouchHelper.RIGHT) {
-                        sharedViewModel.onThingToDoRightSwiped(thingToDo)
+                        //sharedViewModel.onThingToDoRightSwiped(thingToDo)
                     } else if (direction == ItemTouchHelper.LEFT) {
-                        sharedViewModel.onThingToDoLeftSwiped(thingToDo)
+                        //sharedViewModel.onThingToDoLeftSwiped(thingToDo)
                     }
                 }
 
@@ -192,7 +192,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
                     is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
                         val action =
                             ProjectFragmentDirections.actionProjectFragmentToLocalProjectStatsFragment2(
-                                event.projectData
+                                event.composedTaskData
                             )
                         findNavController().navigate(action)
                     }
@@ -238,17 +238,17 @@ class ProjectFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
     }
 
     override fun onItemThingToDoClicked(thingToDo: ThingToDo) {
-        sharedViewModel.onThingToDoClicked(thingToDo)
+        //sharedViewModel.onThingToDoClicked(thingToDo)
     }
 
     override fun onCheckBoxClick(task: Task, isChecked: Boolean, position: Int) {
-        sharedViewModel.onCheckBoxChanged(task, isChecked)
+        //sharedViewModel.onCheckBoxChanged(task, isChecked)
     }
 
     override fun onItemTaskSwiped(subTask: Task, dir: Int) {
-        if (dir == ItemTouchHelper.RIGHT)
+        /*if (dir == ItemTouchHelper.RIGHT)
             sharedViewModel.onSubTaskRightSwiped(subTask)
-        else sharedViewModel.onSubTaskLeftSwiped(subTask)
+        else sharedViewModel.onSubTaskLeftSwiped(subTask)*/
     }
 
     override fun onProjectBtnAddSubTaskClicked(projectData: ProjectWithSubTasks) {

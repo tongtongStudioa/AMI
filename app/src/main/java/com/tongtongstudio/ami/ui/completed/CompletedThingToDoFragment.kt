@@ -16,11 +16,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.MainAdapter
-import com.tongtongstudio.ami.adapter.ThingToDoListener
-import com.tongtongstudio.ami.data.datatables.ProjectWithSubTasks
-import com.tongtongstudio.ami.data.datatables.Task
-import com.tongtongstudio.ami.data.datatables.ThingToDo
+import com.tongtongstudio.ami.adapter.InteractionListener
+import com.tongtongstudio.ami.adapter.TaskAdapter
+import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
+import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
@@ -29,7 +28,7 @@ import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 @AndroidEntryPoint
 class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
-    ThingToDoListener {
+    InteractionListener {
 
     private val viewModel: CompletedThingToDoViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
@@ -44,7 +43,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         binding.fabAddTask.isVisible = false
 
         sharedViewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
-        val completedAdapter = MainAdapter(this, requireContext())
+        val completedAdapter = TaskAdapter(this)
 
         binding.apply {
             mainRecyclerView.apply {
@@ -63,7 +62,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                 }
 
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    val thingToDo = completedAdapter.data[viewHolder.adapterPosition]
+                    val thingToDo = completedAdapter.getTaskList()[viewHolder.adapterPosition]
                     if (direction == ItemTouchHelper.RIGHT) {
                         sharedViewModel.onThingToDoRightSwiped(thingToDo)
                     }
@@ -133,34 +132,18 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
             if (it.isEmpty()) {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = true
                 binding.mainRecyclerView.isVisible = false
-                binding.emptyRecyclerView.textViewExplication.text = getString(R.string.text_explication_no_tasks_completed)
-                binding.emptyRecyclerView.textViewActionText.text = getString(R.string.text_action_no_tasks_completed)
-                binding.textSup.text = getString(R.string.nb_job_completed_info,0)
+                binding.emptyRecyclerView.textViewExplication.text =
+                    getString(R.string.text_explication_no_tasks_completed)
+                binding.emptyRecyclerView.textViewActionText.text =
+                    getString(R.string.text_action_no_tasks_completed)
+                binding.textSup.text = getString(R.string.nb_job_completed_info, 0)
             } else {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
-                completedAdapter.swapData(it)
-                binding.textSup.text = getString(R.string.nb_job_completed_info,it.size)
+                completedAdapter.submitList(it)
+                binding.textSup.text = getString(R.string.nb_job_completed_info, it.size)
             }
         }
-    }
-
-    override fun onItemThingToDoClicked(thingToDo: ThingToDo) {
-        // TODO: 30/10/2022 view stat of the task
-    }
-
-    override fun onCheckBoxClick(task: Task, isChecked: Boolean, position: Int) {
-        sharedViewModel.onCheckBoxChanged(task, isChecked)
-    }
-
-    override fun onItemTaskSwiped(subTask: Task, dir: Int) {
-        if (dir == ItemTouchHelper.RIGHT)
-            sharedViewModel.onSubTaskRightSwiped(subTask)
-        else sharedViewModel.onSubTaskLeftSwiped(subTask)
-    }
-
-    override fun onProjectBtnAddSubTaskClicked(projectData: ProjectWithSubTasks) {
-        //do nothing
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout
@@ -183,6 +166,30 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
             navController.navigateUp(appBarConfiguration)
         }
         binding.toolbar.subtitle = "Things to do later"
+    }
+
+    override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
+        sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
+    }
+
+    override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
+        // TODO: show stat view
+    }
+
+    override fun onTaskClick(thingToDo: Ttd) {
+        // TODO: show stat view
+    }
+
+    override fun onAddClick(composedTask: TaskWithSubTasks) {
+        // do nothing
+    }
+
+    override fun onSubTaskRightSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
     }
 
 }

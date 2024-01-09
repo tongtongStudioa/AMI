@@ -32,14 +32,16 @@
                 android:id="@+id/text_view_created_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="15dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="Created date"
-                android:visibility="gone" />
+                tools:text="Created date" />
 
-            <RadioGroup
+            <!--<RadioGroup
                 android:id="@+id/radio_group_choice_nature"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -88,22 +90,22 @@
                     android:text="@string/project"
                     android:textColor="@color/text_radio_button_selector" />
 
-            </RadioGroup>
+            </RadioGroup>-->
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_name"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="20dp"
-                android:hint="Name"
-                app:counterMaxLength="30"
+                android:layout_margin="15dp"
+                android:hint="Title"
                 app:counterEnabled="true"
+                app:counterMaxLength="30"
                 app:endIconMode="clear_text"
                 app:helperText="Thing to do's title"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/radio_group_choice_nature">
+                app:layout_constraintTop_toBottomOf="@id/text_view_created_date">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edit_text_name"
@@ -115,25 +117,50 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/input_layout_description"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="15dp"
+                android:hint="Description"
+                app:counterEnabled="true"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/input_layout_name"
+                app:startIconDrawable="@drawable/baseline_notes_24">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edit_text_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top"
+                    android:inputType="textMultiLine"
+                    android:maxHeight="300dp"
+                    android:maxLines="5"
+                    android:scrollbarStyle="insideInset"
+                    android:scrollbars="vertical" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_priority"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
                 android:layout_width="130dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="20dp"
+                android:layout_margin="15dp"
                 android:hint="Priority"
                 app:endIconMode="clear_text"
-                app:startIconDrawable="@drawable/ic_priority_high_24"
                 app:helperText="@string/importance_priority_1_9"
                 app:layout_constraintEnd_toStartOf="@id/input_layout_category"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/input_layout_name">
+                app:layout_constraintTop_toBottomOf="@+id/input_layout_description"
+                app:startIconDrawable="@drawable/ic_priority_high_24">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edit_text_priority"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number"
                     android:digits="123456789"
+                    android:inputType="number"
                     android:maxLength="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -142,12 +169,12 @@
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="20dp"
-                app:startIconDrawable="@drawable/baseline_category_24"
+                android:layout_margin="15dp"
                 android:hint="Category"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/input_layout_priority"
-                app:layout_constraintTop_toBottomOf="@+id/input_layout_name">
+                app:layout_constraintTop_toBottomOf="@+id/input_layout_description"
+                app:startIconDrawable="@drawable/baseline_category_24">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/autocomplete_text_category"
@@ -161,8 +188,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/input_layout_priority" />
@@ -182,7 +209,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="Start Date"
-                    app:icon="@drawable/ic_baseline_schedule_24"
+                    app:icon="@drawable/ic_line_start_circle_24"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -210,7 +237,7 @@
                 app:layout_constraintTop_toBottomOf="@id/start_date_selection_group" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/deadline_selection_group"
+                android:id="@+id/due_date_selection_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -218,22 +245,64 @@
                 app:layout_constraintTop_toBottomOf="@+id/start_date_selection_group">
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_set_deadline"
+                    android:id="@+id/btn_set_due_date"
                     style="@style/ButtonEditTask.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Deadline"
-                    app:icon="@drawable/ic_edit_calendar_24"
+                    android:text="Due Date"
+                    app:icon="@drawable/ic_commit_24"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageButton
-                    android:contentDescription="button to remove deadline"
+                    android:id="@+id/remove_due_date"
+                    style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="button to remove due date"
+                    android:src="@drawable/baseline_clear_24"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="@+id/btn_set_due_date"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:id="@+id/divider_3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/due_date_selection_group" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/deadline_selection_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/due_date_selection_group">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_set_deadline"
+                    style="@style/ButtonEditTask.AMI.Style"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Deadline"
+                    app:icon="@drawable/ic_line_end_circle_24"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageButton
                     android:id="@+id/remove_deadline"
                     style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:contentDescription="button to remove deadline"
                     android:src="@drawable/baseline_clear_24"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/btn_set_deadline"
@@ -242,7 +311,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <com.google.android.material.divider.MaterialDivider
-                android:id="@+id/divider_3"
+                android:id="@+id/divider_4"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
@@ -284,7 +353,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <com.google.android.material.divider.MaterialDivider
-                android:id="@+id/divider_4"
+                android:id="@+id/divider_5"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
@@ -302,31 +371,40 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/repeat_selection_group">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_set_reminder"
-                    style="@style/ButtonEditTask.AMI.Style"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/set_reminder"
-                    app:icon="@drawable/ic_notifications_24"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ImageButton
-                    android:id="@+id/remove_reminder"
+                <ImageView
+                    android:id="@+id/icon_add_reminder"
                     style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/baseline_clear_24"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="@+id/btn_set_reminder"
+                    android:padding="13dp"
+                    android:src="@drawable/baseline_notification_add_24"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_add_reminder"
+                    style="@style/ButtonEditTask.AMI.Style"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/set_reminder"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/icon_add_reminder"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_reminders"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toEndOf="@id/icon_add_reminder"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/btn_add_reminder"
+                    tools:itemCount="1"
+                    tools:listitem="@layout/item_overview_data_edit" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <com.google.android.material.divider.MaterialDivider
-                android:id="@+id/divider_5"
+                android:id="@+id/divider_6"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
@@ -367,147 +445,120 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/input_layout_description"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            <!--<androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/sub_tasks_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="20dp"
-                android:hint="Description"
-                app:counterEnabled="true"
-                app:startIconDrawable="@drawable/baseline_notes_24"
+                android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/estimation_selection_group">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edit_text_description"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:maxLines="5"
-                    android:scrollbarStyle="insideInset"
-                    android:scrollbars="vertical"
-                    android:gravity="top"
-                    android:inputType="textMultiLine"
-                    android:maxHeight="300dp" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/evaluation_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="20dp"
-                android:orientation="vertical"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/input_layout_description">
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/input_layout_evaluation"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:hint="Evaluation title"
-                    app:counterEnabled="true"
-                    app:counterMaxLength="30"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:startIconDrawable="@drawable/baseline_rate_review_24">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/edit_text_evaluation"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="text"
-                        android:maxLength="30" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/input_layout_goal"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                    android:layout_width="100dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:hint="Goal"
-                    app:endIconMode="clear_text"
-                    app:layout_constraintEnd_toStartOf="@id/input_layout_unit"
-                    app:layout_constraintStart_toStartOf="@+id/input_layout_evaluation"
-                    app:layout_constraintTop_toBottomOf="@id/input_layout_evaluation">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/edit_text_goal"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:inputType="numberDecimal"
-                        android:maxHeight="300dp"
-                        android:maxLength="6" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/input_layout_unit"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+                <ImageView
+                    android:id="@+id/icon_add_sub_tasks"
+                    style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:hint="Unit"
-                    app:layout_constraintStart_toEndOf="@id/input_layout_goal"
-                    app:layout_constraintTop_toTopOf="@+id/input_layout_goal">
-
-                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                        android:id="@+id/autocomplete_text_view_unit"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:inputType="none" />
-                </com.google.android.material.textfield.TextInputLayout>
+                    android:padding="13dp"
+                    android:src="@drawable/ic_add_task_24"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/set_evaluation_date"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/btn_add_sub_task"
+                    style="@style/ButtonEditTask.AMI.Style"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:text="Evaluation date"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/input_layout_goal" />
+                    android:text="Add a sub task"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/icon_add_sub_tasks"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toEndOf="@id/icon_add_sub_tasks"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/btn_add_sub_task"
+                    tools:itemCount="1"
+                    tools:listitem="@layout/item_overview_data_edit"/>
 
+            </androidx.constraintlayout.widget.ConstraintLayout>-->
 
-            <Switch
-                android:visibility="gone"
+            <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/switch_dependency"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Task depend of another person ?"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/input_layout_user_level"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/evaluation_view" />
+                android:layout_margin="10dp"
+                android:text="Depend another person ?"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/input_layout_user_level"
+                app:layout_constraintTop_toBottomOf="@+id/estimation_selection_group" />
 
             <com.google.android.material.textfield.TextInputLayout
-                android:visibility="gone"
                 android:id="@+id/input_layout_user_level"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
-                android:layout_width="150dp"
+                android:layout_width="175dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
-                android:hint="User level"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/evaluation_view">
+                android:hint="Mastery level"
+                android:visibility="visible"
+                app:layout_constraintEnd_toStartOf="@+id/switch_dependency"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/estimation_selection_group">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/edit_text_user_level"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:inputType="none"
+                    android:digits="123456789"
+                    android:inputType="number"
                     android:maxLength="1" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/assessments_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/input_layout_user_level">
+
+                <ImageView
+                    android:id="@+id/icon_add_assessments"
+                    style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="13dp"
+                    android:src="@drawable/ic_list_alt_add_24"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_add_assessment"
+                    style="@style/ButtonEditTask.AMI.Style"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Create an assessment"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/icon_add_assessments"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_assessments"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toEndOf="@id/icon_add_assessments"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/btn_add_assessment"
+                    tools:itemCount="1"
+                    tools:listitem="@layout/item_overview_data_edit" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>
@@ -518,11 +569,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="25dp"
-        app:icon="@drawable/ic_check_mark"
+        app:icon="@drawable/ic_save_task_24"
         android:text="Save"
+        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
         android:contentDescription="Save task" />
 
-    <!--app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"-->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

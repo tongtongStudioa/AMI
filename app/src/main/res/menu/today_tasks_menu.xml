@@ -14,8 +14,20 @@
                 android:title="@string/sort_by_name" />
 
             <item
-                android:id="@+id/action_sort_by_importance_priority"
-                android:title="@string/sort_by_importance_priority" />
+                android:id="@+id/action_sort_by_eisenhower_matrix"
+                android:title="By Eisenhower matrix" />
+
+            <item
+                android:id="@+id/action_sort_by_2_minutes_rules"
+                android:title="By 2 minutes rules" />
+
+            <item
+                android:id="@+id/action_sort_by_deadline"
+                android:title="By deadline" />
+
+            <item
+                android:id="@+id/action_sort_by_creator_sort"
+                android:title="Creator sort" />
         </menu>
 
     </item>

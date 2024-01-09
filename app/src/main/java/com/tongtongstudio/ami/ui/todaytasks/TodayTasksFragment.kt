@@ -1,10 +1,6 @@
 package com.tongtongstudio.ami.ui.todaytasks
 
 import android.graphics.Canvas
-import android.media.AudioAttributes
-import android.media.AudioManager
-import android.media.SoundPool
-import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -26,16 +22,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.MainAdapter
-import com.tongtongstudio.ami.adapter.ThingToDoListener
+import com.tongtongstudio.ami.adapter.InteractionListener
+import com.tongtongstudio.ami.adapter.TaskAdapter
 import com.tongtongstudio.ami.data.SortOrder
-import com.tongtongstudio.ami.data.datatables.ProjectWithSubTasks
-import com.tongtongstudio.ami.data.datatables.Task
-import com.tongtongstudio.ami.data.datatables.ThingToDo
+import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
+import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
-import com.tongtongstudio.todolistami.util.exhaustive
+import com.tongtongstudio.ami.ui.todaytasks.TodayTasksFragmentDirections.Companion.actionTodayTasksFragmentToAddEditTaskFragment
+import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.coroutines.flow.first
@@ -44,11 +40,11 @@ import java.text.SimpleDateFormat
 
 
 @AndroidEntryPoint
-class TodayTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
+class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
     private val viewModel: TasksViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
-    private lateinit var newTaskAdapter: MainAdapter
+    private lateinit var newTaskAdapter: TaskAdapter
     private lateinit var sharedViewModel: MainViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -60,7 +56,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
         setUpToolbar()
         //view model and adapter
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-        newTaskAdapter = MainAdapter(this, requireContext())
+        newTaskAdapter = TaskAdapter(this)
 
         // implement UI
         binding.apply {
@@ -85,7 +81,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
                 }
 
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    val thingToDo = newTaskAdapter.data[viewHolder.absoluteAdapterPosition]
+                    val thingToDo = newTaskAdapter.getTaskList()[viewHolder.absoluteAdapterPosition]
                     if (direction == ItemTouchHelper.RIGHT) {
                         // delete task
                         newTaskAdapter.notifyItemRemoved(viewHolder.absoluteAdapterPosition)
@@ -158,7 +154,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
                     getString(R.string.text_action_no_tasks_today, upcomingTasksCount)
                 binding.toolbar.collapseActionView()
             } else {
-                newTaskAdapter.swapData(it)
+                newTaskAdapter.submitList(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
             }
@@ -173,16 +169,15 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
                 when (event) {
                     is MainViewModel.SharedEvent.NavigateToEditScreen -> {
                         val action =
-                            TodayTasksFragmentDirections.actionTodayTasksFragmentToAddEditTaskFragment(
+                            actionTodayTasksFragmentToAddEditTaskFragment(
                                 getString(R.string.fragment_title_edit_thing_to_do),
                                 event.thingToDo
-
                             )
                         findNavController().navigate(action)
                     }
                     is MainViewModel.SharedEvent.NavigateToAddScreen -> {
                         val action =
-                            TodayTasksFragmentDirections.actionTodayTasksFragmentToAddEditTaskFragment(
+                            actionTodayTasksFragmentToAddEditTaskFragment(
                                 getString(R.string.fragment_title_add_thing_to_do),
                                 null
                             )
@@ -211,7 +206,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
                     is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
                         val action =
                             TodayTasksFragmentDirections.actionTodayTasksFragmentToLocalProjectStatsFragment2(
-                                event.projectData
+                                event.composedTaskData
                             )
                         findNavController().navigate(action)
                     }
@@ -241,25 +236,43 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_sort_by_importance_priority -> {
-                sharedViewModel.onSortOrderSelected(SortOrder.BY_IMPORTANCE_PRIORITY)
+            R.id.action_sort_by_name -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_NAME)
                 true
             }
+
+            R.id.action_sort_by_eisenhower_matrix -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_EISENHOWER_MATRIX)
+                true
+            }
+
+            R.id.action_sort_by_2_minutes_rules -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_2MINUTES_RULES)
+                true
+            }
+
+            R.id.action_sort_by_deadline -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_DEADLINE)
+                true
+            }
+
+            R.id.action_sort_by_creator_sort -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_CREATOR_SORT)
+                true
+            }
+
             R.id.action_hide_completed_tasks -> {
                 item.isChecked = !item.isChecked
                 sharedViewModel.onHideCompletedClick(item.isChecked)
                 true
             }
-            R.id.action_sort_by_name -> {
-                sharedViewModel.onSortOrderSelected(SortOrder.BY_NAME)
-                true
-            }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
 
     // function for adapter (today's tasks)
-    override fun onCheckBoxClick(task: Task, isChecked: Boolean, position: Int) {
+    /*override fun onCheckBoxClick(task: Task, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(task, isChecked)
         if (isChecked) {
             sharedViewModel.soundPool.load(this.context, R.raw.success_2, 1)
@@ -280,7 +293,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
     override fun onProjectBtnAddSubTaskClicked(projectData: ProjectWithSubTasks) {
         setFragmentResult("is_new_sub_task", bundleOf("project_id" to projectData.project.p_id))
         sharedViewModel.onAddThingToDoDemand()
-    }
+    }*/
 
     // function to set up toolbar with collapse toolbar and link to drawer layout
     private fun setUpToolbar() {
@@ -304,5 +317,34 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
         binding.toolbar.subtitle = "Today's things to do"
         binding.textSup.text =
             SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM).format(viewModel.startOfToday)
+    }
+
+    override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
+        sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
+        if (isChecked) {
+            sharedViewModel.soundPool.load(this.context, R.raw.success_2, 1)
+            sharedViewModel.soundPool.play(1, 0.25F, 0.25F, 0, 0, 1.1F)
+        }
+    }
+
+    override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
+        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
+    }
+
+    override fun onTaskClick(thingToDo: Ttd) {
+        sharedViewModel.navigateToTaskInfoScreen(thingToDo)
+    }
+
+    override fun onAddClick(composedTask: TaskWithSubTasks) {
+        setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
+        sharedViewModel.onAddThingToDoDemand()
+    }
+
+    override fun onSubTaskRightSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
     }
 }

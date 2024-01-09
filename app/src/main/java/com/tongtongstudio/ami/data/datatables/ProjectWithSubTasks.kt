@@ -41,5 +41,4 @@ data class ProjectWithSubTasks(
     override fun getReminderDate(): Long? {
         return project.pjtReminder
     }
-
 }

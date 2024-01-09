@@ -88,7 +88,7 @@
     <string name="description_notification_channel">description channel notifications : todo</string>
     <string name="title_notification_channel">Task notifications channel</string>
     <string name="set_reminder">Set reminder</string>
-    <string name="nb_sub_tasks_project">%1$s/%2$s sub tasks completed</string>
+    <string name="nb_sub_tasks_project">%1$d/%2$d sub tasks completed</string>
     <string name="fragment_title_achievements">My Insights</string>
     <string name="no_information">_</string>
     <string name="no_estimated_work_time">No estimated work time</string>
@@ -141,4 +141,5 @@
     <string name="time_statistics">Time Statistics</string>
     <string name="streak_and_habit_improvement">Streak and habit improvement</string>
     <string name="focus_on_project">Focus on Project</string>
+    <string name="set_due_date">Set due date</string>
 </resources>

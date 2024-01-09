@@ -6,31 +6,37 @@
         <item name="android:fontFamily">@font/montserrat_bold</item>
         <item name="android:textSize">97sp</item>
     </style>
+
     <style name="TextAppearance.Ami.Headline2" parent="TextAppearance.MaterialComponents.Headline2">
         <item name="fontFamily">@font/montserrat_bold</item>
-        <item name="android:fontFamily">@font/montserrat_bold </item>
+        <item name="android:fontFamily">@font/montserrat_bold</item>
         <item name="android:textSize">61sp</item>
     </style>
+
     <style name="TextAppearance.Ami.Headline3" parent="TextAppearance.MaterialComponents.Headline3">
         <item name="fontFamily">@font/montserrat_bold</item>
         <item name="android:fontFamily">@font/montserrat_bold</item>
         <item name="android:textSize">48sp</item>
     </style>
+
     <style name="TextAppearance.Ami.Headline4" parent="TextAppearance.MaterialComponents.Headline4">
         <item name="fontFamily">@font/montserrat_bold</item>
         <item name="android:fontFamily">@font/montserrat_bold</item>
         <item name="android:textSize">34sp</item>
     </style>
+
     <style name="TextAppearance.Ami.Headline5" parent="TextAppearance.MaterialComponents.Headline5">
         <item name="fontFamily">@font/montserrat_bold</item>
         <item name="android:fontFamily">@font/montserrat_bold</item>
         <item name="android:textSize">24sp</item>
     </style>
+
     <style name="TextAppearance.Ami.Headline6" parent="TextAppearance.MaterialComponents.Headline6">
         <item name="fontFamily">@font/montserrat_semibold</item>
         <item name="android:fontFamily">@font/montserrat_semibold</item>
         <item name="android:textSize">20sp</item>
     </style>
+
     <style name="TextAppearance.Ami.Subtitle1.Day" parent="TextAppearance.MaterialComponents.Subtitle1">
         <item name="fontFamily">@font/montserrat_semibold</item>
         <item name="android:fontFamily">@font/montserrat_semibold</item>
@@ -64,21 +70,25 @@
         <item name="android:fontFamily">@font/montserrat_medium</item>
         <item name="android:textSize">16sp</item>
     </style>
+
     <style name="TextAppearance.Ami.Body2" parent="TextAppearance.MaterialComponents.Body2">
         <item name="fontFamily">@font/montserrat_light</item>
         <item name="android:fontFamily">@font/montserrat_light</item>
         <item name="android:textSize">13sp</item>
     </style>
+
     <style name="TextAppearance.Ami.Button" parent="TextAppearance.MaterialComponents.Button">
         <item name="fontFamily">@font/montserrat_medium</item>
         <item name="android:fontFamily">@font/montserrat_medium</item>
         <item name="android:textSize">14sp</item>
     </style>
+
     <style name="TextAppearance.Ami.Caption" parent="TextAppearance.MaterialComponents.Caption">
         <item name="fontFamily">@font/montserrat_medium</item>
         <item name="android:fontFamily">@font/montserrat_medium</item>
         <item name="android:textSize">12sp</item>
     </style>
+
     <style name="TextAppearance.Ami.Overline" parent="TextAppearance.MaterialComponents.Overline">
         <item name="fontFamily">@font/montserrat_medium</item>
         <item name="android:fontFamily">@font/montserrat_medium</item>

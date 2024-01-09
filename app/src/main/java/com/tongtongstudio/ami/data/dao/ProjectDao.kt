@@ -29,14 +29,18 @@ interface ProjectDao {
     ): Flow<List<ProjectWithSubTasks>>
 
     // to get all projects to begin or finish later
-        //without filter
+    //without filter
     @Transaction
     @Query("SELECT * FROM project_table WHERE is_pjt_completed == 0 AND (pjtStartDate > :endOfToday OR pjtDeadline > :endOfToday) ")
     fun getLaterProjects(endOfToday: Long): Flow<List<ProjectWithSubTasks>>
-        // with filter
+
+    // with filter
     @Transaction
     @Query("SELECT * FROM project_table WHERE is_pjt_completed == 0 AND (pjtStartDate BETWEEN :endOfToday AND :endOfDayFilter OR pjtDeadline BETWEEN :endOfToday AND :endOfDayFilter)")
-    fun getLaterProjectsFilter(endOfToday: Long, endOfDayFilter: Long): Flow<List<ProjectWithSubTasks>>
+    fun getLaterProjectsFilter(
+        endOfToday: Long,
+        endOfDayFilter: Long
+    ): Flow<List<ProjectWithSubTasks>>
 
     // to get all projects with filter
     fun getProjectsWithTasks(
@@ -44,11 +48,12 @@ interface ProjectDao {
         hideCompleted: Boolean
     ): Flow<List<ProjectWithSubTasks>> =
         when (sortOrder) {
-            SortOrder.BY_IMPORTANCE_PRIORITY -> getAllProjectsByPriority(hideCompleted)
+            SortOrder.BY_CREATOR_SORT -> getAllProjectsByPriority(hideCompleted)
             SortOrder.BY_DEADLINE -> getAllProjectsByDeadline(
                 hideCompleted
             )
             SortOrder.BY_NAME -> getAllProjectsByName(hideCompleted)
+            else -> getAllProjectsByPriority(hideCompleted)
         }
 
     @Transaction

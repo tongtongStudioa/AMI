@@ -9,28 +9,25 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        >
+        android:layout_height="wrap_content">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            tools:title="@string/fragment_title_achievements"/>
+            tools:title="@string/fragment_title_achievements" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-        >
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="15dp"
-            >
+            android:padding="15dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/section1"
@@ -79,7 +76,8 @@
                             android:id="@+id/tv_nb_tasks_completed"
                             android:layout_width="wrap_content"
                             android:textColor="@color/md_theme_light_primary"
-                            android:textAppearance="@style/TextAppearance.Ami.Headline5"                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.Ami.Headline5"
+                            android:layout_height="wrap_content"
                             app:layout_constraintEnd_toEndOf="@+id/materialTextView"
                             app:layout_constraintStart_toStartOf="@+id/materialTextView"
                             app:layout_constraintTop_toBottomOf="@+id/materialTextView"
@@ -120,7 +118,8 @@
                             android:id="@+id/tv_projects_completed"
                             android:layout_width="wrap_content"
                             android:textColor="@color/md_theme_light_primary"
-                            android:textAppearance="@style/TextAppearance.Ami.Headline5"                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.Ami.Headline5"
+                            android:layout_height="wrap_content"
                             app:layout_constraintEnd_toEndOf="@+id/title2_section1"
                             app:layout_constraintStart_toStartOf="@+id/title2_section1"
                             app:layout_constraintTop_toBottomOf="@+id/title2_section1"

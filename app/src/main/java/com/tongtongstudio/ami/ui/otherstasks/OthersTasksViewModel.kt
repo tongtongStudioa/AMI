@@ -29,22 +29,22 @@ class OthersTasksViewModel @Inject constructor(
 
     private val endOfTomorrow = Calendar.getInstance().run {
         timeInMillis = endOfToday
-        add(Calendar.DAY_OF_MONTH,1)
+        add(Calendar.DAY_OF_MONTH, 1)
         timeInMillis
     }
 
     private val endOfWeek = Calendar.getInstance().run {
         timeInMillis = endOfToday
-        add(Calendar.DAY_OF_MONTH,7)
+        add(Calendar.DAY_OF_MONTH, 7)
         timeInMillis
     }
 
     private val thingsToDoFlow = preferencesFlow
         .flatMapLatest { filterPreferences ->
             when (filterPreferences.filter) {
-                LaterFilter.TOMORROW -> repository.getAllLaterThingsToDo(endOfToday,endOfTomorrow)
-                LaterFilter.NEXT_WEEK -> repository.getAllLaterThingsToDo(endOfToday,endOfWeek)
-                LaterFilter.LATER -> repository.getAllLaterThingsToDo(endOfToday,null)
+                LaterFilter.TOMORROW -> repository.getLaterThingsToDo(endOfToday, endOfTomorrow)
+                LaterFilter.NEXT_WEEK -> repository.getLaterThingsToDo(endOfToday, endOfWeek)
+                LaterFilter.LATER -> repository.getLaterThingsToDo(endOfToday, null)
             }
 
         }

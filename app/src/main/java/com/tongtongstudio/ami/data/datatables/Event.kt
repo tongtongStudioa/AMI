@@ -32,7 +32,7 @@ data class Event(
     @ColumnInfo(name = "created_date") val eventCreatedDate: Long = System.currentTimeMillis(),
 
     // TODO: create a completedDate when event is passed
-    ) : ThingToDo(eventName, eventPriority, eventDeadline) {
+) : ThingToDo(eventName, eventPriority, eventDeadline) {
     override fun getCreatedDateFormatted(): String {
         return DateFormat.getDateInstance().format(eventCreatedDate)
     }

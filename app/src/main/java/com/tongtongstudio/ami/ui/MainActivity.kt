@@ -1,15 +1,10 @@
 package com.tongtongstudio.ami.ui
 
 import android.app.Activity
-import android.os.Build
 import android.os.Bundle
-import android.view.Window
-import android.view.WindowManager
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -18,7 +13,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.navigation.NavigationView
 import com.tongtongstudio.ami.R
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,7 +25,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var drawerLayout: DrawerLayout
     lateinit var appBarConfiguration: AppBarConfiguration
     lateinit var toolbar: Toolbar
-    private lateinit var collapsingToolbarLayout: CollapsingToolbarLayout
 
     val viewModel: MainViewModel by viewModels()
 

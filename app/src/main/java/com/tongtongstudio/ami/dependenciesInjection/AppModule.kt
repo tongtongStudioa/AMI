@@ -34,6 +34,18 @@ object AppModule {
     @Provides
     fun provideProjectDao(db: ThingToDoDatabase) = db.projectDao()
 
+    @Provides
+    fun provideTtdDao(db: ThingToDoDatabase) = db.ttdDao()
+
+    @Provides
+    fun provideReminderDao(db: ThingToDoDatabase) = db.reminderDao()
+
+    @Provides
+    fun provideCategoryDao(db: ThingToDoDatabase) = db.categoryDao()
+
+    @Provides
+    fun provideAssessmentDao(db: ThingToDoDatabase) = db.assessmentDao()
+
     @ApplicationScope
     @Provides
     @Singleton

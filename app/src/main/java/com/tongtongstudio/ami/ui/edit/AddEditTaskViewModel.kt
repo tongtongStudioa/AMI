@@ -1,16 +1,16 @@
 package com.tongtongstudio.ami.ui.edit
 
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.tongtongstudio.ami.data.RecurringTaskInterval
+import androidx.lifecycle.*
 import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.datatables.*
-import com.tongtongstudio.ami.ui.*
+import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
+import com.tongtongstudio.ami.ui.EDIT_TASK_RESULT_OK
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,12 +26,27 @@ class AddEditTaskViewModel @Inject constructor(
     // TODO: 21/06/2022 create a better variable for project id
     var projectId: Long? = null
 
-    val thingToDo = state.get<ThingToDo>("thingToDo")
+    val thingToDo = state.get<Ttd>("thingToDo")
 
-    val createdDateFormatted = thingToDo?.getCreatedDateFormatted()
+    private val _reminders = MutableLiveData<MutableList<Reminder>>()
+    val reminders: LiveData<MutableList<Reminder>> get() = _reminders
 
-    var name =
-        state.get<String>("thingToDoName") ?: thingToDo?.name ?: ""
+    init {
+        viewModelScope.launch {
+            repository.getTaskReminders(thingToDo?.id)?.collect { reminders ->
+                _reminders.value = reminders
+            }
+        }
+    }
+
+    private val _assessments = MutableLiveData<MutableList<Assessment>>()
+    val assessments: LiveData<MutableList<Assessment>>
+        get() = _assessments
+
+    val createdDateFormatted = thingToDo?.getCreationDateFormatted()
+
+    var title =
+        state.get<String>("thingToDoName") ?: thingToDo?.title ?: ""
         set(value) {
             field = value
             state["thingToDoName"] = value
@@ -44,49 +59,48 @@ class AddEditTaskViewModel @Inject constructor(
             state["thingToDoPriority"] = value
         }
 
-    var category: String? =
-        state["ThingToDoCategory"] ?: thingToDo?.getCategory()
+    var categoryId: Long? =
+        state["ThingToDoCategory"] ?: thingToDo?.categoryId
         set(value) {
             field = value
             state["ThingToDoCategory"] = value
         }
 
+    var category: Category? = getTaskCategory()
+
     var description: String? =
-        state["ThingToDoDescription"] ?: thingToDo?.getDescription()
+        state["ThingToDoDescription"] ?: thingToDo?.description
         set(value) {
             field = value
             state["ThingToDoDescription"] = value
         }
 
     var estimatedTime: Long? =
-        state["estimatedTime"] ?: thingToDo?.getEstimatedTime()
+        state["estimatedTime"] ?: thingToDo?.estimatedTime
         set(value) {
             field = value
             state["estimatedTime"] = value
         }
 
     private var thingToDoIsSubTask =
-        state.get<Boolean>("thingToDoIsSubTask") ?: when (thingToDo) {
-            is Task -> thingToDo.projectId != null
-            else -> false
-        }
+        state.get<Boolean>("thingToDoIsSubTask") ?: (thingToDo?.parentTaskId != null)
         set(value) {
             field = value
             state["thingToDoIsSubTask"] = value
         }
 
-    var reminder: Long? =
-        state.get<Long>("reminder") ?: thingToDo?.getReminderDate()
-        set(value) {
-            field = value
-            state["reminder"] = value
-        }
-
     var startDate =
-        state.get<Long>("thingToDoStartDate") ?: thingToDo?.getStartDate()
+        state.get<Long>("thingToDoStartDate") ?: thingToDo?.startDate
         set(value) {
             field = value
             state["thingToDoStartDate"] = value
+        }
+
+    var dueDate =
+        state.get<Long>("dueDate") ?: thingToDo?.dueDate
+        set(value) {
+            field = value
+            state["dueDate"] = value
         }
 
     var deadline =
@@ -96,246 +110,211 @@ class AddEditTaskViewModel @Inject constructor(
             state["thingToDoDeadline"] = value
         }
 
-    // TODO: 31/10/2022 make all type thing to do repeatable
     var recurringTaskInterval =
-        state.get<RecurringTaskInterval>("recurringTaskInterval") ?: when (thingToDo) {
-            is Task -> thingToDo.recurringTaskInterval
-            else -> null
-        }
+        state["recurringTaskInterval"] ?: thingToDo?.repetitionFrequency
         set(value) {
             field = value
             state["recurringTaskInterval"] = value
         }
 
-    var isRecurring = state.get<Boolean>("isRecurring") ?: when (thingToDo) {
-        is Task -> thingToDo.isRecurring
-        else -> false
-    }
+    var isRecurring = state.get<Boolean>("isRecurring") ?: thingToDo?.isRecurring ?: false
         set(value) {
             field = value
             state["isRecurring"] = value
         }
 
-    var eventIsSpread =
-        state.get<Boolean>("eventIsSpread") ?: when (thingToDo) {
-            is Event -> thingToDo.isSpread
-            else -> false
-        }
-        set(value) {
-            field = value
-            state["eventIsSpread"] = value
-        }
-
-    var evaluationTaskDescription: String? =
-        state["evaluationDescription"] ?: if (thingToDo is Task)
-            thingToDo.taskEvaluationDescription
-        else null
-
-    var evaluationTaskGoal: Double? =
-        state["evaluationRating"] ?: if (thingToDo is Task)
-            thingToDo.taskEvaluationGoal
-        else null
-
-    var evaluationTaskUnit: String? =
-        state["evaluationUnit"] ?: if (thingToDo is Task)
-            thingToDo.taskEvaluationUnit
-        else null
-
-    var evaluationTaskDate: Long? =
-        state["evaluationDate"] ?: if (thingToDo is Task)
-            thingToDo.taskEvaluationDate
-        else null
-
     var ttdNature =
-        state.get<Nature>("thingToDoNature") ?: when (thingToDo) {
-            is Task -> Nature.TASK
-            is ProjectWithSubTasks -> Nature.PROJECT
-            is Event -> Nature.EVENT
-            else -> Nature.TASK
-        }
+        state.get<String>("thingToDoNature") ?: thingToDo?.type
         set(value) {
             field = value
             state["thingToDoNature"] = value
         }
 
+    var dependency =
+        state["dependency"] ?: thingToDo?.dependency
+        set(value) {
+            field = value
+            state["dependency"] = value
+        }
+
+    var skillLevel =
+        state["level"] ?: thingToDo?.skillLevel
+        set(value) {
+            field = value
+            state["level"] = value
+        }
+
+    var importance =
+        state["importance"] ?: thingToDo?.importance
+        set(value) {
+            field = value
+            state["importance"] = value
+        }
+    var urgency =
+        state["urgency"] ?: thingToDo?.urgency
+        set(value) {
+            field = value
+            state["urgency"] = value
+        }
 
     fun onSaveClick() {
         thingToDo?.let {
-            val isSameNatureTTD = when (it) {
-                is Task -> Nature.TASK == ttdNature
-                is ProjectWithSubTasks -> Nature.PROJECT == ttdNature
-                is Event -> Nature.EVENT == ttdNature
-                else -> false
-            }
-            updateThingToDo(it, isSameNatureTTD)
+            updateThingToDo(it)
+            updateRemindersList(it.id)
+            //updateAssessment(it.id)
         } ?: saveThingToDo()
     }
 
-
-    private fun saveThingToDo() = viewModelScope.launch {
-        when (ttdNature) {
-            Nature.TASK -> {
-                // TODO: 07/11/2022 take off possibility to change type of ttd if it's a sub task
-                val newTask =
-                    Task(
-                        name,
-                        priority.toInt(),
-                        startDate,
-                        deadline,
-                        category,
-                        description,
-                        isRecurring = isRecurring,
-                        recurringTaskInterval = recurringTaskInterval,
-                        taskEstimatedTime = estimatedTime,
-                        taskReminder = reminder,
-                        taskEvaluationDescription = evaluationTaskDescription,
-                        taskEvaluationGoal = evaluationTaskGoal,
-                        taskEvaluationUnit = evaluationTaskUnit,
-                        taskEvaluationDate = evaluationTaskDate
-                    )
-                if (projectId != null) {
-                    repository.insertTask(newTask.copy(projectId = projectId))
-                    val projectLinked = repository.getProjectData(projectId!!).project
-                    repository.updateProject(projectLinked.copy(nb_sub_task = projectLinked.nb_sub_task + 1))
-                } else {
-                    repository.insertTask(newTask)
+    private fun updateRemindersList(idTtd: Long) {
+        if (reminders.value != null) {
+            for (reminder in reminders.value!!) {
+                if (reminder.parentId == null) {
+                    val newTaskReminder = reminder.copy(parentId = idTtd)
+                    insertReminder(newTaskReminder)
                 }
-
-                addEditChannelEvent.send(
-                    AddEditTaskEvent.NavigateBackWithResult(
-                        ADD_TASK_RESULT_OK
-                    )
-                )
-            }
-            Nature.PROJECT -> {
-                repository.insertProject(
-                    Project(
-                        name,
-                        priority.toInt(),
-                        startDate,
-                        deadline,
-                        category,
-                        description,
-                        estimatedTime,
-                        pjtReminder = reminder
-                    )
-                )
-                addEditChannelEvent.send(
-                    AddEditTaskEvent.NavigateBackWithResult(
-                        ADD_PROJECT_RESULT_OK
-                    )
-                )
-            }
-            Nature.EVENT -> {
-                repository.insertEvent(
-                    Event(
-                        name,
-                        priority.toInt(),
-                        startDate,
-                        deadline,
-                        description,
-                        estimatedTime,
-                        isSpread = eventIsSpread,
-                        eventReminder = reminder
-                    )
-                )
-                addEditChannelEvent.send(
-                    AddEditTaskEvent.NavigateBackWithResult(
-                        ADD_EVENT_RESULT_OK
-                    )
-                )
             }
         }
     }
 
-    private fun updateThingToDo(thingToDo: ThingToDo, isSameNature: Boolean) =
+    fun updateReminder(oldReminder: Reminder, updatedReminder: Reminder) = viewModelScope.launch {
+        if (oldReminder.parentId != null) {
+            val currentReminders = _reminders.value ?: mutableListOf()
+            val indexElement = currentReminders.indexOf(oldReminder)
+            currentReminders.remove(oldReminder)
+            currentReminders.add(indexElement, updatedReminder)
+            _reminders.value = currentReminders
+        } else
+            repository.updateReminder(updatedReminder)
+    }
+
+    private fun insertReminder(reminder: Reminder) = viewModelScope.launch {
+        repository.insertReminder(reminder)
+    }
+
+    fun updateCategoryId(title: String) {
+        val updatedCategory = getTaskCategory(title)
+        category = updatedCategory
+        categoryId = updatedCategory?.id
+    }
+
+    private fun getTaskCategory(title: String? = null): Category? = runBlocking {
+        return@runBlocking if (title != null)
+            repository.getCategoryByTitle(title)
+        else if (categoryId != null)
+            repository.getCategoryById(categoryId!!)
+        else null
+    }
+
+    private fun getCategories(): List<Category> = runBlocking {
+        return@runBlocking repository.getCategories().first()
+    }
+
+    fun getCategoriesTitle(): List<String> {
+        return getCategories().map { it.title }
+    }
+
+    fun getAssessments(): List<Assessment> = runBlocking {
+        return@runBlocking if (thingToDo != null) {
+            repository.getTasksAssessments(thingToDo.id).first()
+        } else emptyList()
+    }
+
+    private fun insertNewAssessment(taskId: Long, newAssessment: Assessment) =
         viewModelScope.launch {
-            // TODO: 21/10/2022 update method to change a type of thing to do and for update an old item
-            when (thingToDo) {
-                is Task -> {
-                    if (isSameNature) {
-                        repository.updateTask(
-                            thingToDo.copy(
-                                name,
-                                priority.toInt(),
-                                startDate,
-                                deadline,
-                                category,
-                                description,
-                                isRecurring = isRecurring,
-                                recurringTaskInterval = recurringTaskInterval,
-                                taskEstimatedTime = estimatedTime,
-                                taskReminder = reminder,
-                                taskEvaluationDescription = evaluationTaskDescription,
-                                taskEvaluationGoal = evaluationTaskGoal,
-                                taskEvaluationUnit = evaluationTaskUnit,
-                                taskEvaluationDate = evaluationTaskDate
-                            )
-                        )
-                    } else {
-                        repository.deleteTask(thingToDo)
-                        saveThingToDo()
-                    }
-                    // TODO: 08/11/2022 change message for another type saved
-                    addEditChannelEvent.send(
-                        AddEditTaskEvent.NavigateBackWithResult(
-                            EDIT_TASK_RESULT_OK
-                        )
-                    )
-                }
-                is ProjectWithSubTasks -> {
-                    if (isSameNature) {
-                        repository.updateProject(
-                            thingToDo.project.copy(
-                                pjtName = name,
-                                pjtPriority = priority.toInt(),
-                                pjtStartDate = startDate,
-                                pjtCategory = category,
-                                pjtDescription = description,
-                                pjtDeadline = deadline,
-                                pjtEstimatedTime = estimatedTime,
-                                pjtReminder = reminder
-                            )
-                        )
-                    } else {
-                        repository.deleteProject(thingToDo.project)
-                        saveThingToDo()
-                    }
-                    addEditChannelEvent.send(
-                        AddEditTaskEvent.NavigateBackWithResult(
-                            EDIT_PROJECT_RESULT_OK
-                        )
-                    )
-                }
-                is Event -> {
-                    if (isSameNature) {
-                        repository.updateEvent(
-                            thingToDo.copy(
-                                name,
-                                priority.toInt(),
-                                startDate,
-                                deadline,
-                                description,
-                                estimatedTime,
-                                isSpread = eventIsSpread,
-                                eventReminder = reminder
-                            )
-                        )
-                    } else {
-                        repository.deleteEvent(thingToDo)
-                        saveThingToDo()
-                    }
-                    addEditChannelEvent.send(
-                        AddEditTaskEvent.NavigateBackWithResult(
-                            EDIT_EVENT_RESULT_OK
-                        )
-                    )
-                }
-            }
+            repository.insertAssessment(newAssessment.copy(taskId = taskId))
+        }
+
+    private fun saveThingToDo() = viewModelScope.launch {
+        val newThingToDo =
+            Ttd(
+                title,
+                priority.toInt(),
+                dueDate = dueDate!!,
+                startDate = startDate,
+                deadline = deadline,
+                description = description,
+                type = Nature.TASK.name,
+                importance = importance,
+                urgency = urgency,
+                estimatedTime = estimatedTime,
+                isRecurring = isRecurring,
+                repetitionFrequency = recurringTaskInterval,
+                dependency = dependency,
+                skillLevel = skillLevel,
+                parentTaskId = projectId,
+                categoryId = categoryId
+            )
+
+        repository.insertTask(newThingToDo)
+
+        // TODO: move out this method (to insure that update method assessment, categories and reminder is well saved
+
+        addEditChannelEvent.send(
+            AddEditTaskEvent.NavigateBackWithResult(
+                ADD_TASK_RESULT_OK
+            )
+        )
+    }
+
+    private fun updateThingToDo(thingToDo: Ttd) =
+        viewModelScope.launch {
+            repository.updateTask(
+                thingToDo.copy(
+                    title,
+                    priority.toInt(),
+                    dueDate = dueDate!!,
+                    startDate = startDate,
+                    deadline = deadline,
+                    description = description,
+                    type = Nature.TASK.name,
+                    importance = importance,
+                    urgency = urgency,
+                    estimatedTime = estimatedTime,
+                    isRecurring = isRecurring,
+                    repetitionFrequency = recurringTaskInterval,
+                    dependency = dependency,
+                    skillLevel = skillLevel,
+                    parentTaskId = projectId,
+                    categoryId = categoryId
+                )
+            )
+            // TODO: move out this method (to insure that update method assessment, categories and reminder is well saved
+            addEditChannelEvent.send(
+                AddEditTaskEvent.NavigateBackWithResult(
+                    EDIT_TASK_RESULT_OK
+                )
+            )
         }
 
     fun showInvalidInputMessage(invalidUserMsg: String) = viewModelScope.launch {
         addEditChannelEvent.send(AddEditTaskEvent.ShowInvalidInputMessage(invalidUserMsg))
+    }
+
+    fun addNewReminder(reminderTriggerTime: Long) {
+        val newReminder = Reminder(
+            dueDate = reminderTriggerTime,
+            isRecurrent = false
+        )
+        val currentReminders = reminders.value ?: mutableListOf()
+        currentReminders.add(newReminder)
+        _reminders.value = currentReminders
+    }
+
+    fun addNewAssessment(result: Assessment) {
+        _assessments.value?.add(result)
+    }
+
+    fun removeAssessment(assessment: Assessment) = viewModelScope.launch {
+        _assessments.value?.remove(assessment)
+        if (assessment.taskId == null)
+            repository.deleteAssessment(assessment)
+    }
+
+    fun removeReminder(attribute: Reminder) = viewModelScope.launch {
+        val updatedList: MutableList<Reminder> = _reminders.value ?: mutableListOf()
+        updatedList.remove(attribute)
+        _reminders.value = updatedList
+        if (attribute.parentId != null) repository.deleteReminder(attribute)
     }
 
     sealed class AddEditTaskEvent {

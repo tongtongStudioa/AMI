@@ -10,5 +10,5 @@ import javax.inject.Inject
 class CompletedThingToDoViewModel @Inject constructor(
     private val repository: Repository
 ) : ViewModel() {
-    val thingsToDoCompleted = repository.getAllThingsToDoCompleted().asLiveData()
+    val thingsToDoCompleted = repository.getCompletedTasks().asLiveData()
 }

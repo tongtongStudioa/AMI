@@ -6,19 +6,18 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Nature
-import com.tongtongstudio.ami.data.datatables.Task
-import com.tongtongstudio.ami.data.datatables.ThingToDo
+import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.ItemMissedTaskBinding
 
 class MissedTaskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    val data: MutableList<ThingToDo>
+    val data: MutableList<Ttd>
 
     init {
         data = ArrayList()
     }
 
-    fun swapData(newData: List<ThingToDo>) {
+    fun swapData(newData: List<Ttd>) {
         data.clear()
         data.addAll(newData)
         notifyDataSetChanged()
@@ -37,17 +36,16 @@ class MissedTaskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val task = data[position]
-        (holder as TaskMissedViewHolder).bind(task as Task)
+        (holder as TaskMissedViewHolder).bind(task)
     }
 
-    class TaskMissedViewHolder(val binding: ItemMissedTaskBinding): RecyclerView.ViewHolder(binding.root) {
-        fun bind(thingToDo: Task) {
+    class TaskMissedViewHolder(val binding: ItemMissedTaskBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(thingToDo: Ttd) {
             binding.apply {
-                tvTaskName.text = thingToDo.taskName
+                tvTaskName.text = thingToDo.title
                 tvNature.text = Nature.TASK.name
-                if (thingToDo.taskDeadline != null) {
-                    tvDeadline.text = thingToDo.getDeadlineFormatted()
-                } else tvDeadline.isVisible = false
+                tvDeadline.text = thingToDo.getDateFormatted(thingToDo.dueDate)
                 // todo: show missed times count
                 tvMissedCount.isVisible = false
                 //tvMissedCount.text = countMissedTimes(task)

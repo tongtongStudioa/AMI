@@ -130,10 +130,12 @@ class MainAdapter(private val listener: ThingToDoListener, val fragmentContext: 
                         set(Calendar.MINUTE, 0)
                         timeInMillis
                     }
-                    if (thingToDo.taskDeadline < todayDate && !thingToDo.isTaskCompleted){
-                        tvTaskName.setTextColor(context.resources.getColor(
-                            resolveThemeAttribute(R.attr.colorError)
-                        ))
+                    if (thingToDo.taskDeadline < todayDate && !thingToDo.isTaskCompleted) {
+                        tvTaskName.setTextColor(
+                            context.resources.getColor(
+                                resolveThemeAttribute(R.attr.colorError)
+                            )
+                        )
                     }
                     tvDeadline.text = thingToDo.getDeadlineFormatted()
                 } else tvDeadline.isVisible = false
@@ -229,7 +231,6 @@ class MainAdapter(private val listener: ThingToDoListener, val fragmentContext: 
                     layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
                     adapter = SubAdapter(listener, thingToDo.subTasks, context)
                 }
-
                 ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
                     0,
                     ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT
@@ -243,7 +244,9 @@ class MainAdapter(private val listener: ThingToDoListener, val fragmentContext: 
                     }
 
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                        val subTask = (data[bindingAdapterPosition] as ProjectWithSubTasks).subTasks[viewHolder.bindingAdapterPosition]
+
+                        val subTask =
+                            (data[bindingAdapterPosition] as ProjectWithSubTasks).subTasks[viewHolder.bindingAdapterPosition]
                         if (direction == ItemTouchHelper.RIGHT) {
                             listener.onItemTaskSwiped(subTask, ItemTouchHelper.RIGHT)
                         } else if (direction == ItemTouchHelper.LEFT) {

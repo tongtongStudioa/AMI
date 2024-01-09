@@ -5,7 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
-import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.Ttd
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,43 +16,43 @@ class TrackingTimeAndDetailsViewModel @Inject constructor(
     state: SavedStateHandle
 ) : ViewModel() {
 
-    val thingToDo = state.get<Task>("task")
+    val task = state.get<Ttd>("task")
 
-    val nbCompleted: Int? = if (thingToDo is Task && thingToDo.isRecurring) {
-        thingToDo.nbCompleted
+    val totalRepetition: Int? = if (task != null && task.isRecurring) {
+        task.totalRepetitionCount
     } else null
 
-    val streak: Int? = if (thingToDo is Task && thingToDo.isRecurring) {
-        thingToDo.streak
+    val streak: Int? = if (task != null && task.isRecurring) {
+        task.currentStreak
     } else null
 
     //private val _isTimerRunning = MutableLiveData<Boolean>(false)
     var isTimerRunning: Boolean = false
 
     //private val _timerCount = MutableLiveData<Long>(thingToDo?.getWorkTime() ?: 0)
-    var timerCount: Long = thingToDo?.getWorkTime() ?: 0
+    var timerCount: Long = task?.actualWorkTime ?: 0
 
+    // TODO: decompose this method and move it
     fun saveTrackingTime(newWorkTime: Long) = viewModelScope.launch {
-        if (thingToDo != null) {
-            if (thingToDo.projectId != null) {
-                val project = repository.getProjectData(thingToDo.projectId).project
+        if (task != null) {
+            if (task.parentTaskId != null) {
+                val parentTask = repository.getTask(task.parentTaskId)
                 val timeDifference = newWorkTime - timerCount
                 val updatedProjectWorkTime =
-                    if (project.pjtWorkTime != null) project.pjtWorkTime + timeDifference else newWorkTime
-                repository.updateProject(
-                    project.copy(
-                        pjtWorkTime = updatedProjectWorkTime
+                    if (parentTask.actualWorkTime != null) parentTask.actualWorkTime + timeDifference else newWorkTime
+                repository.updateTask(
+                    parentTask.copy(
+                        actualWorkTime = updatedProjectWorkTime
                     )
                 )
             }
-            val updatedThingToDo = thingToDo.copy(taskWorkTime = newWorkTime)
+            val updatedThingToDo = task.copy(actualWorkTime = newWorkTime)
             repository.updateTask(updatedThingToDo)
         }
         timerCount = newWorkTime
     }
 
     fun retrieveEstimatedTime(): Long? {
-
-        return thingToDo?.getEstimatedTime()
+        return task?.estimatedTime
     }
 }

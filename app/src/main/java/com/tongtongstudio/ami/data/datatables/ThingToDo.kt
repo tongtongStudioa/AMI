@@ -23,6 +23,7 @@ open class ThingToDo(
     open fun getStartDateFormatted(): String? {
         return null
     }
+
     open fun getDeadlineFormatted(): String? {
         return if (deadline != null) {
             SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(deadline)

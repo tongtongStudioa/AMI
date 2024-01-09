@@ -22,26 +22,25 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.MainAdapter
-import com.tongtongstudio.ami.adapter.ThingToDoListener
+import com.tongtongstudio.ami.adapter.InteractionListener
+import com.tongtongstudio.ami.adapter.TaskAdapter
 import com.tongtongstudio.ami.data.LaterFilter
-import com.tongtongstudio.ami.data.datatables.ProjectWithSubTasks
-import com.tongtongstudio.ami.data.datatables.Task
-import com.tongtongstudio.ami.data.datatables.ThingToDo
+import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
+import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
-import com.tongtongstudio.todolistami.util.exhaustive
+import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 @AndroidEntryPoint
-class OthersTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
+class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
     private val viewModel: OthersTasksViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var sharedViewModel: MainViewModel
-    private lateinit var mainAdapter: MainAdapter
+    private lateinit var mainAdapter: TaskAdapter
     private lateinit var textExplication: String
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -56,7 +55,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener 
 
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
-        mainAdapter = MainAdapter(this, requireContext())
+        mainAdapter = TaskAdapter(this)
 
         binding.apply {
             mainRecyclerView.apply {
@@ -85,7 +84,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener 
                 }
 
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    val thingToDo = mainAdapter.data[viewHolder.absoluteAdapterPosition]
+                    val thingToDo = mainAdapter.getTaskList()[viewHolder.absoluteAdapterPosition]
                     if (direction == ItemTouchHelper.RIGHT) {
                         sharedViewModel.onThingToDoRightSwiped(thingToDo)
                     } else if (direction == ItemTouchHelper.LEFT) {
@@ -136,14 +135,15 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener 
             if (it.isEmpty()) {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = true
                 binding.mainRecyclerView.isVisible = false
-                binding.textSup.text = getString(R.string.nb_future_tasks_info,0)
+                binding.textSup.text = getString(R.string.nb_future_tasks_info, 0)
                 binding.emptyRecyclerView.textViewExplication.text = textExplication
-                binding.emptyRecyclerView.textViewActionText.text = getString(R.string.text_action_no_tasks)
+                binding.emptyRecyclerView.textViewActionText.text =
+                    getString(R.string.text_action_no_tasks)
             } else {
-                mainAdapter.swapData(it)
+                mainAdapter.submitList(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
-                binding.textSup.text = getString(R.string.nb_future_tasks_info,it.size)
+                binding.textSup.text = getString(R.string.nb_future_tasks_info, it.size)
             }
         }
 
@@ -230,25 +230,6 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener 
         }
     }
 
-    override fun onItemThingToDoClicked(thingToDo: ThingToDo) {
-        // do nothing
-    }
-
-    override fun onCheckBoxClick(task: Task, isChecked: Boolean, position: Int) {
-        sharedViewModel.onCheckBoxChanged(task, isChecked)
-    }
-
-    override fun onItemTaskSwiped(subTask: Task, dir: Int) {
-        if (dir == ItemTouchHelper.RIGHT)
-            sharedViewModel.onSubTaskRightSwiped(subTask)
-        else sharedViewModel.onSubTaskLeftSwiped(subTask)
-    }
-
-    override fun onProjectBtnAddSubTaskClicked(projectData: ProjectWithSubTasks) {
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to projectData.project.p_id))
-        sharedViewModel.onAddThingToDoDemand()
-    }
-
     // function to set up toolbar with collapse toolbar and link to drawer layout
     private fun setUpToolbar() {
         val mainActivity = activity as MainActivity
@@ -269,5 +250,30 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), ThingToDoListener 
             navController.navigateUp(appBarConfiguration)
         }
         //binding.toolbar.subtitle = "Things to do later"
+    }
+
+    override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
+        sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
+    }
+
+    override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
+        //do nothing
+    }
+
+    override fun onTaskClick(thingToDo: Ttd) {
+        //do nothing
+    }
+
+    override fun onAddClick(composedTask: TaskWithSubTasks) {
+        setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
+        sharedViewModel.onAddThingToDoDemand()
+    }
+
+    override fun onSubTaskRightSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
     }
 }

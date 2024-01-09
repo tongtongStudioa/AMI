@@ -30,7 +30,12 @@ class InsightsFragment : Fragment(R.layout.productivity_insights_fragment) {
             val estimationAccuracyRate = viewModel.retrieveEstimationWorkTimeAccuracyRate(it)
             val onTimeCompletionRate = viewModel.retrieveOnTimeCompletionRate(it)
 
-            displayInsightsOnTasksCompleted(nbTaskCompleted, taskAverageTimeCompletion, estimationAccuracyRate, onTimeCompletionRate)
+            displayInsightsOnTasksCompleted(
+                nbTaskCompleted,
+                taskAverageTimeCompletion,
+                estimationAccuracyRate,
+                onTimeCompletionRate
+            )
         }
 
         viewModel.projectsLD.observe(viewLifecycleOwner) {
@@ -62,26 +67,35 @@ class InsightsFragment : Fragment(R.layout.productivity_insights_fragment) {
     // TODO: 23/03/2023 save nb tasks completed in database to save completed tasks deleted
     //  and easiest way to retrieve this data
     //  and this list is only tasks list !!
-    private fun displayInsightsOnTasksCompleted(nbTaskCompleted: Int, taskAverageTimeCompletion: Long?, estimationAccuracyRate: Float?,onTimeCompletionRate: Float?) {
+    private fun displayInsightsOnTasksCompleted(
+        nbTaskCompleted: Int,
+        taskAverageTimeCompletion: Long?,
+        estimationAccuracyRate: Float?,
+        onTimeCompletionRate: Float?
+    ) {
         binding.tvNbTasksCompleted.text = nbTaskCompleted.toString()
-        binding.tvAverageTimeCompletion.text = if (taskAverageTimeCompletion != null) {
-            val hours: Int = (taskAverageTimeCompletion / 3600_000).toInt()
-            val minutes: Int = (taskAverageTimeCompletion / 60_000 % 60).toInt()
-            val minutesToString = if (minutes < 10) "0${minutes}" else minutes.toString()
-            "${hours}h$minutesToString"
-        } else getString(R.string.no_information)
+        binding.tvAverageTimeCompletion.text =
+            if (taskAverageTimeCompletion != null) { // todo: by categories
+                val hours: Int = (taskAverageTimeCompletion / 3600_000).toInt()
+                val minutes: Int = (taskAverageTimeCompletion / 60_000 % 60).toInt()
+                val minutesToString = if (minutes < 10) "0${minutes}" else minutes.toString()
+                "${hours}h$minutesToString"
+            } else getString(R.string.no_information)
         binding.tvEstimationTimeAccuracy.text =
-            if (estimationAccuracyRate != null) "$estimationAccuracyRate%" else  getString(R.string.no_information)
+            if (estimationAccuracyRate != null) "${estimationAccuracyRate % .1F}%" else getString(R.string.no_information)
         binding.tvOnRateCompletionTime.text =
-            if (onTimeCompletionRate != null) "$onTimeCompletionRate%" else getString(R.string.no_information)
+            if (onTimeCompletionRate != null) "${onTimeCompletionRate % .1F}%" else getString(R.string.no_information)
         binding.tvBestStreak.text = getString(R.string.no_information)
     }
 
-    private fun displayInsightsOnProjects(nbProjectsCompleted: Int, projectsAchievementRate: Float?) {
+    private fun displayInsightsOnProjects(
+        nbProjectsCompleted: Int,
+        projectsAchievementRate: Float?
+    ) {
         binding.tvProjectsCompleted.text =
-           nbProjectsCompleted.toString()
+            nbProjectsCompleted.toString()
         binding.tvProjectsAchievementRate.text = if (projectsAchievementRate != null)
-            "$projectsAchievementRate%"
+            "${projectsAchievementRate % .1F}%"
         else getString(R.string.no_information)
     }
 }

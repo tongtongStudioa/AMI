@@ -236,19 +236,37 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_sort_by_importance_priority -> {
-                sharedViewModel.onSortOrderSelected(SortOrder.BY_IMPORTANCE_PRIORITY)
+            R.id.action_sort_by_name -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_NAME)
                 true
             }
+
+            R.id.action_sort_by_eisenhower_matrix -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_EISENHOWER_MATRIX)
+                true
+            }
+
+            R.id.action_sort_by_2_minutes_rules -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_2MINUTES_RULES)
+                true
+            }
+
+            R.id.action_sort_by_deadline -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_DEADLINE)
+                true
+            }
+
+            R.id.action_sort_by_creator_sort -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_CREATOR_SORT)
+                true
+            }
+
             R.id.action_hide_completed_tasks -> {
                 item.isChecked = !item.isChecked
                 sharedViewModel.onHideCompletedClick(item.isChecked)
                 true
             }
-            R.id.action_sort_by_name -> {
-                sharedViewModel.onSortOrderSelected(SortOrder.BY_NAME)
-                true
-            }
+
             else -> super.onOptionsItemSelected(item)
         }
     }

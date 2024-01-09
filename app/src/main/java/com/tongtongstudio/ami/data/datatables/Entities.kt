@@ -87,12 +87,12 @@ data class Ttd(
         return isCompleted && completionDate != null && (completionDate < dueDate || (deadline != null && completionDate < deadline))
     }
 
-    fun calculusPriority(): Int? {
+    fun calculatingPriority(importance: Int? = null, urgency: Int? = null): Int {
         // TODO: change way of calculus priority
         return if (importance != null && urgency != null)
             2 * (importance * urgency) / (importance + urgency)
         else
-            null
+            priority
     }
 
     fun getCreationDateFormatted(): String {
@@ -194,6 +194,11 @@ data class Reminder(
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 ) {
     // TODO: change to return format DD/MM HH:mm
+
+    fun getReminderDueDateFormatted(): String {
+        return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
+    }
+
     fun formatDueDate(): String {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = dueDate

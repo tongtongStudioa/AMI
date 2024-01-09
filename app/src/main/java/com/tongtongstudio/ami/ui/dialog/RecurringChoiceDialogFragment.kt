@@ -86,10 +86,11 @@ class RecurringChoiceDialogFragment : DialogFragment() {
 
         binding.apply {
             autoCompleteTextView.setAdapter(adapter)
-        }
-        binding.autoCompleteTextView.setOnItemClickListener { parent, view, position, id ->
-            selection = position
-            binding.daysOfWeekSelection.isVisible = position == 1
+
+            autoCompleteTextView.setOnItemClickListener { parent, view, position, id ->
+                selection = position
+                binding.daysOfWeekSelection.isVisible = position == 1
+            }
         }
 
         setFragmentResultListener(CURRENT_RECURRING_INFO_REQUEST_KEY) { _, bundle ->
@@ -104,7 +105,7 @@ class RecurringChoiceDialogFragment : DialogFragment() {
                 if (deadline == null || deadline == NO_VALUE) getString(R.string.set_recurring_end) else deadline
             binding.inputLayoutUserChoice.editText?.setText(if (times != 0) times.toString() else "1")
             // TODO: change text display with which period is already selected
-            //binding.exposedDropdownMenu.editText?.setText(setPeriod(period))
+            binding.exposedDropdownMenu.editText?.setText(setPeriod(period))
             if (period == Period.WEEKS.name)
                 binding.daysOfWeekSelection.isVisible = true
             updateCheckBoxes(daysOfWeek, startDate)

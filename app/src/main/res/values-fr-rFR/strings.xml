@@ -107,8 +107,8 @@
     <string name="text_explication_no_tasks_later">Rien à faire prochainement</string>
     <string name="fab_text_add">Ajoute</string>
     <string name="set_start_date">Fixe une date de début</string>
-    <string name="set_deadline">Fixe une date d\'échéance</string>
-    <string name="set_recurring_end">Fixe une la fin de la répétition</string>
+    <string name="set_deadline">Fixe une date limite</string>
+    <string name="set_recurring_end">Fixe la date de fin de répétition (date limite)</string>
     <string name="text_nb_missed_recurring_tasks">Tu as manqué %d tâches !</string>
     <string name="task_description_view">Information sur la tâche</string>
     <string name="task_s_evaluation">Description de l\'évaluation de la tâche</string>
@@ -118,4 +118,5 @@
     <string name="time_statistics">Statistiques de temps</string>
     <string name="streak_and_habit_improvement">Suivi d\'habitude</string>
     <string name="focus_on_project">Détail sur les projets</string>
+    <string name="set_due_date">Fixe une date d\'échéance</string>
 </resources>

@@ -3,7 +3,7 @@ package com.tongtongstudio.ami.data.datatables
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import com.tongtongstudio.ami.data.ThingToDoDatabase1
+import com.tongtongstudio.ami.data.ThingToDoDatabase
 import com.tongtongstudio.ami.data.dao.TtdDao
 import com.tongtongstudio.ami.util.DataTestUtil
 import junit.framework.Assert.assertEquals
@@ -19,7 +19,7 @@ import java.util.*
 internal class TtdTest {
 
     private lateinit var ttdDao: TtdDao
-    private lateinit var db: ThingToDoDatabase1
+    private lateinit var db: ThingToDoDatabase
     private lateinit var dataTestUtil: DataTestUtil
 
     /**
@@ -30,7 +30,7 @@ internal class TtdTest {
         // create db
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(
-            context, ThingToDoDatabase1::class.java
+            context, ThingToDoDatabase::class.java
         ).build()
 
         // retrieve thing_to_do's DAO

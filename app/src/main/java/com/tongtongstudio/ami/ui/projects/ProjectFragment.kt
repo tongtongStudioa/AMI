@@ -216,8 +216,8 @@ class ProjectFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_sort_by_importance_priority -> {
-                sharedViewModel.onSortOrderSelected(SortOrder.BY_IMPORTANCE_PRIORITY)
+            R.id.action_sort_by_eisenhower_matrix -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_EISENHOWER_MATRIX)
                 true
             }
             R.id.action_hide_completed_tasks -> {

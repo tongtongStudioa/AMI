@@ -144,7 +144,7 @@
                     android:textColor="?attr/colorOnPrimaryContainer"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    tools:text="8 sub tasks" />
+                    tools:text="0/2" />
 
                 <ImageButton
                     android:id="@+id/btn_expand_collapse"
@@ -163,11 +163,12 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_sub_tasks"
                 android:padding="3dp"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/main_part_sub_card_view"
                 app:layout_constraintStart_toStartOf="parent"
+                tools:itemCount="2"
                 tools:listitem="@layout/item_task" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

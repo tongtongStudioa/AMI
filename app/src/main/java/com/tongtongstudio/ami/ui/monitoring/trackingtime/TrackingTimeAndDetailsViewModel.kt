@@ -18,8 +18,8 @@ class TrackingTimeAndDetailsViewModel @Inject constructor(
 
     val task = state.get<Ttd>("task")
 
-    val successCount: Int? = if (task != null && task.isRecurring) {
-        task.successCount
+    val totalRepetition: Int? = if (task != null && task.isRecurring) {
+        task.totalRepetitionCount
     } else null
 
     val streak: Int? = if (task != null && task.isRecurring) {

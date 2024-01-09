@@ -48,11 +48,12 @@ interface ProjectDao {
         hideCompleted: Boolean
     ): Flow<List<ProjectWithSubTasks>> =
         when (sortOrder) {
-            SortOrder.BY_IMPORTANCE_PRIORITY -> getAllProjectsByPriority(hideCompleted)
+            SortOrder.BY_CREATOR_SORT -> getAllProjectsByPriority(hideCompleted)
             SortOrder.BY_DEADLINE -> getAllProjectsByDeadline(
                 hideCompleted
             )
             SortOrder.BY_NAME -> getAllProjectsByName(hideCompleted)
+            else -> getAllProjectsByPriority(hideCompleted)
         }
 
     @Transaction

@@ -1,6 +1,7 @@
 package com.tongtongstudio.ami.data.dao
 
 import androidx.room.*
+import com.tongtongstudio.ami.data.SortOrder
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
 import kotlinx.coroutines.flow.Flow
@@ -10,19 +11,27 @@ interface TtdDao {
 
     // TODO: Create const val for sortOrder string or use class SortOrder
     fun getTodayTasks(
-        sortOrder: String,
+        sortOrder: SortOrder,
         hideCompleted: Boolean,
         startOfDay: Long,
         endOfDay: Long
     ): Flow<List<TaskWithSubTasks>> {
         return when (sortOrder) {
-            "2minutesRulesSort" -> getTasksOrderBy2minutesRules(hideCompleted, startOfDay, endOfDay)
-            "EisenhowerMatrixSort" -> getTasksOrderByEisenhowerMatrixSort(
+            SortOrder.BY_2MINUTES_RULES -> getTasksOrderBy2minutesRules(
                 hideCompleted,
                 startOfDay,
                 endOfDay
             )
-            "CreatorSort" -> getTasksOrderByCreatorSort(hideCompleted, startOfDay, endOfDay)
+            SortOrder.BY_EISENHOWER_MATRIX -> getTasksOrderByEisenhowerMatrixSort(
+                hideCompleted,
+                startOfDay,
+                endOfDay
+            )
+            SortOrder.BY_CREATOR_SORT -> getTasksOrderByCreatorSort(
+                hideCompleted,
+                startOfDay,
+                endOfDay
+            )
             else -> getTasksOrderByCreatorSort(hideCompleted, startOfDay, endOfDay)
         }
     }
@@ -100,7 +109,7 @@ interface TtdDao {
     )
     fun getSubTasks(parentId: Long): Flow<List<Ttd>>
 
-    @Query("SELECT * FROM thing_to_do_table WHERE startDate < :todayDate AND isRecurring == 1")
+    @Query("SELECT * FROM thing_to_do_table WHERE task_due_date < :todayDate AND isRecurring == 1")
     suspend fun getMissedRecurringTasks(todayDate: Long): List<Ttd>
 
     @Transaction

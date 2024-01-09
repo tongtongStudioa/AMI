@@ -92,11 +92,11 @@ class TrackingTimeAndDetailsFragment : Fragment(R.layout.task_tracking_fragment)
 
 
             // stats view
-            if (viewModel.streak == null && viewModel.successCount == null)
+            if (viewModel.streak == null && viewModel.totalRepetition == null)
                 statsView.isVisible = false
 
-            tvNbCompleted.text = if (viewModel.successCount == null)
-                viewModel.successCount.toString()
+            tvNbCompleted.text = if (viewModel.totalRepetition == null)
+                viewModel.totalRepetition.toString()
             else getString(R.string.no_information)
             binding.tvStreak.text =
                 if (viewModel.streak != null)

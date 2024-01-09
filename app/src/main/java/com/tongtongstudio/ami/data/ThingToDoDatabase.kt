@@ -20,10 +20,10 @@ import javax.inject.Provider
         Assessment::class,
         Reminder::class,
         Category::class],
-    version = 8, exportSchema = false
+    version = 9, exportSchema = false
 )
 @TypeConverters(Converters::class)
-abstract class ThingToDoDatabase1 : RoomDatabase() {
+abstract class ThingToDoDatabase : RoomDatabase() {
 
     abstract fun taskDao(): TaskDao
     abstract fun projectDao(): ProjectDao
@@ -34,7 +34,7 @@ abstract class ThingToDoDatabase1 : RoomDatabase() {
     abstract fun assessmentDao(): AssessmentDao
 
     class Callback @Inject constructor(
-        private val database: Provider<ThingToDoDatabase1>,
+        private val database: Provider<ThingToDoDatabase>,
         @ApplicationScope private val applicationScope: CoroutineScope
     ) : RoomDatabase.Callback() {
 
@@ -42,10 +42,21 @@ abstract class ThingToDoDatabase1 : RoomDatabase() {
             super.onCreate(db)
 
             val ttdDao = database.get().ttdDao()
-
+            val categoryDao = database.get().categoryDao()
             applicationScope.launch {
-                val task = Ttd("Composed Task", 3, System.currentTimeMillis())
-                val parentId = ttdDao.insert(task)
+                val category1 = Category(
+                    "Personnel",
+                    "a sample categories for all kind of task in personal life",
+                )
+                val category2 = Category("Job", null)
+                val category3 = Category("Housework", null)
+                categoryDao.insertMultipleCategories(listOf(category1, category2, category3))
+
+                // test
+                val sampleTsk = Ttd("Simple task", 2, System.currentTimeMillis())
+                ttdDao.insert(sampleTsk)
+                val composedTask = Ttd("Composed Task", 3, System.currentTimeMillis())
+                val parentId = ttdDao.insert(composedTask)
                 val subTask =
                     Ttd("Sub task", 1, System.currentTimeMillis(), parentTaskId = parentId)
                 ttdDao.insert(subTask)

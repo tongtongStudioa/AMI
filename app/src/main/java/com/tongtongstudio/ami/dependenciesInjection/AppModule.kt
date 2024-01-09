@@ -2,7 +2,7 @@ package com.tongtongstudio.ami.dependenciesInjection
 
 import android.app.Application
 import androidx.room.Room
-import com.tongtongstudio.ami.data.ThingToDoDatabase1
+import com.tongtongstudio.ami.data.ThingToDoDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,32 +19,32 @@ object AppModule {
     @Singleton
     fun provideDatabase(
         app: Application,
-        callback: ThingToDoDatabase1.Callback
-    ) = Room.databaseBuilder(app, ThingToDoDatabase1::class.java, "thing_to_do_database")
+        callback: ThingToDoDatabase.Callback
+    ) = Room.databaseBuilder(app, ThingToDoDatabase::class.java, "thing_to_do_database")
         .fallbackToDestructiveMigration()
         .addCallback(callback)
         .build()
 
     @Provides
-    fun provideTaskDao(db: ThingToDoDatabase1) = db.taskDao()
+    fun provideTaskDao(db: ThingToDoDatabase) = db.taskDao()
 
     @Provides
-    fun provideEventDao(db: ThingToDoDatabase1) = db.eventDao()
+    fun provideEventDao(db: ThingToDoDatabase) = db.eventDao()
 
     @Provides
-    fun provideProjectDao(db: ThingToDoDatabase1) = db.projectDao()
+    fun provideProjectDao(db: ThingToDoDatabase) = db.projectDao()
 
     @Provides
-    fun provideTtdDao(db: ThingToDoDatabase1) = db.ttdDao()
+    fun provideTtdDao(db: ThingToDoDatabase) = db.ttdDao()
 
     @Provides
-    fun provideReminderDao(db: ThingToDoDatabase1) = db.reminderDao()
+    fun provideReminderDao(db: ThingToDoDatabase) = db.reminderDao()
 
     @Provides
-    fun provideCategoryDao(db: ThingToDoDatabase1) = db.categoryDao()
+    fun provideCategoryDao(db: ThingToDoDatabase) = db.categoryDao()
 
     @Provides
-    fun provideAssessmentDao(db: ThingToDoDatabase1) = db.assessmentDao()
+    fun provideAssessmentDao(db: ThingToDoDatabase) = db.assessmentDao()
 
     @ApplicationScope
     @Provides

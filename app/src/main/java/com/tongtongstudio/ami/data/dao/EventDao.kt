@@ -18,11 +18,12 @@ interface EventDao {
 
     fun getAllEvents(hideCompleted: Boolean, sortOrder: SortOrder): Flow<List<Event>> =
         when (sortOrder) {
-            SortOrder.BY_IMPORTANCE_PRIORITY -> getEventsByPriority(hideCompleted)
+            SortOrder.BY_EISENHOWER_MATRIX -> getEventsByPriority(hideCompleted)
             SortOrder.BY_DEADLINE -> getEventsByDeadline(
                 hideCompleted
             )
             SortOrder.BY_NAME -> getEventsByName(hideCompleted)
+            else -> getEventsByDeadline(hideCompleted)
         }
 
     @Query("SELECT * FROM event_table WHERE is_event_completed = :hideCompleted ORDER BY event_name")

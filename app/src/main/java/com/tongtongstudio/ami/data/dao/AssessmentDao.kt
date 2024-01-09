@@ -12,7 +12,7 @@ interface AssessmentDao {
     @Query("SELECT * FROM Assessment WHERE assessment_id = :id LIMIT 1")
     suspend fun get(id: Long): Assessment
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(assessment: Assessment): Long
 
     @Update

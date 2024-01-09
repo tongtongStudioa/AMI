@@ -77,31 +77,19 @@ class RecurringTaskInterval(
     }
 
     fun updateRecurringTask(ttd: Ttd, checked: Boolean): Ttd {
-        val oldStartDate = ttd.startDate!!
+        val oldStartDate = ttd.dueDate
         val updatedStartDate = if (daysOfWeek != null) {
             findNextOccurrenceDay(oldStartDate, checked)
         } else {
             findNextStartDate(oldStartDate, checked)
         }
-        val newStartDate = updatedStartDate.newStartDate
+        val newDueDateDate = updatedStartDate.newDueDate
         val timesSkipped = updatedStartDate.timesSkipped
 
         // TODO: 25/10/2022 how dismiss a miss check ? how count when task were completed or not ?
-        //val isCompleted = if (checked) 1 else 0
-        /*val lastStartDate = Calendar.getInstance().run {
-            timeInMillis = ttd.deadline!!
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            time
-        }
-        val completedDate = Calendar.getInstance().run {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            time
-        }*/
 
         // all attributes to update
-        val isTaskEnding = newStartDate > ttd.deadline!!
+        val isTaskEnding = if (ttd.deadline != null) newDueDateDate > ttd.deadline else false
         val newCurrentStreak = if (timesSkipped == 0) { // if no skipped task
             ttd.currentStreak + 1 // add one day of streak
         } else 0 // else reset current streak
@@ -112,7 +100,8 @@ class RecurringTaskInterval(
 
         val updatedTask = ttd.copy(
             isCompleted = isTaskEnding,
-            startDate = if (isTaskEnding) ttd.deadline else newStartDate,
+            completionDate = if (isTaskEnding) ttd.dueDate else null,
+            dueDate = if (isTaskEnding) ttd.dueDate else newDueDateDate,
             currentStreak = newCurrentStreak,
             successCount = newSuccessCount,
             timesMissed = ttd.timesMissed + timesSkipped,
@@ -176,6 +165,34 @@ class RecurringTaskInterval(
         return UpdatedStartDate(newStartDate, timesSkipped)
     }
 
+    // TODO: problem get string method without context
+    /*fun getStringReadable(): String {
+        return if (times == 1 && daysOfWeek == null) {
+            when (period) {
+                Period.DAYS.name -> getString(R.string.each_days)
+                Period.WEEKS.name -> getString(R.string.each_weeks)
+                Period.MONTHS.name -> getString(R.string.each_months)
+                Period.YEARS.name -> getString(R.string.each_years)
+                else -> getString(R.string.each_days)
+            }
+        } else if (daysOfWeek != null) {
+            if (times == 1) {
+                "Weekly on $daysOfWeek"
+
+            } else "On $daysOfWeek every $times weeks"
+        } else {
+            when (period) {
+                Period.DAYS.name -> getString(R.string.every_x_days, times)
+                Period.WEEKS.name -> getString(R.string.every_x_weeks, times)
+                Period.MONTHS.name -> getString(
+                    R.string.every_x_months,
+                    times
+                )
+                Period.YEARS.name -> getString(R.string.every_x_years, times)
+                else -> getString(R.string.every_x_days, times)
+            }
+        }
+    }*/
 }
 
-class UpdatedStartDate(val newStartDate: Long, val timesSkipped: Int = 0)
+class UpdatedStartDate(val newDueDate: Long, val timesSkipped: Int = 0)

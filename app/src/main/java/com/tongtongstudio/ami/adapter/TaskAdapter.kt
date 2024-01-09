@@ -1,7 +1,6 @@
 package com.tongtongstudio.ami.adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -17,9 +16,9 @@ import java.util.*
 
 
 class TaskAdapter(private val listener: InteractionListener) :
-    RecyclerView.Adapter<TaskAdapter.ViewHolder<*>>() {
+    RecyclerView.Adapter<ViewHolder<*>>() {
 
-    private val taskList: MutableList<TaskWithSubTasks> = ArrayList()
+    private val taskList: MutableList<TaskWithSubTasks> = mutableListOf()
 
     companion object {
         private const val TYPE_TASK = 0
@@ -37,11 +36,6 @@ class TaskAdapter(private val listener: InteractionListener) :
         taskList.add(position, newTask)
         notifyItemInserted(position)
     }*/
-
-    // Base view holder for all type of view in recycler view
-    abstract class ViewHolder<in T>(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        abstract fun bind(thingToDo: T)
-    }
 
     override fun onBindViewHolder(holder: ViewHolder<*>, position: Int) {
         val element = taskList[position]
@@ -105,16 +99,16 @@ class TaskAdapter(private val listener: InteractionListener) :
             }
         }
 
-        override fun bind(thingToDo: Ttd) {
+        override fun bind(data: Ttd) {
             binding.apply {
-                tvTaskName.text = thingToDo.title
+                tvTaskName.text = data.title
                 //tvNature.text = thingToDo.getCategoryTitle()
-                checkBoxCompleted.isChecked = thingToDo.isCompleted
-                tvTaskName.paint.isStrikeThruText = thingToDo.isCompleted
+                checkBoxCompleted.isChecked = data.isCompleted
+                tvTaskName.paint.isStrikeThruText = data.isCompleted
                 tvNumberPriority.text =
                     this@TaskViewHolder.itemView.context.getString(
                         R.string.importance_thing_to_do,
-                        thingToDo.priority
+                        data.priority
                     )
 
                 // TODO: erase this date make this outside the class
@@ -123,7 +117,7 @@ class TaskAdapter(private val listener: InteractionListener) :
                     set(Calendar.MINUTE, 0)
                     timeInMillis
                 }
-                if (thingToDo.dueDate < todayDate && !thingToDo.isCompleted) {
+                if (data.dueDate < todayDate && !data.isCompleted) {
                     tvTaskName.setTextColor(
                         ContextCompat.getColor(
                             this@TaskViewHolder.itemView.context,
@@ -131,9 +125,9 @@ class TaskAdapter(private val listener: InteractionListener) :
                         )
                     )
                 }
-                tvDeadline.text = thingToDo.getDateFormatted(thingToDo.dueDate)
-                if (thingToDo.startDate != null) {
-                    tvStartDate.text = thingToDo.getDateFormatted(thingToDo.startDate)
+                tvDeadline.text = data.getDateFormatted(data.dueDate)
+                if (data.startDate != null) {
+                    tvStartDate.text = data.getDateFormatted(data.startDate)
                 } else tvStartDate.isVisible = false
             }
         }
@@ -191,30 +185,30 @@ class TaskAdapter(private val listener: InteractionListener) :
         }
 
         override fun bind(
-            thingToDo: TaskWithSubTasks
+            data: TaskWithSubTasks
         ) {
             binding.apply {
-                tvProjectName.text = thingToDo.mainTask.title
-                tvProjectName.paint.isStrikeThruText = thingToDo.mainTask.isCompleted
-                tvDeadline.text = thingToDo.mainTask.getDateFormatted(thingToDo.mainTask.dueDate)
+                tvProjectName.text = data.mainTask.title
+                tvProjectName.paint.isStrikeThruText = data.mainTask.isCompleted
+                tvDeadline.text = data.mainTask.getDateFormatted(data.mainTask.dueDate)
                 tvDeadline.isVisible =
-                    thingToDo.mainTask.getDateFormatted(thingToDo.mainTask.dueDate) != null
-                tvStartDate.text = thingToDo.mainTask.getDateFormatted(thingToDo.mainTask.startDate)
+                    data.mainTask.getDateFormatted(data.mainTask.dueDate) != null
+                tvStartDate.text = data.mainTask.getDateFormatted(data.mainTask.startDate)
                 tvStartDate.isVisible =
-                    thingToDo.mainTask.getDateFormatted(thingToDo.mainTask.startDate) != null
+                    data.mainTask.getDateFormatted(data.mainTask.startDate) != null
                 tvNumberPriority.text = this@TaskComposedViewHolder.itemView.context.getString(
                     R.string.importance_thing_to_do,
-                    thingToDo.mainTask.priority
+                    data.mainTask.priority
                 )
                 tvNbSubTasks.text = this@TaskComposedViewHolder.itemView.context.getString(
                     R.string.nb_sub_tasks_project,
-                    thingToDo.getNbSubTasksCompleted(),
-                    thingToDo.getNbSubTasks()
+                    data.getNbSubTasksCompleted(),
+                    data.getNbSubTasks()
                 )
                 // TODO: is there that we make the sub task adapter alive ?
                 rvSubTasks.apply {
                     layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-                    adapter = SubTaskAdapter(listener, thingToDo.subTasks)
+                    adapter = SubTaskAdapter(listener, data.subTasks)
                 }
 
                 // TODO: search for help on this helper

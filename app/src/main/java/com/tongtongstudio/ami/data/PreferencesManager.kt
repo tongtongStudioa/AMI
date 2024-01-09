@@ -13,7 +13,7 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-enum class SortOrder { BY_NAME, BY_IMPORTANCE_PRIORITY, BY_DEADLINE }
+enum class SortOrder { BY_NAME, BY_EISENHOWER_MATRIX, BY_2MINUTES_RULES, BY_CREATOR_SORT, BY_DEADLINE }
 enum class LaterFilter { TOMORROW, NEXT_WEEK, LATER }
 
 data class FilterPreferences(
@@ -43,7 +43,7 @@ class PreferencesManager @Inject constructor(@ApplicationContext context: Contex
         }
         .map { preferences ->
             val sortOrder = SortOrder.valueOf(
-                preferences[PreferencesKeys.SORT_ORDER] ?: SortOrder.BY_IMPORTANCE_PRIORITY.name
+                preferences[PreferencesKeys.SORT_ORDER] ?: SortOrder.BY_CREATOR_SORT.name
             )
             val hideCompleted = preferences[PreferencesKeys.HIDE_COMPLETED] ?: false
 

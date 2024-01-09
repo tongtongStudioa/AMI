@@ -141,4 +141,5 @@
     <string name="time_statistics">Time Statistics</string>
     <string name="streak_and_habit_improvement">Streak and habit improvement</string>
     <string name="focus_on_project">Focus on Project</string>
+    <string name="set_due_date">Set due date</string>
 </resources>

@@ -24,7 +24,7 @@ class Repository @Inject constructor(
         endOfToday: Long,
     ): Flow<List<TaskWithSubTasks>> {
         // TODO: Change sorOrder class (add ordering rules)
-        return ttdDao.getTodayTasks(sortOrder.name, hideCompleted, startOfToday, endOfToday)
+        return ttdDao.getTodayTasks(sortOrder, hideCompleted, startOfToday, endOfToday)
     }
 
     fun getLaterThingsToDo(
@@ -61,8 +61,12 @@ class Repository @Inject constructor(
         return ttdDao.getMissedRecurringTasks(todayDate)
     }
 
-    suspend fun getCategory(id: Long): Category {
-        return categoryDao.get(id)
+    suspend fun getCategoryById(id: Long): Category {
+        return categoryDao.getById(id)
+    }
+
+    suspend fun getCategoryByTitle(title: String): Category {
+        return categoryDao.getByTitle(title)
     }
 
     fun getCategories(): Flow<List<Category>> {
@@ -101,6 +105,24 @@ class Repository @Inject constructor(
         assessmentDao.delete(assessment)
     }
 
+    fun getTaskReminders(id: Long?): Flow<MutableList<Reminder>>? {
+        return if (id != null)
+            reminderDao.getTaskReminders(id)
+        else null
+    }
+
+    suspend fun insertReminder(reminder: Reminder) {
+        reminderDao.insert(reminder)
+    }
+
+    suspend fun deleteReminder(reminder: Reminder) {
+        reminderDao.delete(reminder)
+    }
+
+    suspend fun updateReminder(reminder: Reminder) {
+        reminderDao.update(reminder)
+    }
+
     // TODO: 04/02/2023 add comparative sorting for same name, deadline, etc, case
     fun getAllThingToDoToday(
         sortOrder: SortOrder,
@@ -121,7 +143,7 @@ class Repository @Inject constructor(
             tasks + events + projects
         }.map { allThingsToDo ->
             when (sortOrder) {
-                SortOrder.BY_IMPORTANCE_PRIORITY ->
+                SortOrder.BY_CREATOR_SORT ->
                     allThingsToDo.sortedWith(compareBy<ThingToDo> { it.isCompleted() }.thenBy { it.priority }
                         .thenBy { it.getEstimatedTime() })
                 SortOrder.BY_NAME -> allThingsToDo.sortedBy { it.name }

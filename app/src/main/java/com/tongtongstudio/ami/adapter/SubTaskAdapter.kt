@@ -27,7 +27,7 @@ class SubTaskAdapter(private val listener: InteractionListener, private val subT
 
     inner class SubTaskViewHolder(
         private val binding: ItemTaskBinding
-    ) : TaskAdapter.ViewHolder<Ttd>(binding.root) {
+    ) : ViewHolder<Ttd>(binding.root) {
 
         init {
             binding.apply {

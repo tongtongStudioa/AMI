@@ -7,8 +7,6 @@ import com.google.android.material.datepicker.DateValidatorPointForward
 class CalendarCustomFunction {
 
     companion object {
-
-
         /**
          * Create a constraint point backward which exclude future date after maxDate
          * @param maxDate

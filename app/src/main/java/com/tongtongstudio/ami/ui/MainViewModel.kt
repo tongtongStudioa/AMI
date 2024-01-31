@@ -5,11 +5,9 @@ import android.media.AudioManager
 import android.media.SoundPool
 import android.os.Build
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.tongtongstudio.ami.data.LaterFilter
-import com.tongtongstudio.ami.data.PreferencesManager
-import com.tongtongstudio.ami.data.Repository
-import com.tongtongstudio.ami.data.SortOrder
+import com.tongtongstudio.ami.data.*
 import com.tongtongstudio.ami.data.datatables.ProjectWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
@@ -44,7 +42,9 @@ class MainViewModel @Inject constructor(
         SoundPool(6, AudioManager.STREAM_MUSIC, 0)
     }
 
-    //val preferencesFlow = preferencesManager.preferencesFlow
+    val globalPreferencesFlow = preferencesManager.globalPreferencesFlow
+
+    val currentLayoutMode = globalPreferencesFlow.asLiveData()
 
     fun onSortOrderSelected(sortOrder: SortOrder) = viewModelScope.launch {
         preferencesManager.updateSortOrder(sortOrder)
@@ -56,6 +56,10 @@ class MainViewModel @Inject constructor(
 
     fun onLaterFilterSelected(laterFilter: LaterFilter) = viewModelScope.launch {
         preferencesManager.updateLaterFilter(laterFilter)
+    }
+
+    fun onLayoutModeSelected(layoutMode: LayoutMode) = viewModelScope.launch {
+        preferencesManager.updateLayoutMode(layoutMode)
     }
 
     fun onCheckBoxChanged(thingToDo: Ttd, checked: Boolean) = viewModelScope.launch {
@@ -193,6 +197,10 @@ class MainViewModel @Inject constructor(
             updateTaskState(task, false)
         }
         showThingToDoSavedConfirmationMessage("Recurring tasks updated")
+    }
+
+    fun addSubTask(newSubTask: Ttd, parentId: Long) = viewModelScope.launch {
+        repository.updateTask(newSubTask.copy(parentTaskId = parentId))
     }
 
     sealed class SharedEvent {

@@ -10,7 +10,7 @@
     <item
         android:id="@+id/action_update_edit_layout"
         android:checkable="true"
-        android:title="Sample edit"
+        android:title="Edit simplified"
         app:showAsAction="never" />
 
 </menu>

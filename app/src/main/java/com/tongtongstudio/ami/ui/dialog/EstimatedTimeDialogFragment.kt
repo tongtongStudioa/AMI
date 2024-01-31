@@ -48,17 +48,21 @@ class EstimatedTimeDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding.hoursPicker.minValue = 0
-        binding.hoursPicker.maxValue = 75
-        binding.minutesPicker.minValue = 0
-        binding.minutesPicker.maxValue = 59
-
+        val values = (0..59).step(5).toList()
+        binding.apply {
+            hoursPicker.minValue = 0
+            hoursPicker.maxValue = 25
+            minutesPicker.minValue = 0
+            minutesPicker.maxValue = 11
+            minutesPicker.displayedValues = values.map { it.toString() }.toTypedArray()
+        }
         return binding.root
     }
 
     private fun onDialogPositiveClick(dialog: EstimatedTimeDialogFragment) {
         val hours: Int = binding.hoursPicker.value
-        val minutes: Int = binding.minutesPicker.value
+        val minutes: Int =
+            binding.minutesPicker.value * 5 // minutesPicker.value return value between 0 and 11
         val result = IntArray(2)
         result[0] = hours
         result[1] = minutes

@@ -69,6 +69,18 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 layoutManager = LinearLayoutManager(requireContext())
                 setHasFixedSize(false)
             }
+            /*val callback = TaskTouchHelperCallback(newTaskAdapter,
+                { newSubTask, parentId ->
+                    // TODO: use drag and drop to add subTTask
+                //sharedViewModel.addSubTask(newSubTask,parentId)
+            },
+                { taskWithSubTasks ->
+                    sharedViewModel.onThingToDoRightSwiped(taskWithSubTasks)
+                },
+                { taskWithSubTasks ->
+                    sharedViewModel.onThingToDoLeftSwiped(taskWithSubTasks)
+                })*/
+            //ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
 
             ItemTouchHelper(object :
                 ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT) {

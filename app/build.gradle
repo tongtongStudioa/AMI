@@ -2,9 +2,9 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-parcelize'
-    id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
     id 'androidx.navigation.safeargs.kotlin'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -16,7 +16,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 33
         versionCode 6
-        versionName "1.9.9-aplha"
+        versionName "1"
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
@@ -92,7 +92,7 @@ dependencies {
     // Dagger Hilt
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     kapt "com.google.dagger:hilt-android-compiler:$hiltVersion"
-    kapt "androidx.hilt:hilt-compiler:$hiltAndroidXVersion"
+    //kapt "androidx.hilt:hilt-compiler:$hiltAndroidXVersion"
 
     // DataStore
     implementation "androidx.datastore:datastore-preferences:$dataStoreVersion"

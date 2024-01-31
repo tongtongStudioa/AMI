@@ -14,7 +14,7 @@ class EventViewModel @Inject constructor(
     preferencesManager: PreferencesManager
 ) : ViewModel() {
 
-    private val preferencesFlow = preferencesManager.preferencesFlow
+    private val preferencesFlow = preferencesManager.filterPreferencesFlow
 
     // TODO: 04/04/2023 remove filter preferences for events or add a local menu
     private val eventsFlow = preferencesFlow

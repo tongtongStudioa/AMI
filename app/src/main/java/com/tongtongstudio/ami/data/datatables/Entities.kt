@@ -87,35 +87,42 @@ data class Ttd(
         return isCompleted && completionDate != null && (completionDate < dueDate || (deadline != null && completionDate < deadline))
     }
 
-    fun calculatingPriority(importance: Int? = null, urgency: Int? = null): Int {
-        // TODO: change way of calculus priority
-        return if (importance != null && urgency != null)
-            2 * (importance * urgency) / (importance + urgency)
-        else
-            priority
-    }
-
     fun getCreationDateFormatted(): String {
         return DateFormat.getDateInstance().format(creationDate)
     }
 
-    /**
-     * Function that calculate urgency.
-     * Delay between due date and deadline otherwise, if no deadline, urgency = 10.
-     * @return Int : between 2 and 10
-     */
-    fun calculusUrgency(todayDateMillis: Long): Int {
-        val delay = if (deadline != null) abs(dueDate - deadline) else 0
-        return when {
-            delay <= 1 * DAY_IN_MILLIS -> 10
-            delay <= 2 * DAY_IN_MILLIS -> 9
-            delay <= 3 * DAY_IN_MILLIS -> 8
-            delay <= 5 * DAY_IN_MILLIS -> 7
-            delay <= 7 * DAY_IN_MILLIS -> 6
-            delay <= 10 * DAY_IN_MILLIS -> 5
-            delay <= 14 * DAY_IN_MILLIS -> 4
-            delay <= 19 * DAY_IN_MILLIS -> 3
-            else -> 2
+    companion object {
+        /**
+         * Function that calculate urgency.
+         * Delay between due date and deadline otherwise, if no deadline, urgency = 9.
+         * @return Int : between 2 and 10
+         */
+        fun calculusUrgency(todayDateMillis: Long, dueDate: Long, deadline: Long?): Int {
+            val delay = if (deadline != null) abs(dueDate - deadline) else 0
+            return when {
+                delay <= 1 * DAY_IN_MILLIS -> 9
+                delay <= 2 * DAY_IN_MILLIS -> 8
+                delay <= 3 * DAY_IN_MILLIS -> 7
+                delay <= 5 * DAY_IN_MILLIS -> 6
+                delay <= 7 * DAY_IN_MILLIS -> 5
+                delay <= 10 * DAY_IN_MILLIS -> 4
+                delay <= 14 * DAY_IN_MILLIS -> 3
+                delay <= 19 * DAY_IN_MILLIS -> 2
+                else -> 1
+            }
+        }
+
+        /**
+         * To calculate priority :
+         * 2 * (importance * urgency) / (importance + urgency)
+         * @return int priority
+         */
+        fun calculatingPriority(priority: Int, importance: Int? = null, urgency: Int? = null): Int {
+            // TODO: change way of calculus priority
+            return if (importance != null && urgency != null)
+                2 * (importance * urgency) / (importance + urgency)
+            else
+                priority
         }
     }
 
@@ -169,6 +176,13 @@ data class Assessment(
         else
             null
     }
+
+    fun getSumUp(): String {
+        val evaluationDateFormatted =
+            SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
+        // TODO: create a string resource
+        return "$title on $evaluationDateFormatted"
+    }
 }
 
 @Entity
@@ -197,6 +211,16 @@ data class Reminder(
 
     fun getReminderDueDateFormatted(): String {
         return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
+    }
+
+    private fun getReminderTimeFormatted(): String {
+        return SimpleDateFormat("HH:mm", Locale.getDefault()).format(dueDate)
+    }
+
+    fun getReminderInformation(): String {
+        val dueDateFormatted = getReminderDueDateFormatted()
+        val dueTimeFormatted = getReminderTimeFormatted()
+        return "$dueDateFormatted at $dueTimeFormatted"
     }
 
     fun formatDueDate(): String {

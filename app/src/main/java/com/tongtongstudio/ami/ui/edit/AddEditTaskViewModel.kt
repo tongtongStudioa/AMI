@@ -7,10 +7,10 @@ import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.EDIT_TASK_RESULT_OK
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,13 +23,14 @@ class AddEditTaskViewModel @Inject constructor(
     private val addEditChannelEvent = Channel<AddEditTaskEvent>()
     val addEditTaskEvent = addEditChannelEvent.receiveAsFlow()
 
-    // TODO: 21/06/2022 create a better variable for project id
-    var projectId: Long? = null
-
     val thingToDo = state.get<Ttd>("thingToDo")
 
     private val _reminders = MutableLiveData<MutableList<Reminder>>()
-    val reminders: LiveData<MutableList<Reminder>> get() = _reminders
+    val reminders: LiveData<MutableList<Reminder>>
+        get() = _reminders
+    private val _assessments = MutableLiveData<MutableList<Assessment>>()
+    val assessments: LiveData<MutableList<Assessment>>
+        get() = _assessments
 
     init {
         viewModelScope.launch {
@@ -37,11 +38,12 @@ class AddEditTaskViewModel @Inject constructor(
                 _reminders.value = reminders
             }
         }
+        viewModelScope.launch {
+            repository.getTasksAssessments(thingToDo?.id)?.collect { assessments ->
+                _assessments.value = assessments
+            }
+        }
     }
-
-    private val _assessments = MutableLiveData<MutableList<Assessment>>()
-    val assessments: LiveData<MutableList<Assessment>>
-        get() = _assessments
 
     val createdDateFormatted = thingToDo?.getCreationDateFormatted()
 
@@ -59,7 +61,7 @@ class AddEditTaskViewModel @Inject constructor(
             state["thingToDoPriority"] = value
         }
 
-    var categoryId: Long? =
+    private var categoryId: Long? =
         state["ThingToDoCategory"] ?: thingToDo?.categoryId
         set(value) {
             field = value
@@ -124,7 +126,7 @@ class AddEditTaskViewModel @Inject constructor(
         }
 
     var ttdNature =
-        state.get<String>("thingToDoNature") ?: thingToDo?.type
+        state.get<String>("thingToDoNature") ?: thingToDo?.type ?: Nature.TASK.name
         set(value) {
             field = value
             state["thingToDoNature"] = value
@@ -150,6 +152,7 @@ class AddEditTaskViewModel @Inject constructor(
             field = value
             state["importance"] = value
         }
+
     var urgency =
         state["urgency"] ?: thingToDo?.urgency
         set(value) {
@@ -157,12 +160,17 @@ class AddEditTaskViewModel @Inject constructor(
             state["urgency"] = value
         }
 
-    fun onSaveClick() {
+    var projectId: Long? =
+        state["parentId"] ?: thingToDo?.parentTaskId
+        set(value) {
+            field = value
+            state["parentId"] = value
+        }
+
+    fun onSaveClick(modeExtent: Boolean) {
         thingToDo?.let {
-            updateThingToDo(it)
-            updateRemindersList(it.id)
-            //updateAssessment(it.id)
-        } ?: saveThingToDo()
+            updateThingToDo(it, modeExtent)
+        } ?: saveThingToDo(modeExtent)
     }
 
     private fun updateRemindersList(idTtd: Long) {
@@ -170,14 +178,23 @@ class AddEditTaskViewModel @Inject constructor(
             for (reminder in reminders.value!!) {
                 if (reminder.parentId == null) {
                     val newTaskReminder = reminder.copy(parentId = idTtd)
-                    insertReminder(newTaskReminder)
+                    insertNewReminder(newTaskReminder)
                 }
             }
         }
     }
 
+    private fun updateAssessmentsList(idTtd: Long) {
+        if (assessments.value != null) {
+            for (assessment in assessments.value!!) {
+                if (assessment.taskId != idTtd)
+                    insertNewAssessment(idTtd, assessment)
+            }
+        }
+    }
+
     fun updateReminder(oldReminder: Reminder, updatedReminder: Reminder) = viewModelScope.launch {
-        if (oldReminder.parentId != null) {
+        if (oldReminder.parentId == null) {
             val currentReminders = _reminders.value ?: mutableListOf()
             val indexElement = currentReminders.indexOf(oldReminder)
             currentReminders.remove(oldReminder)
@@ -187,7 +204,7 @@ class AddEditTaskViewModel @Inject constructor(
             repository.updateReminder(updatedReminder)
     }
 
-    private fun insertReminder(reminder: Reminder) = viewModelScope.launch {
+    private fun insertNewReminder(reminder: Reminder) = viewModelScope.launch {
         repository.insertReminder(reminder)
     }
 
@@ -205,49 +222,46 @@ class AddEditTaskViewModel @Inject constructor(
         else null
     }
 
-    private fun getCategories(): List<Category> = runBlocking {
-        return@runBlocking repository.getCategories().first()
-    }
-
-    fun getCategoriesTitle(): List<String> {
-        return getCategories().map { it.title }
-    }
-
-    fun getAssessments(): List<Assessment> = runBlocking {
-        return@runBlocking if (thingToDo != null) {
-            repository.getTasksAssessments(thingToDo.id).first()
-        } else emptyList()
-    }
+    fun getCategories() = repository.getCategories().asLiveData()
 
     private fun insertNewAssessment(taskId: Long, newAssessment: Assessment) =
         viewModelScope.launch {
             repository.insertAssessment(newAssessment.copy(taskId = taskId))
         }
 
-    private fun saveThingToDo() = viewModelScope.launch {
+    private fun saveThingToDo(modeExtent: Boolean) = viewModelScope.launch {
+        val taskId: Long
         val newThingToDo =
             Ttd(
-                title,
-                priority.toInt(),
+                title = title,
+                priority = priority.toInt(),
                 dueDate = dueDate!!,
                 startDate = startDate,
+                isRecurring = isRecurring,
+                repetitionFrequency = recurringTaskInterval,
+                parentTaskId = projectId,
+                categoryId = categoryId,
+                type = Nature.TASK.name
+            )
+
+        taskId = if (modeExtent) {
+            urgency = Ttd.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
+            val newThingToDoExtent = newThingToDo.copy(
+                priority = Ttd.calculatingPriority(priority.toInt(), importance, urgency),
                 deadline = deadline,
                 description = description,
-                type = Nature.TASK.name,
                 importance = importance,
                 urgency = urgency,
                 estimatedTime = estimatedTime,
-                isRecurring = isRecurring,
-                repetitionFrequency = recurringTaskInterval,
                 dependency = dependency,
                 skillLevel = skillLevel,
-                parentTaskId = projectId,
-                categoryId = categoryId
+                type = ttdNature
             )
+            repository.insertTask(newThingToDoExtent)
+        } else repository.insertTask(newThingToDo)
 
-        repository.insertTask(newThingToDo)
-
-        // TODO: move out this method (to insure that update method assessment, categories and reminder is well saved
+        updateRemindersList(taskId)
+        updateAssessmentsList(taskId)
 
         addEditChannelEvent.send(
             AddEditTaskEvent.NavigateBackWithResult(
@@ -256,28 +270,37 @@ class AddEditTaskViewModel @Inject constructor(
         )
     }
 
-    private fun updateThingToDo(thingToDo: Ttd) =
+    private fun updateThingToDo(thingToDo: Ttd, modeExtent: Boolean) =
         viewModelScope.launch {
-            repository.updateTask(
+            val updatedThingToDo =
                 thingToDo.copy(
-                    title,
-                    priority.toInt(),
+                    title = title,
+                    priority = priority.toInt(),
                     dueDate = dueDate!!,
                     startDate = startDate,
+                    isRecurring = isRecurring,
+                    repetitionFrequency = recurringTaskInterval,
+                    parentTaskId = projectId,
+                    categoryId = categoryId,
+                    type = Nature.TASK.name
+                )
+            if (modeExtent) {
+                urgency =
+                    Ttd.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
+                val updatedThingToDoExtent = updatedThingToDo.copy(
+                    priority = Ttd.calculatingPriority(priority.toInt(), importance, urgency),
                     deadline = deadline,
                     description = description,
-                    type = Nature.TASK.name,
                     importance = importance,
                     urgency = urgency,
                     estimatedTime = estimatedTime,
-                    isRecurring = isRecurring,
-                    repetitionFrequency = recurringTaskInterval,
                     dependency = dependency,
                     skillLevel = skillLevel,
-                    parentTaskId = projectId,
-                    categoryId = categoryId
+                    type = ttdNature
                 )
-            )
+                repository.updateTask(updatedThingToDoExtent)
+            } else repository.updateTask(updatedThingToDo)
+
             // TODO: move out this method (to insure that update method assessment, categories and reminder is well saved
             addEditChannelEvent.send(
                 AddEditTaskEvent.NavigateBackWithResult(
@@ -290,24 +313,37 @@ class AddEditTaskViewModel @Inject constructor(
         addEditChannelEvent.send(AddEditTaskEvent.ShowInvalidInputMessage(invalidUserMsg))
     }
 
+    fun getMainTask(): String = runBlocking {
+        return@runBlocking if (projectId != null) {
+            repository.getTask(projectId!!).title
+        } else "null"
+    }
+
     fun addNewReminder(reminderTriggerTime: Long) {
         val newReminder = Reminder(
             dueDate = reminderTriggerTime,
             isRecurrent = false
         )
-        val currentReminders = reminders.value ?: mutableListOf()
-        currentReminders.add(newReminder)
-        _reminders.value = currentReminders
+        if (thingToDo?.id == null) { // is a new task ?
+            val currentReminders = reminders.value ?: mutableListOf()
+            currentReminders.add(newReminder)
+            _reminders.value = currentReminders
+        } else insertNewReminder(newReminder.copy(parentId = thingToDo.id))
     }
 
     fun addNewAssessment(result: Assessment) {
-        _assessments.value?.add(result)
+        if (thingToDo?.id == null) { // is a new task ?
+            val currentAssessments = assessments.value ?: mutableListOf()
+            currentAssessments.add(result)
+            _assessments.value = currentAssessments
+        } else insertNewAssessment(thingToDo.id, result)
     }
 
     fun removeAssessment(assessment: Assessment) = viewModelScope.launch {
-        _assessments.value?.remove(assessment)
-        if (assessment.taskId == null)
-            repository.deleteAssessment(assessment)
+        val updatedList: MutableList<Assessment> = _assessments.value ?: mutableListOf()
+        updatedList.remove(assessment)
+        _assessments.value = updatedList
+        repository.deleteAssessment(assessment)
     }
 
     fun removeReminder(attribute: Reminder) = viewModelScope.launch {

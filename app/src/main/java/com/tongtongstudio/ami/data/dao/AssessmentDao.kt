@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface AssessmentDao {
     @Query("SELECT * FROM Assessment WHERE task_id = :taskId ORDER BY assessment_id ASC")
-    fun getTaskAssessments(taskId: Long): Flow<List<Assessment>>
+    fun getTaskAssessments(taskId: Long): Flow<MutableList<Assessment>>
 
     @Query("SELECT * FROM Assessment WHERE assessment_id = :id LIMIT 1")
     suspend fun get(id: Long): Assessment

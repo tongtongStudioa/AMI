@@ -76,7 +76,7 @@
     <string name="projects_achievement_rate_information">Pourcentage d\'avancements des projets</string>
     <string name="estimation_time_accuracy_information">Précision des estimation de temps de travail</string>
     <string name="on_time_completion_rate_information">Taux d\'achèvement dans les délais</string>
-    <string name="error_no_name">Le nom ne peut pas être vide</string>
+    <string name="error_no_title">Le titre ne peut pas être vide</string>
     <string name="error_no_priority">Fixez une éhelle de priorité</string>
     <string name="for_later">Pour plus tard</string>
     <string name="for_next_week">Semaine prochaine</string>
@@ -97,7 +97,7 @@
     <string name="estimated_time_info">%1$dh%2$s estimé</string>
     <string name="set_estimated_time">Estimation du temps</string>
     <string name="set_reminder">Ajouter un rappel</string>
-    <string name="error_no_date">Choisi au moins une date d\'échéance</string>
+    <string name="error_no_date">Choisissez une date d\'échéance</string>
     <string name="text_explication_no_projects">Pas de projets</string>
     <string name="text_action_no_projects">Ajoute un projet</string>
     <string name="text_explication_no_events">Pas d\'évenements</string>

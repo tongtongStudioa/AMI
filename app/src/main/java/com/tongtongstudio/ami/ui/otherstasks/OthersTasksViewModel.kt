@@ -16,7 +16,7 @@ class OthersTasksViewModel @Inject constructor(
     preferencesManager: PreferencesManager
 ) : ViewModel() {
 
-    private val preferencesFlow = preferencesManager.preferencesFlow
+    private val preferencesFlow = preferencesManager.filterPreferencesFlow
 
     // TODO: 24/10/2022 simplify and place it in mainViewModel
     private val endOfToday = Calendar.getInstance().run {

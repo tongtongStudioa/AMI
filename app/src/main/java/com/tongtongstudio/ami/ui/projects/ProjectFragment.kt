@@ -1,15 +1,12 @@
 package com.tongtongstudio.ami.ui.projects
 
-import android.graphics.Canvas
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -17,33 +14,24 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.MainAdapter
-import com.tongtongstudio.ami.adapter.ThingToDoListener
 import com.tongtongstudio.ami.data.SortOrder
-import com.tongtongstudio.ami.data.datatables.ProjectWithSubTasks
-import com.tongtongstudio.ami.data.datatables.Task
-import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
-import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class ProjectFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
+class ProjectFragment : Fragment(R.layout.fragment_main) {
 
     private val viewModel: ProjectViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var binding: FragmentMainBinding
-    private lateinit var mainAdapter: MainAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -53,75 +41,15 @@ class ProjectFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
 
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
-        mainAdapter = MainAdapter(this, requireContext())
-
         binding.apply {
             fabAddTask.setOnClickListener {
                 sharedViewModel.onAddThingToDoDemand()
             }
 
             mainRecyclerView.apply {
-                adapter = mainAdapter
                 layoutManager = LinearLayoutManager(requireContext())
                 setHasFixedSize(true)
             }
-
-            ItemTouchHelper(object :
-                ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT) {
-                override fun onMove(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    target: RecyclerView.ViewHolder
-                ): Boolean {
-                    return false
-                }
-
-                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    val thingToDo = mainAdapter.data[viewHolder.adapterPosition]
-                    if (direction == ItemTouchHelper.RIGHT) {
-                        //sharedViewModel.onThingToDoRightSwiped(thingToDo)
-                    } else if (direction == ItemTouchHelper.LEFT) {
-                        //sharedViewModel.onThingToDoLeftSwiped(thingToDo)
-                    }
-                }
-
-                override fun onChildDraw(
-                    c: Canvas,
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    dX: Float,
-                    dY: Float,
-                    actionState: Int,
-                    isCurrentlyActive: Boolean
-                ) {
-                    RecyclerViewSwipeDecorator.Builder(
-                        context,
-                        c,
-                        recyclerView,
-                        viewHolder,
-                        dX,
-                        dY,
-                        actionState,
-                        isCurrentlyActive
-                    )
-                        .addSwipeLeftActionIcon(R.drawable.ic_baseline_edit_24)
-                        .addSwipeRightActionIcon(R.drawable.ic_baseline_delete_24)
-                        .setSwipeLeftActionIconTint(resources.getColor(R.color.md_theme_light_tertiary))
-                        .setSwipeRightActionIconTint(resources.getColor(R.color.md_theme_light_error))
-                        .create()
-                        .decorate()
-                    super.onChildDraw(
-                        c,
-                        recyclerView,
-                        viewHolder,
-                        dX,
-                        dY,
-                        actionState,
-                        isCurrentlyActive
-                    )
-                }
-
-            }).attachToRecyclerView(mainRecyclerView)
         }
 
         viewModel.projects.observe(viewLifecycleOwner) {
@@ -133,7 +61,6 @@ class ProjectFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
                 binding.emptyRecyclerView.textViewActionText.text =
                     getString(R.string.text_action_no_projects)
             } else {
-                mainAdapter.swapData(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
                 binding.textSup.text = getString(R.string.nb_projects_info, it.size)
@@ -235,25 +162,6 @@ class ProjectFragment : Fragment(R.layout.fragment_main), ThingToDoListener {
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    override fun onItemThingToDoClicked(thingToDo: ThingToDo) {
-        //sharedViewModel.onThingToDoClicked(thingToDo)
-    }
-
-    override fun onCheckBoxClick(task: Task, isChecked: Boolean, position: Int) {
-        //sharedViewModel.onCheckBoxChanged(task, isChecked)
-    }
-
-    override fun onItemTaskSwiped(subTask: Task, dir: Int) {
-        /*if (dir == ItemTouchHelper.RIGHT)
-            sharedViewModel.onSubTaskRightSwiped(subTask)
-        else sharedViewModel.onSubTaskLeftSwiped(subTask)*/
-    }
-
-    override fun onProjectBtnAddSubTaskClicked(projectData: ProjectWithSubTasks) {
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to projectData.project.p_id))
-        sharedViewModel.onAddThingToDoDemand()
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout

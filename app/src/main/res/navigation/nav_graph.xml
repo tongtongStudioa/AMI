@@ -6,6 +6,11 @@
     android:label="Nav Graph"
     app:startDestination="@id/todayTasksFragment">
 
+    <action
+        android:id="@+id/action_global_to_view_pager_tracking_fragment"
+        app:destination="@id/viewPagerTrackingAndStatsFragment"
+        app:launchSingleTop="true" />
+
     <fragment
         android:id="@+id/addEditTaskFragment"
         android:name="com.tongtongstudio.ami.ui.edit.AddEditTaskFragment"
@@ -30,6 +35,9 @@
         <action
             android:id="@+id/action_othersTasksFragment_to_addEditTaskFragment"
             app:destination="@id/addEditTaskFragment" />
+        <action
+            android:id="@+id/action_othersTasksFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment" />
     </fragment>
     <fragment
         android:id="@+id/todayTasksFragment"
@@ -43,15 +51,16 @@
             app:exitAnim="@android:anim/fade_out"
             app:popEnterAnim="@android:anim/fade_in"
             app:popExitAnim="@android:anim/fade_out" />
-        <action
-            android:id="@+id/action_todayTasksFragment_to_chronometerFragment"
-            app:destination="@id/trackingFragment" />
+
         <action
             android:id="@+id/action_todayTasksFragment_to_localProjectStatsFragment2"
             app:destination="@id/localProjectStatsFragment2" />
         <action
             android:id="@+id/action_todayTasksFragment_to_missedRecurringTasksDialogFragment"
             app:destination="@id/missedRecurringTasksDialogFragment" />
+        <action
+            android:id="@+id/action_todayTasksFragment_to_tabPageTrackingStats"
+            app:destination="@id/viewPagerTrackingAndStatsFragment" />
     </fragment>
     <fragment
         android:id="@+id/projectFragment"
@@ -61,12 +70,13 @@
         <action
             android:id="@+id/action_projectFragment_to_addEditTaskFragment"
             app:destination="@id/addEditTaskFragment" />
-        <action
-            android:id="@+id/action_projectFragment_to_chronometerFragment"
-            app:destination="@id/trackingFragment" />
+
         <action
             android:id="@+id/action_projectFragment_to_localProjectStatsFragment2"
             app:destination="@id/localProjectStatsFragment2" />
+        <action
+            android:id="@+id/action_projectFragment_to_tabPageTrackingStats"
+            app:destination="@id/viewPagerTrackingAndStatsFragment" />
     </fragment>
     <fragment
         android:id="@+id/eventFragment"
@@ -81,17 +91,24 @@
         tools:layout="@layout/fragment_main"
         android:id="@+id/completedThingToDoFragment"
         android:name="com.tongtongstudio.ami.ui.completed.CompletedThingToDoFragment"
-        android:label="@string/fragment_title_completed" />
+        android:label="@string/fragment_title_completed">
+        <action
+            android:id="@+id/action_completedThingToDoFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment" />
+        <action
+            android:id="@+id/action_completedThingToDoFragment_to_localProjectStatsFragment2"
+            app:destination="@id/localProjectStatsFragment2" />
+    </fragment>
     <dialog
         android:id="@+id/recurringChoiceDialogFragment"
         android:name="com.tongtongstudio.ami.ui.dialog.RecurringChoiceDialogFragment"
         android:label="RecurringChoiceDialogFragment"
         tools:layout="@layout/dialog_select_recurring_protocol" />
     <fragment
-        android:id="@+id/trackingFragment"
-        android:name="com.tongtongstudio.ami.ui.monitoring.trackingtime.TrackingTimeAndDetailsFragment"
-        android:label="@string/fragment_title_chronometer"
-        tools:layout="@layout/task_tracking_fragment">
+        android:id="@+id/detailsFragment"
+        android:name="com.tongtongstudio.ami.ui.monitoring.task.TaskDetailsFragment"
+        android:label="@string/task_details_screen_title"
+        tools:layout="@layout/fragment_task_information">
         <argument
             android:name="task"
             app:argType="com.tongtongstudio.ami.data.datatables.Ttd" />
@@ -100,7 +117,7 @@
         android:id="@+id/achievementsFragment"
         android:name="com.tongtongstudio.ami.ui.insights.InsightsFragment"
         android:label="@string/fragment_title_achievements"
-        tools:layout="@layout/productivity_insights_fragment" />
+        tools:layout="@layout/fragment_insights" />
     <fragment
         android:id="@+id/localProjectStatsFragment2"
         android:name="com.tongtongstudio.ami.ui.monitoring.projectStats.LocalProjectStatsFragment"
@@ -111,6 +128,7 @@
             app:argType="com.tongtongstudio.ami.data.datatables.TaskWithSubTasks" />
     </fragment>
     <dialog
+        tools:layout="@layout/dialog_select_estimated_work_time"
         android:id="@+id/estimatedTimeDialogFragment"
         android:name="com.tongtongstudio.ami.ui.dialog.EstimatedTimeDialogFragment"
         android:label="EstimatedTimeDialogFragment" />
@@ -123,4 +141,29 @@
             android:name="missedRecurringTasks"
             app:argType="com.tongtongstudio.ami.data.datatables.Ttd[]" />
     </dialog>
+    <fragment
+        android:id="@+id/viewPagerTrackingAndStatsFragment"
+        tools:layout="@layout/fragment_view_pager"
+        android:name="com.tongtongstudio.ami.ui.monitoring.task.ViewPagerTrackingAndStatsFragment"
+        android:label="@string/view_pager_screen_title">
+
+        <argument
+            android:name="task"
+            app:argType="com.tongtongstudio.ami.data.datatables.Ttd" />
+
+        <argument
+            android:name="fragment_pos"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/timeTrackerFragment"
+        tools:layout="@layout/fragment_task_time_tracker"
+        android:name="com.tongtongstudio.ami.ui.monitoring.task.TimeTrackerFragment"
+        android:label="@string/fragment_title_chronometer">
+        <argument
+            android:name="task"
+            app:argType="com.tongtongstudio.ami.data.datatables.Ttd" />
+    </fragment>
 </navigation>

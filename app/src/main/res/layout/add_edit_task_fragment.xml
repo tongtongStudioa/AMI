@@ -21,7 +21,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -32,8 +32,8 @@
                 android:id="@+id/text_view_created_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
                 android:layout_marginStart="15dp"
+                android:layout_marginTop="15dp"
                 android:layout_marginEnd="15dp"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -41,7 +41,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Created date" />
 
-            <!--<RadioGroup
+            <RadioGroup
                 android:id="@+id/radio_group_choice_nature"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -53,7 +53,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/text_view_created_date">
 
-                <com.google.android.material.radiobutton.MaterialRadioButton
+                <!--<com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/rb_event"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -63,7 +63,7 @@
                     android:gravity="center"
                     android:padding="16dp"
                     android:text="@string/event"
-                    android:textColor="@color/text_radio_button_selector" />
+                    android:textColor="@color/text_radio_button_selector" />-->
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/rb_task"
@@ -90,7 +90,7 @@
                     android:text="@string/project"
                     android:textColor="@color/text_radio_button_selector" />
 
-            </RadioGroup>-->
+            </RadioGroup>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_name"
@@ -105,7 +105,7 @@
                 app:helperText="Thing to do's title"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/text_view_created_date">
+                app:layout_constraintTop_toBottomOf="@id/radio_group_choice_nature">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edit_text_name"
@@ -147,6 +147,7 @@
                 android:layout_width="130dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="15dp"
+                android:layout_marginBottom="10dp"
                 android:hint="Priority"
                 app:endIconMode="clear_text"
                 app:helperText="@string/importance_priority_1_9"
@@ -198,10 +199,9 @@
                 android:id="@+id/start_date_selection_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/input_layout_priority">
+                app:layout_constraintTop_toBottomOf="@id/divider_1">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_set_start_date"
@@ -395,8 +395,8 @@
                     android:id="@+id/rv_reminders"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_reminder"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/icon_add_reminder"
                     app:layout_constraintTop_toBottomOf="@id/btn_add_reminder"
                     tools:itemCount="1"
                     tools:listitem="@layout/item_overview_data_edit" />
@@ -445,8 +445,8 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!--<androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/sub_tasks_group"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/project_selection_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -454,36 +454,28 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/estimation_selection_group">
 
-                <ImageView
-                    android:id="@+id/icon_add_sub_tasks"
-                    style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="13dp"
-                    android:src="@drawable/ic_add_task_24"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_add_sub_task"
+                    android:id="@+id/btn_attach_project"
                     style="@style/ButtonEditTask.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Add a sub task"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_sub_tasks"
+                    android:text="Attach to a project"
+                    app:icon="@drawable/ic_add_task_24"
+                    app:layout_constraintEnd_toStartOf="@+id/remove_project_linked"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:layout_width="0dp"
+                <ImageButton
+                    android:id="@+id/remove_project_linked"
+                    style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_sub_tasks"
+                    android:src="@drawable/baseline_clear_24"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/btn_add_sub_task"
-                    tools:itemCount="1"
-                    tools:listitem="@layout/item_overview_data_edit"/>
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>-->
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/switch_dependency"
@@ -494,7 +486,7 @@
                 android:visibility="visible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/input_layout_user_level"
-                app:layout_constraintTop_toBottomOf="@+id/estimation_selection_group" />
+                app:layout_constraintTop_toBottomOf="@+id/project_selection_group" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_user_level"
@@ -506,7 +498,7 @@
                 android:visibility="visible"
                 app:layout_constraintEnd_toStartOf="@+id/switch_dependency"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/estimation_selection_group">
+                app:layout_constraintTop_toBottomOf="@+id/project_selection_group">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/edit_text_user_level"
@@ -522,8 +514,8 @@
                 android:id="@+id/assessments_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginTop="10dp"
+                android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/input_layout_user_level">
@@ -552,8 +544,8 @@
                     android:id="@+id/rv_assessments"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_assessments"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/icon_add_assessments"
                     app:layout_constraintTop_toBottomOf="@id/btn_add_assessment"
                     tools:itemCount="1"
                     tools:listitem="@layout/item_overview_data_edit" />
@@ -569,11 +561,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="25dp"
-        app:icon="@drawable/ic_save_task_24"
+        android:contentDescription="Save task"
         android:text="Save"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-        android:contentDescription="Save task" />
-
+        app:icon="@drawable/ic_save_task_24"
+        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

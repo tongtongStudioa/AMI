@@ -16,7 +16,7 @@ class TasksViewModel @Inject constructor(
     preferencesManager: PreferencesManager,
 ) : ViewModel() {
 
-    val preferencesFlow = preferencesManager.preferencesFlow
+    val preferencesFlow = preferencesManager.filterPreferencesFlow
 
     val startOfToday = Calendar.getInstance().run {
         set(Calendar.HOUR_OF_DAY, 0)

@@ -72,9 +72,10 @@ class SubTaskAdapter(private val listener: InteractionListener, private val subT
                         )
                     )
                 }
-                tvDeadline.text = thingToDo.getDateFormatted(thingToDo.dueDate)
+                tvDeadline.text =
+                    Ttd.getDateFormatted(thingToDo.dueDate)
                 if (thingToDo.startDate != null) {
-                    tvStartDate.text = thingToDo.getDateFormatted(thingToDo.startDate)
+                    tvStartDate.text = Ttd.getDateFormatted(thingToDo.startDate)
                 } else tvStartDate.isVisible = false
             }
         }

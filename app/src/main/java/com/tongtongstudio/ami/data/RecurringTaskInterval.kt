@@ -1,7 +1,9 @@
 package com.tongtongstudio.ami.data
 
+import android.content.res.Resources
 import android.os.Parcelable
 import androidx.room.TypeConverter
+import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.ui.dialog.Period
 import kotlinx.parcelize.Parcelize
@@ -76,6 +78,12 @@ class RecurringTaskInterval(
         return RecurringTaskInterval(newTimes, period, daysOfWeek)
     }
 
+    /**
+     * Update recurring task depending on task's characteristic (delay, repetition frequency, etc.)
+     * @param ttd : task
+     * @param checked : state
+     * @return updated task
+     */
     fun updateRecurringTask(ttd: Ttd, checked: Boolean): Ttd {
         val oldStartDate = ttd.dueDate
         val updatedStartDate = if (daysOfWeek != null) {
@@ -111,32 +119,40 @@ class RecurringTaskInterval(
         return updatedTask
     }
 
-    private fun findNextOccurrenceDay(oldStartDate: Long, checked: Boolean): UpdatedStartDate {
+    private fun findNextOccurrenceDay(oldDueDate: Long, checked: Boolean): UpdatedStartDate {
         var timesSkipped = 0
         val newStartDate = Calendar.getInstance().run {
-            val todayTimeInMillis = timeInMillis
-            timeInMillis = oldStartDate
+            val todayDateInMillis = timeInMillis
+            timeInMillis = oldDueDate
             do {
-                if (daysOfWeek!!.contains(get(Calendar.DAY_OF_WEEK)) && checked)
+                // manage skipped if it contains the day and it's not checked
+                if (daysOfWeek!!.contains(get(Calendar.DAY_OF_WEEK)) && !checked)
                     timesSkipped++
+
                 add(Calendar.DAY_OF_WEEK, 1)
                 val nextDay = get(Calendar.DAY_OF_WEEK)
-                if (get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) { // if we change of week so add intervalWeek if interval > 2 week
+
+                // if we change of week so add intervalWeek if interval > 2 week (times = num of week interval)
+                if (get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
                     add(Calendar.DAY_OF_MONTH, (times - 1) * 7)
                 }
-            } while (!daysOfWeek!!.contains(nextDay) && todayTimeInMillis > timeInMillis) // if list of recurrence days contains next deadline's day so set this deadline
+                val nextDueDate = timeInMillis
+                val notContainsAndBeforeToday =
+                    !(daysOfWeek.contains(nextDay) && nextDueDate >= todayDateInMillis)
+            } while (notContainsAndBeforeToday)
+            // if list of recurrence days contains next deadline's day and it's after  today : set a new due date
             timeInMillis
         }
         return UpdatedStartDate(newStartDate, timesSkipped)
     }
 
-    private fun findNextStartDate(oldStartDate: Long, checked: Boolean): UpdatedStartDate {
+    private fun findNextStartDate(oldDueDate: Long, checked: Boolean): UpdatedStartDate {
         var timesSkipped = 0
         var todayTimeInMillis: Long
         val newStartDate = Calendar.getInstance().run {
             todayTimeInMillis = timeInMillis
             // Set the new due date to the next occurrence of the task's due day
-            timeInMillis = oldStartDate
+            timeInMillis = oldDueDate
             do {
                 when (period) {
                     Period.DAYS.name -> add(
@@ -157,7 +173,7 @@ class RecurringTaskInterval(
                     )
                     else -> add(Calendar.DAY_OF_MONTH, 0)
                 }
-                if (checked)
+                if (!checked)
                     timesSkipped++
             } while (timeInMillis < todayTimeInMillis)
             timeInMillis
@@ -165,34 +181,47 @@ class RecurringTaskInterval(
         return UpdatedStartDate(newStartDate, timesSkipped)
     }
 
+    fun setStartDateSpecificDay(): Long {
+        return if (daysOfWeek != null) {
+            val startDate = Calendar.getInstance().run {
+                while (get(Calendar.DAY_OF_WEEK) != daysOfWeek.first()) {
+                    add(Calendar.DAY_OF_MONTH, 1)
+                }
+                timeInMillis
+            }
+            startDate
+        } else Calendar.getInstance().timeInMillis
+    }
+
     // TODO: problem get string method without context
-    /*fun getStringReadable(): String {
+    fun getRecurringIntervalReadable(resources: Resources): String {
         return if (times == 1 && daysOfWeek == null) {
             when (period) {
-                Period.DAYS.name -> getString(R.string.each_days)
-                Period.WEEKS.name -> getString(R.string.each_weeks)
-                Period.MONTHS.name -> getString(R.string.each_months)
-                Period.YEARS.name -> getString(R.string.each_years)
-                else -> getString(R.string.each_days)
+                Period.DAYS.name -> resources.getString(R.string.each_days)
+                Period.WEEKS.name -> resources.getString(R.string.each_weeks)
+                Period.MONTHS.name -> resources.getString(R.string.each_months)
+                Period.YEARS.name -> resources.getString(R.string.each_years)
+                else -> resources.getString(R.string.each_days)
             }
         } else if (daysOfWeek != null) {
             if (times == 1) {
+                // TODO: format with string resource
                 "Weekly on $daysOfWeek"
 
             } else "On $daysOfWeek every $times weeks"
         } else {
             when (period) {
-                Period.DAYS.name -> getString(R.string.every_x_days, times)
-                Period.WEEKS.name -> getString(R.string.every_x_weeks, times)
-                Period.MONTHS.name -> getString(
+                Period.DAYS.name -> resources.getString(R.string.every_x_days, times)
+                Period.WEEKS.name -> resources.getString(R.string.every_x_weeks, times)
+                Period.MONTHS.name -> resources.getString(
                     R.string.every_x_months,
                     times
                 )
-                Period.YEARS.name -> getString(R.string.every_x_years, times)
-                else -> getString(R.string.every_x_days, times)
+                Period.YEARS.name -> resources.getString(R.string.every_x_years, times)
+                else -> resources.getString(R.string.every_x_days, times)
             }
         }
-    }*/
+    }
 }
 
 class UpdatedStartDate(val newDueDate: Long, val timesSkipped: Int = 0)

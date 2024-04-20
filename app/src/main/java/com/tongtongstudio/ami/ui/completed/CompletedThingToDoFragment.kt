@@ -121,8 +121,22 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                                 sharedViewModel.onUndoDeleteClick(event.thingToDo)
                             }.show()
                     }
+                    is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
+                        val action =
+                            CompletedThingToDoFragmentDirections.actionCompletedThingToDoFragmentToDetailsFragment(
+                                event.task
+                            )
+                        findNavController().navigate(action)
+                    }
+                    is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
+                        /*val action =
+                            CompletedThingToDoFragmentDirections.action(
+                                event.composedTaskData
+                            )
+                        findNavController().navigate(action)*/
+                    }
                     else -> {
-                        // do nothing
+                        //do nothing
                     }
                 }
             }
@@ -165,7 +179,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         binding.toolbar.setNavigationOnClickListener {
             navController.navigateUp(appBarConfiguration)
         }
-        binding.toolbar.subtitle = "Things to do later"
+        binding.toolbar.subtitle = getString(R.string.completed_tasks_subtitle)
     }
 
     override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
@@ -173,11 +187,11 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
     }
 
     override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
-        // TODO: show stat view
+        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
     override fun onTaskClick(thingToDo: Ttd) {
-        // TODO: show stat view
+        sharedViewModel.navigateToTaskDetailsScreen(thingToDo)
     }
 
     override fun onAddClick(composedTask: TaskWithSubTasks) {

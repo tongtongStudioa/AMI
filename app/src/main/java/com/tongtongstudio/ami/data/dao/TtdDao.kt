@@ -27,6 +27,11 @@ interface TtdDao {
                 startOfDay,
                 endOfDay
             )
+            SortOrder.EAT_THE_FROG -> getTasksOrderByCreatorSort(
+                hideCompleted,
+                startOfDay,
+                endOfDay
+            )
             SortOrder.BY_CREATOR_SORT -> getTasksOrderByCreatorSort(
                 hideCompleted,
                 startOfDay,
@@ -60,9 +65,9 @@ interface TtdDao {
                 "WHERE (isCompleted != :hideCompleted OR isCompleted == 0) " +
                 "AND (startDate BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
-                "OR startDate < :endOfDay AND isCompleted == 0 " +
+                "OR task_due_date < :endOfDay AND isCompleted == 0 " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY priority ASC, importance DESC, urgency DESC, estimatedTime DESC"
+                "ORDER BY isCompleted ASC,priority DESC, importance DESC, urgency DESC, estimatedTime DESC"
     )
     fun getTasksOrderByEisenhowerMatrixSort(
         hideCompleted: Boolean,
@@ -76,9 +81,9 @@ interface TtdDao {
                 "WHERE (isCompleted != :hideCompleted OR isCompleted == 0) " +
                 "AND (startDate BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
-                "OR startDate < :endOfDay AND isCompleted == 0 " +
+                "OR task_due_date < :endOfDay AND isCompleted == 0 " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY estimatedTime ASC, skillLevel DESC, isRecurring DESC, priority ASC, urgency DESC, importance DESC"
+                "ORDER BY isCompleted ASC, estimatedTime ASC, skillLevel DESC, isRecurring DESC, priority ASC, urgency DESC, importance DESC"
     )
     fun getTasksOrderBy2minutesRules(
         hideCompleted: Boolean,
@@ -94,7 +99,7 @@ interface TtdDao {
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY estimatedTime ASC, priority ASC, skillLevel ASC, urgency DESC, importance DESC, isRecurring ASC"
+                "ORDER BY isCompleted ASC, estimatedTime ASC, priority DESC, skillLevel ASC, urgency DESC, importance DESC, isRecurring ASC"
     )
     fun getTasksOrderByCreatorSort(
         hideCompleted: Boolean,
@@ -136,4 +141,7 @@ interface TtdDao {
 
     @Query("SELECT * FROM thing_to_do_table WHERE id_ttd = :id LIMIT 1")
     suspend fun getTask(id: Long): Ttd
+
+    @Query("SELECT * FROM thing_to_do_table WHERE parent_task_id IS NULL AND isCompleted == 0")
+    fun getTaskComposed(): Flow<List<Ttd>>
 }

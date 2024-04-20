@@ -19,7 +19,7 @@ import java.util.*
 enum class Period { DAYS, WEEKS, MONTHS, YEARS }
 
 const val RECURRING_SELECTION_DIALOG_TAG = "recurring_selection_tag"
-const val RECURRING_RESULT_KEY = "recurring_selection_resul_key"
+const val RECURRING_RESULT_KEY = "recurring_selection_result_key"
 const val RECURRING_REQUEST_KEY = "recurring_selection_request_key"
 const val CURRENT_RECURRING_INFO_REQUEST_KEY = "current_recurring_info_request_key"
 const val TIMES_KEY = "times"
@@ -84,15 +84,6 @@ class RecurringChoiceDialogFragment : DialogFragment() {
         stringItems = resources.getStringArray(R.array.period_list)
         val adapter = ArrayAdapter(requireContext(), R.layout.list_options, stringItems)
 
-        binding.apply {
-            autoCompleteTextView.setAdapter(adapter)
-
-            autoCompleteTextView.setOnItemClickListener { parent, view, position, id ->
-                selection = position
-                binding.daysOfWeekSelection.isVisible = position == 1
-            }
-        }
-
         setFragmentResultListener(CURRENT_RECURRING_INFO_REQUEST_KEY) { _, bundle ->
             val times = bundle.getInt(TIMES_KEY)
             val period = bundle.getString(PERIOD_KEY)
@@ -105,10 +96,18 @@ class RecurringChoiceDialogFragment : DialogFragment() {
                 if (deadline == null || deadline == NO_VALUE) getString(R.string.set_recurring_end) else deadline
             binding.inputLayoutUserChoice.editText?.setText(if (times != 0) times.toString() else "1")
             // TODO: change text display with which period is already selected
-            binding.exposedDropdownMenu.editText?.setText(setPeriod(period))
+            binding.autoCompleteTextView.setText(setPeriod(period))
+            binding.autoCompleteTextView.setAdapter(adapter)
             if (period == Period.WEEKS.name)
                 binding.daysOfWeekSelection.isVisible = true
             updateCheckBoxes(daysOfWeek, startDate)
+        }
+
+        binding.apply {
+            autoCompleteTextView.setOnItemClickListener { parent, view, position, id ->
+                selection = position
+                binding.daysOfWeekSelection.isVisible = position == 1
+            }
         }
 
         return binding.root

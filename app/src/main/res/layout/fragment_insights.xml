@@ -156,7 +156,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
-                    app:layout_constraintHorizontal_weight="4.5"
+                    app:layout_constraintHorizontal_weight="4.2"
                     app:layout_constraintEnd_toStartOf="@id/time_estimation_accuracy_view"
                     app:layout_constraintStart_toStartOf="@+id/tv_title_section2"
                     app:layout_constraintTop_toBottomOf="@+id/tv_title_section2">
@@ -237,7 +237,7 @@
                     android:layout_margin="10dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/on_time_completion_rate_view">
+                    app:layout_constraintTop_toBottomOf="@+id/time_estimation_accuracy_view">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="wrap_content"
@@ -378,6 +378,64 @@
                             app:layout_constraintEnd_toEndOf="@+id/materialTextView7"
                             app:layout_constraintStart_toStartOf="@+id/materialTextView7"
                             app:layout_constraintTop_toBottomOf="@id/materialTextView7"
+                            tools:text="95%" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/section5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/section4">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tv_title_section5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/focus_on_project"
+                    android:fontFamily="@font/montserrat_medium"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintHorizontal_weight=".5"
+                    app:layout_constraintHorizontal_chainStyle="packed"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_title_section5">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/materialTextView8"
+                            style="@style/TextAppearance.Ami.InsightsSubtitleStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/projects_achievement_rate_information"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tv_test"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.Ami.Headline5"
+                            android:textColor="@color/md_theme_light_primary"
+                            app:layout_constraintEnd_toEndOf="@+id/materialTextView8"
+                            app:layout_constraintStart_toStartOf="@+id/materialTextView8"
+                            app:layout_constraintTop_toBottomOf="@id/materialTextView8"
                             tools:text="95%" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>

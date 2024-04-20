@@ -24,53 +24,48 @@
         android:layout_height="match_parent"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/materialCardView"
+        <TextView
+            android:id="@+id/titleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:text="Project Progress"
+            android:textSize="18sp"
+            android:textAppearance="@style/TextAppearance.Ami.Body2"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintEnd_toEndOf="parent" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp">
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/project_progress"
+            style="@style/Widget.Material3.LinearProgressIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="7dp"
+            android:layout_margin="10dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="20dp"
+            android:max="100"
+            android:progress="74"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/titleText" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/materialTextView8"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Estimated time"
-                    android:textAppearance="@style/TextAppearance.Ami.Body2"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/estimated_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
-                    android:fontFamily="@font/montserrat_medium"
-                    app:layout_constraintEnd_toEndOf="@+id/materialTextView8"
-                    app:layout_constraintStart_toStartOf="@+id/materialTextView8"
-                    app:layout_constraintTop_toBottomOf="@+id/materialTextView8"
-                    tools:text="18h 00min" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </com.google.android.material.card.MaterialCardView>
-
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/progressText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Progress: 0%"
+            app:layout_constraintTop_toBottomOf="@+id/project_progress"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="5dp" />
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/total_work_time_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="15dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/materialCardView">
+            app:layout_constraintTop_toBottomOf="@+id/progressText">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="wrap_content"
@@ -91,16 +86,67 @@
                     android:id="@+id/total_work_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_medium"
+                    android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
                     app:layout_constraintEnd_toEndOf="@+id/tv_title2"
                     app:layout_constraintStart_toStartOf="@+id/tv_title2"
                     app:layout_constraintTop_toBottomOf="@+id/tv_title2"
-                    android:fontFamily="@font/montserrat_medium"
-                    android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
                     tools:text="18h 20min" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tv_title3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Estimated time"
+                    android:textAppearance="@style/TextAppearance.Ami.Body2"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/total_work_time" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/estimated_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_medium"
+                    android:textAppearance="@style/TextAppearance.Ami.Headline6"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_title3"
+                    tools:text="18h 00min" />
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/total_work_time_view" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_project_subtasks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Project's subtasks"
+            android:layout_marginTop="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_subtasks"
+            android:layout_width="match_parent"
+            android:layout_margin="5dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_project_subtasks"
+            tools:itemCount="5"
+            tools:listitem="@layout/item_overview_data_edit" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

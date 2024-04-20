@@ -14,7 +14,7 @@ class ProjectViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
-    val preferencesFlow = preferencesManager.preferencesFlow
+    val preferencesFlow = preferencesManager.filterPreferencesFlow
 
     private val projectsFlow = preferencesFlow
         .flatMapLatest { filterPreferences ->

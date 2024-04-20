@@ -32,10 +32,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        val navView = findViewById<NavigationView>(R.id.nav_view)
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+
+        val navView = findViewById<NavigationView>(R.id.nav_view)
         navController = navHostFragment.findNavController()
         drawerLayout = findViewById(R.id.drawer_layout)
 
@@ -45,8 +45,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.othersTasksFragment,
                 R.id.achievementsFragment,
                 R.id.completedThingToDoFragment,
-                R.id.projectFragment,
-                R.id.eventFragment
+                R.id.projectFragment
             ), drawerLayout
         )
 

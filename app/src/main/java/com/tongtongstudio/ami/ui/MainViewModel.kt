@@ -5,11 +5,9 @@ import android.media.AudioManager
 import android.media.SoundPool
 import android.os.Build
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.tongtongstudio.ami.data.LaterFilter
-import com.tongtongstudio.ami.data.PreferencesManager
-import com.tongtongstudio.ami.data.Repository
-import com.tongtongstudio.ami.data.SortOrder
+import com.tongtongstudio.ami.data.*
 import com.tongtongstudio.ami.data.datatables.ProjectWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
@@ -44,7 +42,9 @@ class MainViewModel @Inject constructor(
         SoundPool(6, AudioManager.STREAM_MUSIC, 0)
     }
 
-    //val preferencesFlow = preferencesManager.preferencesFlow
+    val globalPreferencesFlow = preferencesManager.globalPreferencesFlow
+
+    val currentLayoutMode = globalPreferencesFlow.asLiveData()
 
     fun onSortOrderSelected(sortOrder: SortOrder) = viewModelScope.launch {
         preferencesManager.updateSortOrder(sortOrder)
@@ -58,8 +58,16 @@ class MainViewModel @Inject constructor(
         preferencesManager.updateLaterFilter(laterFilter)
     }
 
+    fun onLayoutModeSelected(layoutMode: LayoutMode) = viewModelScope.launch {
+        preferencesManager.updateLayoutMode(layoutMode)
+    }
+
     fun onCheckBoxChanged(thingToDo: Ttd, checked: Boolean) = viewModelScope.launch {
-        val updatedTask = updateTaskState(thingToDo, checked)
+        val updatedTask = thingToDo.updateCheckedState(checked)
+        // update advancement project after adapt task
+        if (updatedTask.parentTaskId != null) {
+            // TODO: update project state
+        }
         repository.updateTask(updatedTask)
     }
 
@@ -102,15 +110,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // TODO: complete recurring task when start date > deadline date and don't update start date
-    private fun updateTaskState(task: Ttd, checked: Boolean): Ttd {
-        val updatedTask = task.updateCheckedState(checked)
-        // update advancement project after adapt task
-        if (updatedTask.parentTaskId != null) {
-            // TODO: update project state
-        }
+    /*private fun updateTaskState(task: Ttd, checked: Boolean): Ttd {
+
         return updatedTask
-    }
+    }*/
 
     // TODO: 06/09/2022 change this method to show resource string
     fun onThingToDoRightSwiped(thingToDo: TaskWithSubTasks) = viewModelScope.launch {
@@ -169,11 +172,15 @@ class MainViewModel @Inject constructor(
     }
 
     fun navigateToTaskInfoScreen(thingToDo: Ttd) = viewModelScope.launch {
-        mainEventChannel.send(SharedEvent.NavigateToTrackingScreen(thingToDo))
+        mainEventChannel.send(SharedEvent.NavigateToTaskViewPager(thingToDo))
     }
 
     fun navigateToTaskComposedInfoScreen(composedTask: TaskWithSubTasks) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToLocalProjectStatsScreen(composedTask))
+    }
+
+    fun navigateToTaskDetailsScreen(task: Ttd) = viewModelScope.launch {
+        mainEventChannel.send(SharedEvent.NavigateToTaskDetailsScreen(task))
     }
 
     fun lookForMissedRecurringTasks() = viewModelScope.launch {
@@ -190,15 +197,31 @@ class MainViewModel @Inject constructor(
 
     fun updateRecurringTasksMissed(missedTasks: List<Ttd>) = viewModelScope.launch {
         for (task in missedTasks) {
-            updateTaskState(task, false)
+            val updatedTask = task.updateCheckedState(false)
+            // update advancement project after adapt task
+            if (updatedTask.parentTaskId != null) {
+                // TODO: update project state
+            }
+            repository.updateTask(updatedTask)
         }
         showThingToDoSavedConfirmationMessage("Recurring tasks updated")
+    }
+
+    fun addSubTask(newSubTask: Ttd, parentId: Long) = viewModelScope.launch {
+        repository.updateTask(newSubTask.copy(parentTaskId = parentId))
     }
 
     sealed class SharedEvent {
         data class NavigateToEditScreen(val thingToDo: Ttd) : SharedEvent()
         object NavigateToAddScreen : SharedEvent()
-        data class NavigateToTrackingScreen(val task: Ttd) :
+
+        /**
+         * Event to navigate to view pager which display stats and time tracker for a specific task
+         */
+        data class NavigateToTaskViewPager(val task: Ttd) :
+            SharedEvent()
+
+        data class NavigateToTaskDetailsScreen(val task: Ttd) :
             SharedEvent()
 
         data class NavigateToLocalProjectStatsScreen(val composedTaskData: TaskWithSubTasks) :

@@ -76,7 +76,7 @@
     <string name="projects_achievement_rate_information">Pourcentage d\'avancements des projets</string>
     <string name="estimation_time_accuracy_information">Précision des estimation de temps de travail</string>
     <string name="on_time_completion_rate_information">Taux d\'achèvement dans les délais</string>
-    <string name="error_no_name">Le nom ne peut pas être vide</string>
+    <string name="error_no_title">Le titre ne peut pas être vide</string>
     <string name="error_no_priority">Fixez une éhelle de priorité</string>
     <string name="for_later">Pour plus tard</string>
     <string name="for_next_week">Semaine prochaine</string>
@@ -94,10 +94,10 @@
     <string name="text_action_no_tasks_completed">Ajoute des tâches ou va travailler !</string>
     <string name="text_explication_no_tasks_completed">Pas de tâches terminées</string>
     <string name="text_action_no_tasks_today">%d tâches à venir\n Ajoute quelque chose à faire ou va faire la sieste :)</string>
-    <string name="estimated_time_info">%1$dh%2$s estimé</string>
+    <string name="estimated_time_info">%s estimé</string>
     <string name="set_estimated_time">Estimation du temps</string>
     <string name="set_reminder">Ajouter un rappel</string>
-    <string name="error_no_date">Choisi au moins une date d\'échéance</string>
+    <string name="error_no_date">Choisissez une date d\'échéance</string>
     <string name="text_explication_no_projects">Pas de projets</string>
     <string name="text_action_no_projects">Ajoute un projet</string>
     <string name="text_explication_no_events">Pas d\'évenements</string>
@@ -119,4 +119,18 @@
     <string name="streak_and_habit_improvement">Suivi d\'habitude</string>
     <string name="focus_on_project">Détail sur les projets</string>
     <string name="set_due_date">Fixe une date d\'échéance</string>
+    <string name="project_linked_text">Projet : %s</string>
+    <string name="project_linked_default">Attacher à un projet</string>
+    <string name="error_unit">L\'unité d\'évaluation ne peut pas être vide</string>
+    <string name="error_goal_empty">La valeur de l\'objectif ne peut pas être nul</string>
+    <string name="timer">Timer</string>
+    <string name="stopwatch">Chronomètre</string>
+    <string name="launch_chronometer_content_description">Lancer le chrono ou mettre sur pause</string>
+    <string name="missed_tasks_dialog_title">Tâches récurrentes manquées</string>
+    <string name="completed_tasks_subtitle">Tâches déjà complétées !</string>
+    <string name="task_details_screen_title">Détails de la tâche</string>
+    <string name="view_pager_screen_title">Stats et suivi du temps</string>
+    <string name="completion_rate_title">Taux d\'achévement</string>
+    <string name="max_streak_title">Série maximale</string>
+    <string name="tracking_notification_title">Suivi du temps de travail</string>
 </resources>

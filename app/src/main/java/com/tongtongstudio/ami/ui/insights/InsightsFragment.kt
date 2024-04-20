@@ -8,19 +8,19 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.databinding.ProductivityInsightsFragmentBinding
+import com.tongtongstudio.ami.databinding.FragmentInsightsBinding
 import com.tongtongstudio.ami.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class InsightsFragment : Fragment(R.layout.productivity_insights_fragment) {
+class InsightsFragment : Fragment(R.layout.fragment_insights) {
 
     private val viewModel: InsightsViewModel by viewModels()
-    private lateinit var binding: ProductivityInsightsFragmentBinding
+    private lateinit var binding: FragmentInsightsBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = ProductivityInsightsFragmentBinding.bind(view)
+        binding = FragmentInsightsBinding.bind(view)
 
         setUpToolbar()
 

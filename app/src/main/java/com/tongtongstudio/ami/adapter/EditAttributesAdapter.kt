@@ -3,12 +3,12 @@ package com.tongtongstudio.ami.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.tongtongstudio.ami.data.datatables.Assessment
-import com.tongtongstudio.ami.data.datatables.Reminder
-import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.ItemOverviewDataEditBinding
 
-class EditAttributesAdapter<T>(val listener: AttributeListener<T>) :
+class EditAttributesAdapter<T>(
+    val listener: AttributeListener<T>,
+    var actionBindView: (ItemOverviewDataEditBinding, T) -> Unit
+) :
     RecyclerView.Adapter<EditAttributesAdapter<T>.OverviewViewHolder>() {
 
     private val dataList: MutableList<T> = mutableListOf()
@@ -63,14 +63,7 @@ class EditAttributesAdapter<T>(val listener: AttributeListener<T>) :
         }
 
         override fun bind(data: T) {
-            binding.apply {
-                titleOverview.text = when (data) {
-                    is Assessment -> data.title
-                    is Reminder -> data.getReminderDueDateFormatted()
-                    is Ttd -> data.title
-                    else -> ""
-                }
-            }
+            actionBindView(binding, data)
         }
     }
 }

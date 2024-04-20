@@ -47,34 +47,42 @@ data class Ttd(
 ) : Parcelable {
 
     /**
-     * This function update the current thing to do depend on recurring info and checked state
-     * @param checked state
+     * This function update the current thing to do depend on recurring info and state state
+     * @param state state
      * @return updated task
      */
-    fun updateCheckedState(checked: Boolean): Ttd {
-        val updatedTask = if (isRecurring && startDate != null && repetitionFrequency != null) {
-            repetitionFrequency.updateRecurringTask(this@Ttd, checked)
-        } else if (checked) {
-            val completedDateInMillis = Calendar.getInstance().timeInMillis
-            val updatedState = this.copy(
-                isCompleted = true,
-                completionDate = completedDateInMillis
+    fun updateCheckedState(state: Boolean): Ttd {
+        val updatedTask = when {
+            // it is a recurring task
+            isRecurring && repetitionFrequency != null -> repetitionFrequency.updateRecurringTask(
+                this@Ttd,
+                state
             )
-            updatedState.copy(
-                completedOnTime = updatedState.hasBeenCompletedOnTime()
-            )
-        } else {
-            this.copy(
-                isCompleted = false,
-                completionDate = null
-            )
+            // it is checked
+            state -> {
+                val completedDateInMillis = Calendar.getInstance().timeInMillis
+                val updatedState = this.copy(
+                    isCompleted = true,
+                    completionDate = completedDateInMillis
+                )
+                updatedState.copy(
+                    completedOnTime = updatedState.hasBeenCompletedOnTime()
+                )
+            }
+            // task is unchecked and it's not a recurring one
+            else -> {
+                this.copy(
+                    isCompleted = false,
+                    completionDate = null
+                )
+            }
         }
         return updatedTask
     }
 
     fun getHabitSuccessRate(): Float? {
         return if (totalRepetitionCount != 0)
-            successCount.toFloat() / totalRepetitionCount
+            (successCount.toFloat() / totalRepetitionCount) * 100
         else null
     }
 
@@ -83,47 +91,64 @@ data class Ttd(
      * It compares completionDate and dueDate or completionDate and deadline if it was define
      * @return boolean
      */
-    fun hasBeenCompletedOnTime(): Boolean {
+    private fun hasBeenCompletedOnTime(): Boolean {
         return isCompleted && completionDate != null && (completionDate < dueDate || (deadline != null && completionDate < deadline))
-    }
-
-    fun calculatingPriority(importance: Int? = null, urgency: Int? = null): Int {
-        // TODO: change way of calculus priority
-        return if (importance != null && urgency != null)
-            2 * (importance * urgency) / (importance + urgency)
-        else
-            priority
     }
 
     fun getCreationDateFormatted(): String {
         return DateFormat.getDateInstance().format(creationDate)
     }
 
-    /**
-     * Function that calculate urgency.
-     * Delay between due date and deadline otherwise, if no deadline, urgency = 10.
-     * @return Int : between 2 and 10
-     */
-    fun calculusUrgency(todayDateMillis: Long): Int {
-        val delay = if (deadline != null) abs(dueDate - deadline) else 0
-        return when {
-            delay <= 1 * DAY_IN_MILLIS -> 10
-            delay <= 2 * DAY_IN_MILLIS -> 9
-            delay <= 3 * DAY_IN_MILLIS -> 8
-            delay <= 5 * DAY_IN_MILLIS -> 7
-            delay <= 7 * DAY_IN_MILLIS -> 6
-            delay <= 10 * DAY_IN_MILLIS -> 5
-            delay <= 14 * DAY_IN_MILLIS -> 4
-            delay <= 19 * DAY_IN_MILLIS -> 3
-            else -> 2
+    companion object {
+        /**
+         * Function that calculate urgency.
+         * Delay between due date and deadline otherwise, if no deadline, urgency = 9.
+         * @return Int : between 2 and 10
+         */
+        fun calculusUrgency(todayDateMillis: Long, dueDate: Long, deadline: Long?): Int {
+            val delay = if (deadline != null) abs(dueDate - deadline) else 9
+            return when {
+                delay <= 1 * DAY_IN_MILLIS -> 9
+                delay <= 2 * DAY_IN_MILLIS -> 8
+                delay <= 3 * DAY_IN_MILLIS -> 7
+                delay <= 5 * DAY_IN_MILLIS -> 6
+                delay <= 7 * DAY_IN_MILLIS -> 5
+                delay <= 10 * DAY_IN_MILLIS -> 4
+                delay <= 14 * DAY_IN_MILLIS -> 3
+                delay <= 19 * DAY_IN_MILLIS -> 2
+                else -> 1
+            }
+        }
+
+        /**
+         * To calculate priority :
+         * 2 * (importance * urgency) / (importance + urgency)
+         * @return int priority
+         */
+        fun calculatingPriority(priority: Int, importance: Int? = null, urgency: Int? = null): Int {
+            // TODO: change way of calculus priority
+            return if (importance != null && urgency != null)
+                2 * (importance * urgency) / (importance + urgency)
+            else
+                priority
+        }
+
+        fun getDateFormatted(date: Long?): String? {
+            return if (date != null) {
+                SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(date)
+            } else null
+        }
+
+        fun getFormattedTime(time: Long?): String? {
+            return if (time != null) {
+                val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+                timeFormat.timeZone = TimeZone.getTimeZone("UTC")
+                timeFormat.format(time)
+            } else null
         }
     }
 
-    fun getDateFormatted(date: Long?): String? {
-        return if (date != null) {
-            SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(date)
-        } else null
-    }
+
 }
 
 @Parcelize
@@ -169,6 +194,13 @@ data class Assessment(
         else
             null
     }
+
+    fun getSumUp(): String {
+        val evaluationDateFormatted =
+            SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
+        // TODO: create a string resource
+        return "$title on $evaluationDateFormatted"
+    }
 }
 
 @Entity
@@ -195,8 +227,18 @@ data class Reminder(
 ) {
     // TODO: change to return format DD/MM HH:mm
 
-    fun getReminderDueDateFormatted(): String {
+    private fun getReminderDueDateFormatted(): String {
         return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
+    }
+
+    private fun getReminderTimeFormatted(): String {
+        return SimpleDateFormat("HH:mm", Locale.getDefault()).format(dueDate)
+    }
+
+    fun getReminderInformation(): String {
+        val dueDateFormatted = getReminderDueDateFormatted()
+        val dueTimeFormatted = getReminderTimeFormatted()
+        return "$dueDateFormatted at $dueTimeFormatted"
     }
 
     fun formatDueDate(): String {

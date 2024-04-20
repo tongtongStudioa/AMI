@@ -2,21 +2,20 @@ package com.tongtongstudio.ami.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.ItemProjectBinding
 import com.tongtongstudio.ami.databinding.ItemTaskBinding
-import java.util.*
 
 
 class TaskAdapter(private val listener: InteractionListener) :
-    RecyclerView.Adapter<ViewHolder<*>>() {
+    RecyclerView.Adapter<ViewHolder<*>>(), ItemTouchHelperAdapter {
 
     private val taskList: MutableList<TaskWithSubTasks> = mutableListOf()
 
@@ -65,11 +64,17 @@ class TaskAdapter(private val listener: InteractionListener) :
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (taskList[position].subTasks.isEmpty()) TYPE_TASK else TYPE_TASK_COMPOSED
+        return if (taskList[position].mainTask.type == Nature.PROJECT.name || taskList[position].subTasks.isNotEmpty()) TYPE_TASK_COMPOSED else TYPE_TASK
     }
 
     override fun getItemCount(): Int {
         return taskList.size
+    }
+
+    // for drag and drop operation
+    override fun onItemMove(fromPosition: Int, toPosition: Int) {
+        //Collections.swap(taskList, fromPosition, toPosition)
+        notifyItemChanged(toPosition)
     }
 
     fun getTaskList(): List<TaskWithSubTasks> {
@@ -105,29 +110,24 @@ class TaskAdapter(private val listener: InteractionListener) :
                 //tvNature.text = thingToDo.getCategoryTitle()
                 checkBoxCompleted.isChecked = data.isCompleted
                 tvTaskName.paint.isStrikeThruText = data.isCompleted
+                // TODO: show the task's category
                 tvNumberPriority.text =
                     this@TaskViewHolder.itemView.context.getString(
                         R.string.importance_thing_to_do,
                         data.priority
                     )
 
-                // TODO: erase this date make this outside the class
-                val todayDate = Calendar.getInstance().run {
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    timeInMillis
-                }
-                if (data.dueDate < todayDate && !data.isCompleted) {
+                /*if (data.dueDate < todayDate && !data.isCompleted) {
                     tvTaskName.setTextColor(
                         ContextCompat.getColor(
                             this@TaskViewHolder.itemView.context,
                             R.color.design_default_color_error
                         )
                     )
-                }
-                tvDeadline.text = data.getDateFormatted(data.dueDate)
+                }*/
+                tvDeadline.text = Ttd.getDateFormatted(data.dueDate)
                 if (data.startDate != null) {
-                    tvStartDate.text = data.getDateFormatted(data.startDate)
+                    tvStartDate.text = Ttd.getDateFormatted(data.startDate)
                 } else tvStartDate.isVisible = false
             }
         }
@@ -190,12 +190,12 @@ class TaskAdapter(private val listener: InteractionListener) :
             binding.apply {
                 tvProjectName.text = data.mainTask.title
                 tvProjectName.paint.isStrikeThruText = data.mainTask.isCompleted
-                tvDeadline.text = data.mainTask.getDateFormatted(data.mainTask.dueDate)
+                tvDeadline.text = Ttd.getDateFormatted(data.mainTask.dueDate)
                 tvDeadline.isVisible =
-                    data.mainTask.getDateFormatted(data.mainTask.dueDate) != null
-                tvStartDate.text = data.mainTask.getDateFormatted(data.mainTask.startDate)
+                    Ttd.getDateFormatted(data.mainTask.dueDate) != null
+                tvStartDate.text = Ttd.getDateFormatted(data.mainTask.startDate)
                 tvStartDate.isVisible =
-                    data.mainTask.getDateFormatted(data.mainTask.startDate) != null
+                    Ttd.getDateFormatted(data.mainTask.startDate) != null
                 tvNumberPriority.text = this@TaskComposedViewHolder.itemView.context.getString(
                     R.string.importance_thing_to_do,
                     data.mainTask.priority

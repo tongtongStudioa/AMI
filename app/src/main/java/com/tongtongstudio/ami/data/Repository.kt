@@ -45,8 +45,8 @@ class Repository @Inject constructor(
         return ttdDao.getTask(id)
     }
 
-    suspend fun insertTask(task: Ttd) {
-        ttdDao.insert(task)
+    suspend fun insertTask(task: Ttd): Long {
+        return ttdDao.insert(task)
     }
 
     suspend fun updateTask(task: Ttd) {
@@ -55,6 +55,10 @@ class Repository @Inject constructor(
 
     suspend fun deleteTask(task: Ttd) {
         ttdDao.delete(task)
+    }
+
+    fun getProjects(): Flow<List<Ttd>> {
+        return ttdDao.getTaskComposed()
     }
 
     suspend fun getMissedRecurringTasks(todayDate: Long): List<Ttd> {
@@ -89,8 +93,10 @@ class Repository @Inject constructor(
         return assessmentDao.get(id)
     }
 
-    fun getTasksAssessments(taskId: Long): Flow<List<Assessment>> {
-        return assessmentDao.getTaskAssessments(taskId)
+    fun getTasksAssessments(taskId: Long?): Flow<MutableList<Assessment>>? {
+        return if (taskId != null)
+            assessmentDao.getTaskAssessments(taskId)
+        else null
     }
 
     suspend fun insertAssessment(newAssessment: Assessment) {

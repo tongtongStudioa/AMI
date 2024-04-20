@@ -189,7 +189,14 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                                 sharedViewModel.onUndoDeleteClick(event.thingToDo)
                             }.show()
                     }
-                    is MainViewModel.SharedEvent.NavigateToTrackingScreen -> {
+                    is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
+                        val action =
+                            OthersTasksFragmentDirections.actionOthersTasksFragmentToDetailsFragment(
+                                event.task
+                            )
+                        findNavController().navigate(action)
+                    }
+                    is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
                         // do nothing
                     }
                     is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
@@ -261,7 +268,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
     }
 
     override fun onTaskClick(thingToDo: Ttd) {
-        //do nothing
+        sharedViewModel.navigateToTaskDetailsScreen(thingToDo)
     }
 
     override fun onAddClick(composedTask: TaskWithSubTasks) {

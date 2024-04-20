@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.receiver
+package com.tongtongstudio.ami.notification
 
 import android.app.AlarmManager
 import android.app.NotificationChannel
@@ -11,9 +11,13 @@ import android.provider.Settings
 import androidx.core.app.AlarmManagerCompat
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.RecurringTaskInterval
+import com.tongtongstudio.ami.receiver.AlarmReceiver
+import com.tongtongstudio.ami.receiver.TASK_CHANNEL_ID
+import com.tongtongstudio.ami.receiver.TTD_DESCRIPTION
+import com.tongtongstudio.ami.receiver.TTD_NAME
 import com.tongtongstudio.ami.ui.dialog.Period
 
-class TaskNotificationManager(private val context: Context) {
+class ReminderNotificationManager(private val context: Context) {
     /*init {
         createNotificationChannel()
     }*/

@@ -457,11 +457,11 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_attach_project"
                     style="@style/ButtonEditTask.AMI.Style"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="Attach to a project"
                     app:icon="@drawable/ic_add_task_24"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/remove_project_linked"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -472,7 +472,7 @@
                     android:layout_height="wrap_content"
                     android:src="@drawable/baseline_clear_24"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="@+id/btn_attach_project"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

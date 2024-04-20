@@ -48,6 +48,10 @@ android {
 }
 
 dependencies {
+
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    // chart
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // notification FLAG_IMMUTABLE on Android12
     implementation 'androidx.work:work-runtime-ktx:2.8.1'
 
@@ -61,6 +65,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "com.google.android.material:material:$materialVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
+    implementation 'androidx.lifecycle:lifecycle-service:2.6.0'
     testImplementation "junit:junit:$junitVersion"
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.junit.jupiter:junit-jupiter'

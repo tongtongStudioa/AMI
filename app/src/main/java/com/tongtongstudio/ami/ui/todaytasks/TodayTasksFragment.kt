@@ -208,9 +208,9 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                                 sharedViewModel.onUndoDeleteClick(event.thingToDo)
                             }.show()
                     }
-                    is MainViewModel.SharedEvent.NavigateToTrackingScreen -> {
+                    is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
                         val action =
-                            TodayTasksFragmentDirections.actionTodayTasksFragmentToChronometerFragment(
+                            TodayTasksFragmentDirections.actionTodayTasksFragmentToTabPageTrackingStats(
                                 event.task
                             )
                         findNavController().navigate(action)
@@ -228,6 +228,9 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                                 event.missedTasks.toTypedArray()
                             )
                         findNavController().navigate(action)
+                    }
+                    is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
+                        //do nothing
                     }
                 }.exhaustive
             }
@@ -334,7 +337,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
         if (isChecked) {
-            sharedViewModel.soundPool.load(this.context, R.raw.success_2, 1)
+            sharedViewModel.soundPool.load(this.context, R.raw.task_check, 1)
             sharedViewModel.soundPool.play(1, 0.25F, 0.25F, 0, 0, 1.1F)
         }
     }

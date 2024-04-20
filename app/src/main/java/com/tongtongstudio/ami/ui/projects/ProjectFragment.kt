@@ -99,9 +99,9 @@ class ProjectFragment : Fragment(R.layout.fragment_main) {
                     is MainViewModel.SharedEvent.ShowTaskSavedConfirmationMessage -> {
                         Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_SHORT).show()
                     }
-                    is MainViewModel.SharedEvent.NavigateToTrackingScreen -> {
+                    is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
                         val action =
-                            ProjectFragmentDirections.actionProjectFragmentToChronometerFragment(
+                            ProjectFragmentDirections.actionProjectFragmentToTabPageTrackingStats(
                                 event.task
                             )
                         findNavController().navigate(action)
@@ -125,6 +125,9 @@ class ProjectFragment : Fragment(R.layout.fragment_main) {
                     }
                     is MainViewModel.SharedEvent.ShowMissedRecurringTaskDialog -> {
                         // val action
+                    }
+                    is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
+                        // do nothing
                     }
                 }.exhaustive
             }

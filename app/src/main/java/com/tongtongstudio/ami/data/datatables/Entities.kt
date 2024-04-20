@@ -47,34 +47,42 @@ data class Ttd(
 ) : Parcelable {
 
     /**
-     * This function update the current thing to do depend on recurring info and checked state
-     * @param checked state
+     * This function update the current thing to do depend on recurring info and state state
+     * @param state state
      * @return updated task
      */
-    fun updateCheckedState(checked: Boolean): Ttd {
-        val updatedTask = if (isRecurring && startDate != null && repetitionFrequency != null) {
-            repetitionFrequency.updateRecurringTask(this@Ttd, checked)
-        } else if (checked) {
-            val completedDateInMillis = Calendar.getInstance().timeInMillis
-            val updatedState = this.copy(
-                isCompleted = true,
-                completionDate = completedDateInMillis
+    fun updateCheckedState(state: Boolean): Ttd {
+        val updatedTask = when {
+            // it is a recurring task
+            isRecurring && repetitionFrequency != null -> repetitionFrequency.updateRecurringTask(
+                this@Ttd,
+                state
             )
-            updatedState.copy(
-                completedOnTime = updatedState.hasBeenCompletedOnTime()
-            )
-        } else {
-            this.copy(
-                isCompleted = false,
-                completionDate = null
-            )
+            // it is checked
+            state -> {
+                val completedDateInMillis = Calendar.getInstance().timeInMillis
+                val updatedState = this.copy(
+                    isCompleted = true,
+                    completionDate = completedDateInMillis
+                )
+                updatedState.copy(
+                    completedOnTime = updatedState.hasBeenCompletedOnTime()
+                )
+            }
+            // task is unchecked and it's not a recurring one
+            else -> {
+                this.copy(
+                    isCompleted = false,
+                    completionDate = null
+                )
+            }
         }
         return updatedTask
     }
 
     fun getHabitSuccessRate(): Float? {
         return if (totalRepetitionCount != 0)
-            successCount.toFloat() / totalRepetitionCount
+            (successCount.toFloat() / totalRepetitionCount) * 100
         else null
     }
 
@@ -83,7 +91,7 @@ data class Ttd(
      * It compares completionDate and dueDate or completionDate and deadline if it was define
      * @return boolean
      */
-    fun hasBeenCompletedOnTime(): Boolean {
+    private fun hasBeenCompletedOnTime(): Boolean {
         return isCompleted && completionDate != null && (completionDate < dueDate || (deadline != null && completionDate < deadline))
     }
 
@@ -98,7 +106,7 @@ data class Ttd(
          * @return Int : between 2 and 10
          */
         fun calculusUrgency(todayDateMillis: Long, dueDate: Long, deadline: Long?): Int {
-            val delay = if (deadline != null) abs(dueDate - deadline) else 0
+            val delay = if (deadline != null) abs(dueDate - deadline) else 9
             return when {
                 delay <= 1 * DAY_IN_MILLIS -> 9
                 delay <= 2 * DAY_IN_MILLIS -> 8
@@ -124,13 +132,23 @@ data class Ttd(
             else
                 priority
         }
+
+        fun getDateFormatted(date: Long?): String? {
+            return if (date != null) {
+                SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(date)
+            } else null
+        }
+
+        fun getFormattedTime(time: Long?): String? {
+            return if (time != null) {
+                val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+                timeFormat.timeZone = TimeZone.getTimeZone("UTC")
+                timeFormat.format(time)
+            } else null
+        }
     }
 
-    fun getDateFormatted(date: Long?): String? {
-        return if (date != null) {
-            SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(date)
-        } else null
-    }
+
 }
 
 @Parcelize
@@ -209,7 +227,7 @@ data class Reminder(
 ) {
     // TODO: change to return format DD/MM HH:mm
 
-    fun getReminderDueDateFormatted(): String {
+    private fun getReminderDueDateFormatted(): String {
         return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
     }
 

@@ -62,7 +62,7 @@
     </string-array>
     <string name="text_validate_link_subtask">Sub task linked to selected project</string>
     <string name="invalidate_text_link_subtask">Project not selected</string>
-    <string name="estimated_time_info">%1$dh%2$s estimated</string>
+    <string name="estimated_time_info">%s estimated</string>
     <string name="importance_thing_to_do">Priority : %d</string>
     <string-array name="period_list">
         <item>@string/day</item>
@@ -146,4 +146,20 @@
     <string name="project_linked_default">Attach to a project</string>
     <string name="error_unit">Assessment\'s unit can\'t be empty</string>
     <string name="error_goal_empty">Assessment\'s goal can\'t be empty</string>
+    <string name="timer">Timer</string>
+    <string name="stopwatch">StopWatch</string>
+    <string name="launch_chronometer_content_description">Launch chronometer or set pause</string>
+    <string name="missed_tasks_dialog_title">Recurring tasks missed</string>
+    <string name="completed_tasks_subtitle">Things already completed !</string>
+    <string name="task_details_screen_title">Task information</string>
+    <string name="view_pager_screen_title">Stats and time tracker</string>
+    <string name="completion_rate_title">Completion rate</string>
+    <string name="max_streak_title">Max streak</string>
+    <string name="completion_rate_value" translatable="false">%.1f%%</string>
+    <string name="time_worked">Time Worked</string>
+    <string name="tracking_notification_text">Work on %1s : %2s</string>
+    <string name="tracking_notification_title">Suivi du temps de travail</string>
+    <string name="action_pause_title">Pause</string>
+    <string name="action_cancel_title">Cancel</string>
+    <string name="action_resume_titile">Resume</string>
 </resources>

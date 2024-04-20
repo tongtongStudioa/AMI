@@ -92,13 +92,16 @@ class EventFragment : Fragment(R.layout.fragment_main) {
                                 sharedViewModel.onUndoDeleteClick(event.thingToDo)
                             }.show()
                     }
-                    is MainViewModel.SharedEvent.NavigateToTrackingScreen -> {
+                    is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
                         // do nothing
                     }
                     is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
                         // do nothing
                     }
                     is MainViewModel.SharedEvent.ShowMissedRecurringTaskDialog -> {
+                        // do nothing
+                    }
+                    else -> {
                         // do nothing
                     }
                 }.exhaustive

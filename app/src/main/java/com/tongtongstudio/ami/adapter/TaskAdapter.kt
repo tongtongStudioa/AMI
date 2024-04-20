@@ -110,6 +110,7 @@ class TaskAdapter(private val listener: InteractionListener) :
                 //tvNature.text = thingToDo.getCategoryTitle()
                 checkBoxCompleted.isChecked = data.isCompleted
                 tvTaskName.paint.isStrikeThruText = data.isCompleted
+                // TODO: show the task's category
                 tvNumberPriority.text =
                     this@TaskViewHolder.itemView.context.getString(
                         R.string.importance_thing_to_do,
@@ -124,9 +125,9 @@ class TaskAdapter(private val listener: InteractionListener) :
                         )
                     )
                 }*/
-                tvDeadline.text = data.getDateFormatted(data.dueDate)
+                tvDeadline.text = Ttd.getDateFormatted(data.dueDate)
                 if (data.startDate != null) {
-                    tvStartDate.text = data.getDateFormatted(data.startDate)
+                    tvStartDate.text = Ttd.getDateFormatted(data.startDate)
                 } else tvStartDate.isVisible = false
             }
         }
@@ -189,12 +190,12 @@ class TaskAdapter(private val listener: InteractionListener) :
             binding.apply {
                 tvProjectName.text = data.mainTask.title
                 tvProjectName.paint.isStrikeThruText = data.mainTask.isCompleted
-                tvDeadline.text = data.mainTask.getDateFormatted(data.mainTask.dueDate)
+                tvDeadline.text = Ttd.getDateFormatted(data.mainTask.dueDate)
                 tvDeadline.isVisible =
-                    data.mainTask.getDateFormatted(data.mainTask.dueDate) != null
-                tvStartDate.text = data.mainTask.getDateFormatted(data.mainTask.startDate)
+                    Ttd.getDateFormatted(data.mainTask.dueDate) != null
+                tvStartDate.text = Ttd.getDateFormatted(data.mainTask.startDate)
                 tvStartDate.isVisible =
-                    data.mainTask.getDateFormatted(data.mainTask.startDate) != null
+                    Ttd.getDateFormatted(data.mainTask.startDate) != null
                 tvNumberPriority.text = this@TaskComposedViewHolder.itemView.context.getString(
                     R.string.importance_thing_to_do,
                     data.mainTask.priority

@@ -16,7 +16,7 @@ const val ESTIMATED_TIME_LISTENER_REQUEST_KEY = "estimated_time_user_selection"
 const val ESTIMATED_TIME_RESULT_KEY = "estimated_time_user_selection_result"
 const val ESTIMATED_TIME_DIALOG_TAG = "estimated_time_selection_tag"
 
-class EstimatedTimeDialogFragment : DialogFragment() {
+class EstimatedTimeDialogFragment(val title: String) : DialogFragment() {
 
     private lateinit var binding: DialogSelectEstimatedWorkTimeBinding
 
@@ -29,7 +29,7 @@ class EstimatedTimeDialogFragment : DialogFragment() {
             // Inflate and set the layout for the dialog
             // Pass null as the parent view because its going in the dialog layout
             dialog.setView(binding.root)
-                .setTitle("Select estimated time")
+                .setTitle(title)
                 // Add action buttons
                 .setPositiveButton(R.string.ok) { _, _ ->
                     onDialogPositiveClick(this)

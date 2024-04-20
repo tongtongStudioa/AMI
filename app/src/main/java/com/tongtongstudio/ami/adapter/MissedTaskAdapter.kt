@@ -45,7 +45,7 @@ class MissedTaskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             binding.apply {
                 tvTaskName.text = thingToDo.title
                 tvNature.text = Nature.TASK.name
-                tvDeadline.text = thingToDo.getDateFormatted(thingToDo.dueDate)
+                tvDeadline.text = Ttd.getDateFormatted(thingToDo.dueDate)
                 // todo: show missed times count
                 tvMissedCount.isVisible = false
                 //tvMissedCount.text = countMissedTimes(task)

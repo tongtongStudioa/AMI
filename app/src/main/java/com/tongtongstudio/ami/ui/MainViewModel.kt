@@ -63,7 +63,11 @@ class MainViewModel @Inject constructor(
     }
 
     fun onCheckBoxChanged(thingToDo: Ttd, checked: Boolean) = viewModelScope.launch {
-        val updatedTask = updateTaskState(thingToDo, checked)
+        val updatedTask = thingToDo.updateCheckedState(checked)
+        // update advancement project after adapt task
+        if (updatedTask.parentTaskId != null) {
+            // TODO: update project state
+        }
         repository.updateTask(updatedTask)
     }
 
@@ -106,15 +110,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // TODO: complete recurring task when start date > deadline date and don't update start date
-    private fun updateTaskState(task: Ttd, checked: Boolean): Ttd {
-        val updatedTask = task.updateCheckedState(checked)
-        // update advancement project after adapt task
-        if (updatedTask.parentTaskId != null) {
-            // TODO: update project state
-        }
+    /*private fun updateTaskState(task: Ttd, checked: Boolean): Ttd {
+
         return updatedTask
-    }
+    }*/
 
     // TODO: 06/09/2022 change this method to show resource string
     fun onThingToDoRightSwiped(thingToDo: TaskWithSubTasks) = viewModelScope.launch {
@@ -173,11 +172,15 @@ class MainViewModel @Inject constructor(
     }
 
     fun navigateToTaskInfoScreen(thingToDo: Ttd) = viewModelScope.launch {
-        mainEventChannel.send(SharedEvent.NavigateToTrackingScreen(thingToDo))
+        mainEventChannel.send(SharedEvent.NavigateToTaskViewPager(thingToDo))
     }
 
     fun navigateToTaskComposedInfoScreen(composedTask: TaskWithSubTasks) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToLocalProjectStatsScreen(composedTask))
+    }
+
+    fun navigateToTaskDetailsScreen(task: Ttd) = viewModelScope.launch {
+        mainEventChannel.send(SharedEvent.NavigateToTaskDetailsScreen(task))
     }
 
     fun lookForMissedRecurringTasks() = viewModelScope.launch {
@@ -194,7 +197,12 @@ class MainViewModel @Inject constructor(
 
     fun updateRecurringTasksMissed(missedTasks: List<Ttd>) = viewModelScope.launch {
         for (task in missedTasks) {
-            updateTaskState(task, false)
+            val updatedTask = task.updateCheckedState(false)
+            // update advancement project after adapt task
+            if (updatedTask.parentTaskId != null) {
+                // TODO: update project state
+            }
+            repository.updateTask(updatedTask)
         }
         showThingToDoSavedConfirmationMessage("Recurring tasks updated")
     }
@@ -206,7 +214,14 @@ class MainViewModel @Inject constructor(
     sealed class SharedEvent {
         data class NavigateToEditScreen(val thingToDo: Ttd) : SharedEvent()
         object NavigateToAddScreen : SharedEvent()
-        data class NavigateToTrackingScreen(val task: Ttd) :
+
+        /**
+         * Event to navigate to view pager which display stats and time tracker for a specific task
+         */
+        data class NavigateToTaskViewPager(val task: Ttd) :
+            SharedEvent()
+
+        data class NavigateToTaskDetailsScreen(val task: Ttd) :
             SharedEvent()
 
         data class NavigateToLocalProjectStatsScreen(val composedTaskData: TaskWithSubTasks) :

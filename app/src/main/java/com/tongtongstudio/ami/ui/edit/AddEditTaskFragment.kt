@@ -1,7 +1,10 @@
 package com.tongtongstudio.ami.ui.edit
 
 import android.os.Bundle
-import android.view.*
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
 import android.widget.PopupMenu
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.os.bundleOf
@@ -32,12 +35,9 @@ import com.tongtongstudio.ami.adapter.AutoCompleteAdapter
 import com.tongtongstudio.ami.adapter.EditAttributesAdapter
 import com.tongtongstudio.ami.data.LayoutMode
 import com.tongtongstudio.ami.data.RecurringTaskInterval
-import com.tongtongstudio.ami.data.datatables.Assessment
-import com.tongtongstudio.ami.data.datatables.Nature
-import com.tongtongstudio.ami.data.datatables.PATTERN_FORMAT_DATE
-import com.tongtongstudio.ami.data.datatables.Reminder
+import com.tongtongstudio.ami.data.datatables.*
 import com.tongtongstudio.ami.databinding.AddEditTaskFragmentBinding
-import com.tongtongstudio.ami.receiver.TaskNotificationManager
+import com.tongtongstudio.ami.notification.ReminderNotificationManager
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.ui.dialog.*
@@ -65,18 +65,8 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
 
     private val viewModel: AddEditTaskViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
-    private lateinit var taskNotificationManager: TaskNotificationManager
+    private lateinit var taskNotificationManager: ReminderNotificationManager
     private lateinit var binding: AddEditTaskFragmentBinding
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        if (viewModel.thingToDo == null) taskNotificationManager =
-            TaskNotificationManager(requireContext())
-        return super.onCreateView(inflater, container, savedInstanceState)
-    }
 
     private fun setReminderTriggerTime(date: Long, pickedHour: Int, pickedMinutes: Int): Long {
         return Calendar.getInstance().run {
@@ -291,7 +281,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
 
             // set repeatable task
             // TODO: create a custom interval for learning category tasks
-            // TODO: update start date and stop on deadline
+            // TODO: update start date and stopAndReset on deadline
             val dropDownMenuRepeat = PopupMenu(requireContext(), btnRepeatTask)
             btnRepeatTask.setOnClickListener {
                 dropDownMenuRepeat.show()
@@ -308,7 +298,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                         updateSpecificButtonText(
                             btnRepeatTask, removeRepeatedChoice,
                             viewModel.isRecurring,
-                            getStringFromRecurringTaskInterval(viewModel.recurringTaskInterval),
+                            viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
                             getString(R.string.repeat)
                         )
                         true
@@ -320,7 +310,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                         updateSpecificButtonText(
                             btnRepeatTask, removeRepeatedChoice,
                             viewModel.isRecurring,
-                            getStringFromRecurringTaskInterval(viewModel.recurringTaskInterval),
+                            viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
                             getString(R.string.repeat)
                         )
                         true
@@ -338,7 +328,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 updateSpecificButtonText(
                     btnRepeatTask, removeRepeatedChoice,
                     viewModel.isRecurring,
-                    getStringFromRecurringTaskInterval(viewModel.recurringTaskInterval),
+                    viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
                     getString(R.string.repeat)
                 )
             }
@@ -352,7 +342,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 updateSpecificButtonText(
                     btnSetEstimatedTime, removeEstimatedTime,
                     viewModel.estimatedTime != null,
-                    getEstimatedTimeFormatted(viewModel.estimatedTime),
+                    Ttd.getFormattedTime(viewModel.estimatedTime),
                     getString(R.string.set_estimated_time)
                 )
             }
@@ -432,7 +422,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                     binding.btnSetEstimatedTime,
                     binding.removeEstimatedTime,
                     viewModel.estimatedTime != null,
-                    getEstimatedTimeFormatted(viewModel.estimatedTime),
+                    Ttd.getFormattedTime(viewModel.estimatedTime),
                     getString(R.string.set_estimated_time)
                 )
             }
@@ -451,7 +441,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 binding.btnRepeatTask,
                 binding.removeRepeatedChoice,
                 viewModel.isRecurring,
-                getStringFromRecurringTaskInterval(result),
+                result?.getRecurringIntervalReadable(resources),
                 getString(R.string.repeat)
             )
         }
@@ -586,17 +576,13 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         }
     }
 
-    private fun updateTaskRecurringStartDate(result: RecurringTaskInterval) {
-        if (result.daysOfWeek == null && viewModel.dueDate == null) {
+    // TODO: update start date as well as due date to track first commit
+    private fun updateTaskRecurringStartDate(recurringTaskInterval: RecurringTaskInterval) {
+
+        if (recurringTaskInterval.daysOfWeek == null && viewModel.dueDate == null) {
             viewModel.dueDate = Calendar.getInstance().timeInMillis
-        } else if (result.daysOfWeek != null) {
-            val startDate = Calendar.getInstance().run {
-                while (get(Calendar.DAY_OF_WEEK) != result.daysOfWeek.first()) {
-                    add(Calendar.DAY_OF_MONTH, 1)
-                }
-                timeInMillis
-            }
-            viewModel.dueDate = startDate
+        } else if (recurringTaskInterval.daysOfWeek != null) {
+            viewModel.dueDate = recurringTaskInterval.setStartDateSpecificDay()
         }
         updateDateButtonText(
             binding.btnSetDueDate,
@@ -620,7 +606,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             updateSpecificButtonText(
                 btnRepeatTask, removeRepeatedChoice,
                 viewModel.isRecurring,
-                getStringFromRecurringTaskInterval(viewModel.recurringTaskInterval),
+                viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
                 getString(R.string.repeat)
             )
 
@@ -643,7 +629,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 updateSpecificButtonText(
                     btnSetEstimatedTime, removeEstimatedTime,
                     viewModel.estimatedTime != null,
-                    getEstimatedTimeFormatted(viewModel.estimatedTime),
+                    Ttd.getFormattedTime(viewModel.estimatedTime),
                     getString(R.string.set_estimated_time)
                 )
                 // TODO: assessments
@@ -743,16 +729,6 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         }
     }
 
-    // TODO: change this method to use SimpleDateFormat with "HH:mm" pattern
-    private fun getEstimatedTimeFormatted(estimatedTime: Long?): String {
-        return if (estimatedTime != null) {
-            val hours = estimatedTime.toInt() / 3600_000
-            val minutes = estimatedTime.toInt() / 60_000 % 60
-            val minutesToString = if (minutes < 10) "0$minutes" else minutes.toString()
-            getString(R.string.estimated_time_info, hours, minutesToString)
-        } else ""
-    }
-
     // TODO: change color when dark mode is activate
     private fun updateDateButtonText(
         button: MaterialButton,
@@ -782,7 +758,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
     }
 
     private fun showEstimatedTimePicker() {
-        val newFragment = EstimatedTimeDialogFragment()
+        val newFragment = EstimatedTimeDialogFragment(getString(R.string.set_estimated_time))
         newFragment.show(parentFragmentManager, ESTIMATED_TIME_DIALOG_TAG)
     }
 
@@ -852,45 +828,6 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         }
         setFragmentResult(CURRENT_RECURRING_INFO_REQUEST_KEY, result)
         newFragment.show(parentFragmentManager, RECURRING_SELECTION_DIALOG_TAG)
-    }
-
-    private fun getStringFromRecurringTaskInterval(recurringTaskInterval: RecurringTaskInterval?): String {
-        return if (recurringTaskInterval != null) {
-            if (recurringTaskInterval.times == 1 && recurringTaskInterval.daysOfWeek == null) {
-                when (recurringTaskInterval.period) {
-                    Period.DAYS.name -> getString(R.string.each_days)
-                    Period.WEEKS.name -> getString(R.string.each_weeks)
-                    Period.MONTHS.name -> getString(R.string.each_months)
-                    Period.YEARS.name -> getString(R.string.each_years)
-                    else -> getString(R.string.each_days)
-                }
-            } else if (recurringTaskInterval.daysOfWeek != null) { // TODO: change this to best integration
-                if (recurringTaskInterval.times == 1) {
-                    "Weekly on " + recurringTaskInterval.daysOfWeek
-
-                } else "On " + recurringTaskInterval.daysOfWeek + " every " + recurringTaskInterval.times + " weeks"
-            } else {
-                when (recurringTaskInterval.period) {
-                    Period.DAYS.name -> getString(
-                        R.string.every_x_days,
-                        recurringTaskInterval.times
-                    )
-                    Period.WEEKS.name -> getString(
-                        R.string.every_x_weeks,
-                        recurringTaskInterval.times
-                    )
-                    Period.MONTHS.name -> getString(
-                        R.string.every_x_months,
-                        recurringTaskInterval.times
-                    )
-                    Period.YEARS.name -> getString(
-                        R.string.every_x_years,
-                        recurringTaskInterval.times
-                    )
-                    else -> getString(R.string.every_x_days, recurringTaskInterval.times)
-                }
-            }
-        } else ""
     }
 
     private fun showDatePickerMaterial(

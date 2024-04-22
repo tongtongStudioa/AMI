@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.ui.events
+package com.tongtongstudio.ami.ui.habits
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
@@ -9,20 +9,20 @@ import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 @HiltViewModel
-class EventViewModel @Inject constructor(
+class HabitsViewModel @Inject constructor(
     private val repository: Repository,
     preferencesManager: PreferencesManager
 ) : ViewModel() {
 
     private val preferencesFlow = preferencesManager.filterPreferencesFlow
 
-    // TODO: 04/04/2023 remove filter preferences for events or add a local menu
-    private val eventsFlow = preferencesFlow
+    // TODO: 04/04/2023 remove filter preferences for habits or add a local menu
+    private val habitsFlow = preferencesFlow
         .flatMapLatest { filterPreferences ->
-            repository.getAllEvents(
-                filterPreferences.hideCompleted,
-                filterPreferences.sortOrder
+            repository.getHabits(
+                /*filterPreferences.hideCompleted,
+                filterPreferences.sortOrder*/
             )
         }
-    val events = eventsFlow.asLiveData()
+    val habits = habitsFlow.asLiveData()
 }

@@ -34,7 +34,6 @@ import com.tongtongstudio.ami.adapter.AttributeListener
 import com.tongtongstudio.ami.adapter.AutoCompleteAdapter
 import com.tongtongstudio.ami.adapter.EditAttributesAdapter
 import com.tongtongstudio.ami.data.LayoutMode
-import com.tongtongstudio.ami.data.RecurringTaskInterval
 import com.tongtongstudio.ami.data.datatables.*
 import com.tongtongstudio.ami.databinding.AddEditTaskFragmentBinding
 import com.tongtongstudio.ami.notification.ReminderNotificationManager

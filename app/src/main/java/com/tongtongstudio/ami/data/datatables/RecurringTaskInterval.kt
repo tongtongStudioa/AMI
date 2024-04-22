@@ -1,10 +1,9 @@
-package com.tongtongstudio.ami.data
+package com.tongtongstudio.ami.data.datatables
 
 import android.content.res.Resources
 import android.os.Parcelable
 import androidx.room.TypeConverter
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.ui.dialog.Period
 import kotlinx.parcelize.Parcelize
 import java.util.*

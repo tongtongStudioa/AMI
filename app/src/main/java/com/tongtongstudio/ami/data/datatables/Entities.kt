@@ -3,7 +3,6 @@ package com.tongtongstudio.ami.data.datatables
 import android.os.Parcelable
 import android.text.format.DateUtils.DAY_IN_MILLIS
 import androidx.room.*
-import com.tongtongstudio.ami.data.RecurringTaskInterval
 import kotlinx.parcelize.Parcelize
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -27,7 +26,9 @@ data class Ttd(
     val isCompleted: Boolean = false,
     val completionDate: Long? = null,
     val completedOnTime: Boolean? = null,
+    // TODO: replace with estimated working time
     val estimatedTime: Long? = null,
+    // TODO: replace with currentWorkingTime
     val actualWorkTime: Long? = null,
     val isRecurring: Boolean = false,
     val currentStreak: Int = 0,
@@ -73,7 +74,8 @@ data class Ttd(
             else -> {
                 this.copy(
                     isCompleted = false,
-                    completionDate = null
+                    completionDate = null,
+                    completedOnTime = null
                 )
             }
         }
@@ -225,8 +227,6 @@ data class Reminder(
     @ColumnInfo(name = "reminder_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 ) {
-    // TODO: change to return format DD/MM HH:mm
-
     private fun getReminderDueDateFormatted(): String {
         return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
     }
@@ -247,3 +247,5 @@ data class Reminder(
         return DateFormat.getDateInstance(DateFormat.MEDIUM).format(calendar.time)
     }
 }
+
+// TODO: Create TimeWorked sessions entry

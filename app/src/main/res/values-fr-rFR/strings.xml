@@ -5,7 +5,6 @@
     <string name="menu_drawer_today_s_tasks">Ma journée</string>
     <string name="menu_drawer_others_tasks">À venir</string>
     <string name="menu_drawer_all_projects">Mes projets</string>
-    <string name="menu_drawer_all_events">Mes événements</string>
     <string name="date_picker_menu_today">Aujourd\'hui</string>
     <string name="date_picker_menu_tomorrow">Demain</string>
     <string name="menu_personalized">Personalisé</string>
@@ -132,5 +131,8 @@
     <string name="view_pager_screen_title">Stats et suivi du temps</string>
     <string name="completion_rate_title">Taux d\'achévement</string>
     <string name="max_streak_title">Série maximale</string>
+    <string name="time_worked">Temps travaillé</string>
+    <string name="tracking_notification_text">Travaille sur %1s : %2s</string>
     <string name="tracking_notification_title">Suivi du temps de travail</string>
+    <string name="menu_drawer_habits">Habitudes</string>
 </resources>

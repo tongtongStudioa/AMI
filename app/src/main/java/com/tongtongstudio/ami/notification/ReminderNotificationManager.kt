@@ -10,7 +10,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.core.app.AlarmManagerCompat
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.RecurringTaskInterval
+import com.tongtongstudio.ami.data.datatables.RecurringTaskInterval
 import com.tongtongstudio.ami.receiver.AlarmReceiver
 import com.tongtongstudio.ami.receiver.TASK_CHANNEL_ID
 import com.tongtongstudio.ami.receiver.TTD_DESCRIPTION

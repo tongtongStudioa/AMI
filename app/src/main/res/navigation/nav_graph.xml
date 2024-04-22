@@ -6,11 +6,6 @@
     android:label="Nav Graph"
     app:startDestination="@id/todayTasksFragment">
 
-    <action
-        android:id="@+id/action_global_to_view_pager_tracking_fragment"
-        app:destination="@id/viewPagerTrackingAndStatsFragment"
-        app:launchSingleTop="true" />
-
     <fragment
         android:id="@+id/addEditTaskFragment"
         android:name="com.tongtongstudio.ami.ui.edit.AddEditTaskFragment"
@@ -78,14 +73,18 @@
             android:id="@+id/action_projectFragment_to_tabPageTrackingStats"
             app:destination="@id/viewPagerTrackingAndStatsFragment" />
     </fragment>
+
     <fragment
-        android:id="@+id/eventFragment"
-        android:name="com.tongtongstudio.ami.ui.events.EventFragment"
-        android:label="@string/fragment_title_events"
+        android:id="@+id/habitsFragment"
+        android:name="com.tongtongstudio.ami.ui.habits.HabitsFragment"
+        android:label="@string/fragment_title_habits"
         tools:layout="@layout/fragment_main">
         <action
             android:id="@+id/action_eventFragment_to_addEditTaskFragment"
             app:destination="@id/addEditTaskFragment" />
+        <action
+            android:id="@+id/action_habitsFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment" />
     </fragment>
     <fragment
         tools:layout="@layout/fragment_main"

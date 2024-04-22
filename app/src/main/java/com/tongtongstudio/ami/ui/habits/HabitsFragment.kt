@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.ui.events
+package com.tongtongstudio.ami.ui.habits
 
 import android.os.Bundle
 import android.view.View
@@ -21,8 +21,8 @@ import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class EventFragment : Fragment(R.layout.fragment_main) {
-    private val viewModel: EventViewModel by viewModels()
+class HabitsFragment : Fragment(R.layout.fragment_main) {
+    private val viewModel: HabitsViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var sharedViewModel: MainViewModel
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -32,7 +32,7 @@ class EventFragment : Fragment(R.layout.fragment_main) {
 
         setUpToolbar()
 
-        sharedViewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
+        sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
         binding.apply {
             fabAddTask.setOnClickListener {
@@ -110,7 +110,7 @@ class EventFragment : Fragment(R.layout.fragment_main) {
     }
 
     private fun loadEvents() {
-        viewModel.events.observe(viewLifecycleOwner) {
+        viewModel.habits.observe(viewLifecycleOwner) {
             if (it.isEmpty()) {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = true
                 binding.mainRecyclerView.isVisible = false

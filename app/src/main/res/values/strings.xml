@@ -6,7 +6,7 @@
     <string name="menu_drawer_today_s_tasks">My day</string>
     <string name="menu_drawer_others_tasks">Upcoming</string>
     <string name="menu_drawer_all_projects">My projects</string>
-    <string name="menu_drawer_all_events">My events</string>
+    <string name="menu_drawer_habits">Habits</string>
     <string name="date_picker_menu_today">Today</string>
     <string name="date_picker_menu_tomorrow">Tomorrow</string>
     <string name="menu_personalized">Personalized</string>
@@ -159,7 +159,8 @@
     <string name="time_worked">Time Worked</string>
     <string name="tracking_notification_text">Work on %1s : %2s</string>
     <string name="tracking_notification_title">Suivi du temps de travail</string>
-    <string name="action_pause_title">Pause</string>
-    <string name="action_cancel_title">Cancel</string>
-    <string name="action_resume_titile">Resume</string>
+    <string name="action_pause_title" translatable="false">Pause</string>
+    <string name="action_cancel_title" translatable="false">Cancel</string>
+    <string name="action_resume_titile" translatable="false">Resume</string>
+    <string name="fragment_title_habits">Habits</string>
 </resources>

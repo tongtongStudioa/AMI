@@ -2,10 +2,15 @@ package com.tongtongstudio.ami.data.dao
 
 import androidx.room.*
 import com.tongtongstudio.ami.data.datatables.Category
+import com.tongtongstudio.ami.data.datatables.CategoryTasks
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CategoryDao {
+
+    @Transaction
+    @Query("SELECT * FROM Category WHERE category_id = :categoryId")
+    fun getCategoryTasks(categoryId: Long): Flow<List<CategoryTasks>>
 
     @Query("SELECT * FROM Category ORDER BY category_id DESC")
     fun getCategories(): Flow<List<Category>>

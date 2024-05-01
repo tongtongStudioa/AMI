@@ -4,11 +4,14 @@ import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
+import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.SoundPool
 import android.os.Build
+import android.os.PowerManager
+import android.os.PowerManager.WakeLock
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.MutableLiveData
@@ -31,6 +34,10 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class TrackingService : LifecycleService() {
+
+    // wake lock
+
+    private lateinit var wakeLock: WakeLock
 
     // Sonification
     private lateinit var soundPool: SoundPool
@@ -67,6 +74,10 @@ class TrackingService : LifecycleService() {
 
         // to initialize values
         postInitialValues()
+
+        // set up wake lock
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name))
 
         // set up sonification
         soundPool = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -110,8 +121,11 @@ class TrackingService : LifecycleService() {
             when (it.action) {
                 ACTION_START -> {
                     setPauseNotifAction()
-                    if (isFirstRun)
+                    if (isFirstRun) {
                         taskName = it.getStringExtra("task_title")
+                    }
+                    if (isFirstRun || !wakeLock.isHeld)
+                        wakeLock.acquire(4 * 60 * 60 * 1000L /*4 hours*/)
                     startOrResumeTracking()
                 }
                 ACTION_PAUSE -> {
@@ -143,7 +157,6 @@ class TrackingService : LifecycleService() {
     private fun resetTracking() {
         timer.reset()
         isRunning.postValue(false)
-        //timeWorkedInMillis.postValue(0L)
     }
 
     private fun startOrResumeTracking() {
@@ -158,6 +171,8 @@ class TrackingService : LifecycleService() {
     private fun pauseTracking() {
         timer.pause()
         isRunning.postValue(false)
+        if (wakeLock.isHeld)
+            wakeLock.release()
     }
 
     private fun cancelService() {
@@ -165,6 +180,8 @@ class TrackingService : LifecycleService() {
         serviceKilled = true
         isFirstRun = true
         postInitialValues()
+        if (wakeLock.isHeld)
+            wakeLock.release()
         stopForeground(true)
         stopSelf()
     }

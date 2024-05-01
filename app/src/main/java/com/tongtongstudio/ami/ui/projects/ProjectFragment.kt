@@ -17,7 +17,11 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.adapter.InteractionListener
+import com.tongtongstudio.ami.adapter.TaskAdapter
 import com.tongtongstudio.ami.data.SortOrder
+import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
+import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
@@ -27,11 +31,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class ProjectFragment : Fragment(R.layout.fragment_main) {
+class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
     private val viewModel: ProjectViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var binding: FragmentMainBinding
+    private lateinit var newTaskAdapter: TaskAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -40,6 +45,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main) {
         setUpToolbar()
 
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
+        newTaskAdapter = TaskAdapter(this)
 
         binding.apply {
             fabAddTask.setOnClickListener {
@@ -48,6 +54,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main) {
 
             mainRecyclerView.apply {
                 layoutManager = LinearLayoutManager(requireContext())
+                adapter = newTaskAdapter
                 setHasFixedSize(true)
             }
         }
@@ -61,9 +68,12 @@ class ProjectFragment : Fragment(R.layout.fragment_main) {
                 binding.emptyRecyclerView.textViewActionText.text =
                     getString(R.string.text_action_no_projects)
             } else {
-                binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
-                binding.mainRecyclerView.isVisible = true
-                binding.textSup.text = getString(R.string.nb_projects_info, it.size)
+                binding.apply {
+                    newTaskAdapter.submitList(it)
+                    emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
+                    mainRecyclerView.isVisible = true
+                    textSup.text = getString(R.string.nb_projects_info, it.size)
+                }
             }
         }
 
@@ -186,5 +196,29 @@ class ProjectFragment : Fragment(R.layout.fragment_main) {
         binding.toolbar.setNavigationOnClickListener {
             navController.navigateUp(appBarConfiguration)
         }
+    }
+
+    override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onTaskClick(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onAddClick(composedTask: TaskWithSubTasks) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onSubTaskRightSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
     }
 }

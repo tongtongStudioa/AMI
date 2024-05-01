@@ -9,9 +9,9 @@
 
         <menu>
 
-            <item
+            <!--<item
                 android:id="@+id/action_sort_by_name"
-                android:title="@string/sort_by_name" />
+                android:title="@string/sort_by_name" />-->
 
             <item
                 android:id="@+id/action_sort_by_eisenhower_matrix"
@@ -22,8 +22,8 @@
                 android:title="By 2 minutes rules" />
 
             <item
-                android:id="@+id/action_sort_by_deadline"
-                android:title="By deadline" />
+                android:id="@+id/action_sort_by_eat_the_frog"
+                android:title="By Eat The Frog" />
 
             <item
                 android:id="@+id/action_sort_by_creator_sort"

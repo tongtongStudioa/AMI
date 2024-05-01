@@ -9,6 +9,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
 
+const val PATTERN_FORMAT_DATE = "E dd/MM"
+
+enum class Nature { PROJECT, TASK, EVENT }
+
 @Parcelize
 @Entity(tableName = "thing_to_do_table")
 data class Ttd(
@@ -214,6 +218,13 @@ data class Category(
     val parentCategoryId: Long? = null,
     @ColumnInfo(name = "category_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
+)
+
+data class CategoryTasks(
+    @Embedded
+    val category: Category,
+    @Relation(entity = Ttd::class, parentColumn = "category_id", entityColumn = "categoryId")
+    val tasks: List<Ttd>
 )
 
 @Entity

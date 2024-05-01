@@ -161,15 +161,17 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 binding.mainRecyclerView.isVisible = false
                 binding.emptyRecyclerView.textViewExplication.text =
                     getText(R.string.text_explication_no_tasks_today)
-                val upcomingTasksCount = viewModel.getUpcomingTtdCount()
-                binding.emptyRecyclerView.textViewActionText.text =
-                    getString(R.string.text_action_no_tasks_today, upcomingTasksCount)
                 binding.toolbar.collapseActionView()
             } else {
                 newTaskAdapter.submitList(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
             }
+        }
+
+        viewModel.upcomingTasksCount.observe(viewLifecycleOwner) {
+            binding.emptyRecyclerView.textViewActionText.text =
+                getString(R.string.text_action_no_tasks_today, it)
         }
 
         // respond to event
@@ -251,11 +253,6 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_sort_by_name -> {
-                sharedViewModel.onSortOrderSelected(SortOrder.BY_NAME)
-                true
-            }
-
             R.id.action_sort_by_eisenhower_matrix -> {
                 sharedViewModel.onSortOrderSelected(SortOrder.BY_EISENHOWER_MATRIX)
                 true
@@ -266,8 +263,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 true
             }
 
-            R.id.action_sort_by_deadline -> {
-                sharedViewModel.onSortOrderSelected(SortOrder.BY_DEADLINE)
+            R.id.action_sort_by_eat_the_frog -> {
+                sharedViewModel.onSortOrderSelected(SortOrder.BY_EAT_THE_FROG)
                 true
             }
 

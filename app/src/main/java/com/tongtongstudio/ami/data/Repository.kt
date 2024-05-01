@@ -55,8 +55,12 @@ class Repository @Inject constructor(
         ttdDao.delete(task)
     }
 
-    fun getProjects(): Flow<List<Ttd>> {
-        return ttdDao.getTaskComposed()
+    fun getProjects(): Flow<List<TaskWithSubTasks>> {
+        return ttdDao.getProjects()
+    }
+
+    fun getPotentialProjects(): Flow<List<Ttd>> {
+        return ttdDao.getPotentialProject()
     }
 
     suspend fun getMissedRecurringTasks(todayDate: Long): List<Ttd> {
@@ -127,34 +131,132 @@ class Repository @Inject constructor(
         reminderDao.update(reminder)
     }
 
-    fun getHabits(): Flow<List<Ttd>> {
+    fun getHabits(): Flow<List<TaskWithSubTasks>> {
         return ttdDao.getRecurringTasks()
     }
 
-    suspend fun getCountUpcomingTasks(endOfToday: Long): Int {
-        return taskDao.getUpcomingTasksCount(endOfToday) + eventDao.getUpcomingEventsCount(
-            endOfToday
-        ) + projectDao.getUpcomingProjectsCount(endOfToday)
-    }
-
-    // task
-    fun getTasksCompletedStats(): Flow<List<Task>> {
-        return taskDao.getTasksCompletedStats()
-    }
-
-    //project
-    fun getAllProjects(
-        sortOrder: SortOrder,
-        hideCompleted: Boolean
-    ): Flow<List<ProjectWithSubTasks>> {
-        return projectDao.getProjectsWithTasks(sortOrder, hideCompleted)
-    }
-
-    fun getProjectCompletedStats(): Flow<List<Project>> {
-        return projectDao.getProjectsStats()
-    }
-
+    // TODO: suppress this method and update composed task
     suspend fun updateProject(project: Project) {
         projectDao.update(project)
     }
+
+    fun getUpcomingTasksCount(endDate: Long, endDateFilter: Long? = null): Flow<Int> {
+        return if (endDateFilter != null)
+            ttdDao.getUpcomingTasksCountFilter(endDate, endDateFilter)
+        else ttdDao.getUpcomingTasksCount(endDate)
+    }
+
+    suspend fun getTasksAchievementRate(categoryId: Long? = null): Float {
+        return if (categoryId != null) ttdDao.getCategoryTasksAchievementRate(categoryId) else ttdDao.getTotalAchievementRate()
+    }
+
+    suspend fun getProjectsAchievementRate(categoryId: Long? = null): Float {
+        return if (categoryId != null) ttdDao.getCategoryProjectsAchievementRate(categoryId) else ttdDao.getAllProjectsAchievementRate()
+    }
+
+    private suspend fun getCompletedProjectsCount(categoryId: Long? = null): Int {
+        return if (categoryId != null)
+            ttdDao.getCategoryCompletedProjectsCount(categoryId)
+        else ttdDao.getCompletedProjectsCount()
+    }
+
+    private suspend fun getCompletedProjectsCountByPeriod(
+        categoryId: Long? = null,
+        startDate: Long,
+        endDate: Long
+    ): Int {
+        return if (categoryId != null)
+            ttdDao.getCompletedCategoryTasksByPeriod(categoryId, startDate, endDate)
+        else ttdDao.getCompletedTasksByPeriod(startDate, endDate)
+    }
+
+    suspend fun getMCompletedProjectsCount(
+        categoryId: Long? = null,
+        startDate: Long? = null,
+        endDate: Long? = null
+    ): Int {
+        return if (startDate != null && endDate != null)
+            getCompletedProjectsCountByPeriod(categoryId, startDate, endDate)
+        else getCompletedProjectsCount(categoryId)
+    }
+
+
+    private suspend fun getCompletedTasksCount(categoryId: Long? = null): Int {
+        return if (categoryId != null) ttdDao.getCategoryCompletedTasksCount(categoryId) else ttdDao.getCompletedTasksCount()
+    }
+
+    private suspend fun getCompletedTasksCountByPeriod(
+        categoryId: Long? = null,
+        startDate: Long,
+        endDate: Long
+    ): Int {
+        return if (categoryId != null) ttdDao.getCompletedCategoryTasksByPeriod(
+            categoryId,
+            startDate,
+            endDate
+        ) else ttdDao.getCompletedTasksByPeriod(startDate, endDate)
+    }
+
+    suspend fun getMCompletedTasksCount(
+        categoryId: Long? = null,
+        startDate: Long? = null,
+        endDate: Long? = null
+    ): Int {
+        return if (startDate != null && endDate != null)
+            getCompletedTasksCountByPeriod(categoryId, startDate, endDate)
+        else getCompletedTasksCount(categoryId)
+    }
+
+    suspend fun getAccuracyRateEstimation(
+        categoryId: Long? = null,
+        startDate: Long? = null,
+        endDate: Long? = null,
+        errorPercent: Float = 0.2F
+    ): Float {
+        return if (categoryId != null && startDate != null && endDate != null)
+            ttdDao.getCategoryAccuracyRateOfEstimatedWorkTimeByPeriod(
+                categoryId,
+                startDate,
+                endDate,
+                errorPercent
+            )
+        else if (startDate != null && endDate != null)
+            ttdDao.getAccuracyRateOfEstimatedWorkTimeByPeriod(startDate, endDate, errorPercent)
+        else if (categoryId != null)
+            ttdDao.getCategoryAccuracyRateOfEstimatedWorkTime(categoryId, errorPercent)
+        else ttdDao.getAccuracyRateOfEstimatedWorkTime(errorPercent)
+    }
+
+    suspend fun getOnTimeCompletionRate(
+        categoryId: Long? = null,
+        startDate: Long? = null,
+        endDate: Long? = null
+    ): Float {
+        return if (categoryId != null && startDate != null && endDate != null)
+            ttdDao.getOnTimeCompletionTasksRateByCategoryAndPeriod(categoryId, startDate, endDate)
+        else if (startDate != null && endDate != null)
+            ttdDao.getOnTimeCompletionTasksRateByPeriod(startDate, endDate)
+        else if (categoryId != null)
+            ttdDao.getOnTimeCompletionCategoryTasksRate(categoryId)
+        else ttdDao.getOnTimeCompletionTasksRate()
+    }
+
+    suspend fun getTimeWorked(categoryId: Long? = null): Long {
+        return if (categoryId != null)
+            ttdDao.getSumCategoryTimeWorked(categoryId)
+        else ttdDao.getTotalTimeWorked()
+    }
+
+    suspend fun getMaxStreak(current: Boolean = false): Ttd {
+        return if (current)
+            ttdDao.getMaxCurrentStreakTask()
+        else ttdDao.getMaxStreakTask()
+    }
+
+    suspend fun getHabitCompletionRate(categoryId: Long? = null): Float {
+        return if (categoryId != null)
+            ttdDao.getCategoryHabitCompletionRate(categoryId)
+        else ttdDao.getHabitCompletionRate()
+    }
+
 }

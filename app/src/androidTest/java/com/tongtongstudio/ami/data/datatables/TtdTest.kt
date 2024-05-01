@@ -110,10 +110,40 @@ internal class TtdTest {
 
         val resultingRate = ttdDao.getTotalAchievementRate()
 
-        // actually rate must be 50.0%
-        assertEquals(50.0, resultingRate)
+        // actually rate must be 50.0 (%)
+        assertEquals(50.0F, resultingRate)
 
     }
+
+    @Test
+    fun getHabitCompletionRate_allRecurringTasks_correctRate() = runBlocking {
+
+        val resultingRate = ttdDao.getHabitCompletionRate()
+
+        // actually rate must be 66.7 (%)
+        assertEquals(66.7F, resultingRate)
+
+    }
+
+    @Test
+    fun getOnTimeCompletionRate_allCompletedTasks_correctRate() = runBlocking {
+
+        val resultingRate = ttdDao.getOnTimeCompletionTasksRate()
+
+        // actually rate must be 25.0 (%)
+        assertEquals(25.0F, resultingRate)
+    }
+
+    @Test
+    fun getEstimationAccuracyRate_allCompletedTasks_correctRate() = runBlocking {
+
+        val resultingRate = ttdDao.getAccuracyRateOfEstimatedWorkTime(0.2F)
+
+        // actually rate must be 25.0 (%)
+        assertEquals(25.0F, resultingRate)
+
+    }
+
 
     @Test
     fun getLaterTasks_tomorrow_listWithoutUnexpectedTasks() = runBlocking {

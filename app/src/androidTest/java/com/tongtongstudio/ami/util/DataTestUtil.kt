@@ -46,7 +46,10 @@ class DataTestUtil(private val ttdDao: TtdDao) {
             urgency = 8,
             estimatedTime = util.getTimeInMillis(2, 30),
             dependency = true,
-            skillLevel = 10
+            skillLevel = 10,
+            isRecurring = true,
+            totalRepetitionCount = 15,
+            successCount = 10
         ),
         Ttd(
             "Créer un test pour la base de donnée",
@@ -72,7 +75,7 @@ class DataTestUtil(private val ttdDao: TtdDao) {
             skillLevel = 4,
             isCompleted = true,
             actualWorkTime = util.getTimeInMillis(4, 0),
-            completedOnTime = true
+            completedOnTime = false
         ),
         Ttd(
             "Faire une lessive",

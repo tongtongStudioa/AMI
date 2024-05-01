@@ -24,5 +24,5 @@ class EditProjectLinkedViewModel @Inject constructor(
     val projectId: LiveData<Long?>
         get() = _projectId
 
-    val projects = repository.getProjects().asLiveData()
+    val projects = repository.getPotentialProjects().asLiveData()
 }

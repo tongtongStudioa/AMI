@@ -83,7 +83,7 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_information) {
             entries.add(Entry(8.0F, 27.0F))
             val dataSet = LineDataSet(entries, "1 serie")
             val lineData = LineData(dataSet)
-            //chartView.data = lineData
+            chartView.data = lineData
             chartView.invalidate() // refresh
         }
     }

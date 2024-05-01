@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.todayTasksFragment,
                 R.id.othersTasksFragment,
                 R.id.achievementsFragment,
+                R.id.habitsFragment,
                 R.id.completedThingToDoFragment,
                 R.id.projectFragment
             ), drawerLayout

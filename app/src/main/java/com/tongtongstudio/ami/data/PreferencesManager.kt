@@ -13,7 +13,7 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-enum class SortOrder { BY_NAME, BY_EISENHOWER_MATRIX, BY_2MINUTES_RULES, EAT_THE_FROG, BY_CREATOR_SORT, BY_DEADLINE }
+enum class SortOrder { BY_NAME, BY_EISENHOWER_MATRIX, BY_2MINUTES_RULES, BY_EAT_THE_FROG, BY_CREATOR_SORT, BY_DEADLINE }
 enum class LaterFilter { TOMORROW, NEXT_WEEK, LATER }
 enum class LayoutMode { EXTENT, SIMPLIFIED }
 

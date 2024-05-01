@@ -200,7 +200,11 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                         // do nothing
                     }
                     is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
-                        //do nothing
+                        val action =
+                            OthersTasksFragmentDirections.actionOthersTasksFragmentToLocalProjectStatsFragment2(
+                                event.composedTaskData
+                            )
+                        findNavController().navigate(action)
                     }
                     is MainViewModel.SharedEvent.ShowMissedRecurringTaskDialog -> {
                         // do nothing
@@ -264,7 +268,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
     }
 
     override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
-        //do nothing
+        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
     override fun onTaskClick(thingToDo: Ttd) {

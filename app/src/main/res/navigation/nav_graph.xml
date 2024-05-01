@@ -33,6 +33,10 @@
         <action
             android:id="@+id/action_othersTasksFragment_to_detailsFragment"
             app:destination="@id/detailsFragment" />
+        <action
+            android:id="@+id/action_othersTasksFragment_to_localProjectStatsFragment2"
+            app:destination="@id/localProjectStatsFragment2"
+            app:enterAnim="@anim/nav_default_enter_anim" />
     </fragment>
     <fragment
         android:id="@+id/todayTasksFragment"

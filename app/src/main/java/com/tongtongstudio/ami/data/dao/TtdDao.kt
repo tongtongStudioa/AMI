@@ -2,7 +2,6 @@ package com.tongtongstudio.ami.data.dao
 
 import androidx.room.*
 import com.tongtongstudio.ami.data.SortOrder
-import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
 import kotlinx.coroutines.flow.Flow
@@ -27,7 +26,7 @@ interface TtdDao {
                 startOfDay,
                 endOfDay
             )
-            SortOrder.EAT_THE_FROG -> getTasksOrderByEatTheFrogSort(
+            SortOrder.BY_EAT_THE_FROG -> getTasksOrderByEatTheFrogSort(
                 hideCompleted,
                 startOfDay,
                 endOfDay
@@ -47,7 +46,7 @@ interface TtdDao {
         "SELECT * FROM thing_to_do_table " +
                 "WHERE isCompleted == 0 " +
                 "AND (task_due_date > :endOfDay OR startDate > :endOfDay) " +
-                "ORDER BY task_due_date ASC, deadline ASC, startDate ASC, priority ASC, estimatedTime DESC"
+                "ORDER BY task_due_date ASC, deadline ASC, startDate ASC, priority DESC, estimatedTime DESC"
     )
     fun getLaterTasks(endOfDay: Long): Flow<List<TaskWithSubTasks>>
 
@@ -55,7 +54,7 @@ interface TtdDao {
     @Query(
         "SELECT * FROM thing_to_do_table " +
                 "WHERE isCompleted == 0 AND (task_due_date BETWEEN :endOfDay AND :endOfDayFilter OR startDate BETWEEN :endOfDay AND :endOfDayFilter) " +
-                "ORDER BY task_due_date ASC, deadline ASC, startDate ASC, priority ASC, estimatedTime DESC"
+                "ORDER BY task_due_date ASC, deadline ASC, startDate ASC, priority DESC, estimatedTime DESC"
     )
     fun getLaterTasksFilter(endOfDay: Long, endOfDayFilter: Long): Flow<List<TaskWithSubTasks>>
 
@@ -67,7 +66,7 @@ interface TtdDao {
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY isCompleted ASC,priority DESC, importance DESC, urgency DESC, estimatedTime DESC"
+                "ORDER BY isCompleted, startDate ASC, priority DESC, importance DESC, urgency DESC, estimatedTime DESC"
     )
     fun getTasksOrderByEisenhowerMatrixSort(
         hideCompleted: Boolean,
@@ -83,7 +82,7 @@ interface TtdDao {
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY isCompleted ASC, estimatedTime ASC, skillLevel DESC, isRecurring DESC, priority ASC, urgency DESC, importance DESC"
+                "ORDER BY isCompleted ASC, startDate ASC, estimatedTime ASC, skillLevel DESC, isRecurring DESC, priority ASC, urgency DESC, importance DESC"
     )
     fun getTasksOrderBy2minutesRules(
         hideCompleted: Boolean,
@@ -99,7 +98,7 @@ interface TtdDao {
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY isCompleted ASC, estimatedTime DESC, priority DESC, importance DESC, deadline ASC, skillLevel ASC"
+                "ORDER BY isCompleted ASC, startDate ASC, estimatedTime DESC, priority DESC, importance DESC, deadline ASC, skillLevel ASC"
     )
     fun getTasksOrderByEatTheFrogSort(
         hideCompleted: Boolean,
@@ -115,7 +114,7 @@ interface TtdDao {
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY isCompleted ASC, estimatedTime ASC, priority DESC, skillLevel ASC, urgency DESC, importance DESC, isRecurring ASC"
+                "ORDER BY isCompleted ASC, startDate ASC, estimatedTime ASC, priority DESC, skillLevel ASC, urgency DESC, importance DESC, isRecurring ASC"
     )
     fun getTasksOrderByCreatorSort(
         hideCompleted: Boolean,
@@ -130,7 +129,7 @@ interface TtdDao {
     )
     fun getSubTasks(parentId: Long): Flow<List<Ttd>>
 
-    @Query("SELECT * FROM thing_to_do_table WHERE task_due_date < :todayDate AND isRecurring == 1")
+    @Query("SELECT * FROM thing_to_do_table WHERE task_due_date < :todayDate AND isRecurring == 1 ORDER BY task_due_date ASC")
     suspend fun getMissedRecurringTasks(todayDate: Long): List<Ttd>
 
 
@@ -141,11 +140,33 @@ interface TtdDao {
 
     @Transaction
     @Query("SELECT COUNT(*) FROM thing_to_do_table WHERE isCompleted")
-    fun getCountTasks(): Int
+    suspend fun getCompletedTasksCount(): Int
 
     @Transaction
     @Query("SELECT COUNT(*) FROM thing_to_do_table WHERE categoryId = :categoryId ")
-    fun getCountCategoryTasks(categoryId: Long): Int
+    fun getCategoryCompletedTasksCount(categoryId: Long): Int
+
+    @Transaction
+    @Query("SELECT COUNT(*) FROM thing_to_do_table WHERE parent_task_id IS NULL AND isCompleted AND type = 'PROJECT'")
+    suspend fun getCompletedProjectsCount(): Int
+
+    @Transaction
+    @Query("SELECT COUNT(*) FROM thing_to_do_table WHERE parent_task_id IS NULL AND isCompleted AND type = 'PROJECT' AND categoryId = :categoryId ")
+    fun getCategoryCompletedProjectsCount(categoryId: Long): Int
+
+    @Transaction
+    @Query(
+        "SELECT COUNT(*) FROM thing_to_do_table " +
+                "WHERE isCompleted == 0 AND task_due_date > :endDate AND task_due_date < :endDateFilter"
+    )
+    fun getUpcomingTasksCountFilter(endDate: Long, endDateFilter: Long): Flow<Int>
+
+    @Transaction
+    @Query(
+        "SELECT COUNT(*) FROM thing_to_do_table " +
+                "WHERE isCompleted == 0 AND task_due_date > :endDate"
+    )
+    fun getUpcomingTasksCount(endDate: Long): Flow<Int>
 
     @Transaction
     @Query("SELECT round(1.0 * COUNT(CASE WHEN isCompleted THEN 1 END) / COUNT(*) * 100,1) FROM thing_to_do_table ")
@@ -153,7 +174,23 @@ interface TtdDao {
 
     @Transaction
     @Query("SELECT round(1.0 * COUNT(CASE WHEN isCompleted THEN 1 END) / COUNT(*) * 100,1)  FROM thing_to_do_table WHERE categoryId = :categoryId")
-    suspend fun getCategoryAchievementRate(categoryId: Long): Float
+    suspend fun getCategoryTasksAchievementRate(categoryId: Long): Float
+
+    @Transaction
+    @Query(
+        "SELECT round(100.0 * COUNT(CASE WHEN isCompleted THEN 1 END) / COUNT(*),1) " +
+                "FROM thing_to_do_table " +
+                "WHERE parent_task_id IS NULL AND type = 'PROJECT'"
+    )
+    suspend fun getAllProjectsAchievementRate(): Float
+
+    @Transaction
+    @Query(
+        "SELECT round(CASE WHEN COUNT(*) != 0 THEN 100.0 * COUNT(isCompleted) / COUNT(*) END,1)  " +
+                "FROM thing_to_do_table " +
+                "WHERE parent_task_id IS NULL AND isCompleted AND type = 'PROJECT' AND categoryId = :categoryId"
+    )
+    suspend fun getCategoryProjectsAchievementRate(categoryId: Long): Float
 
     @Transaction
     @Query(
@@ -179,39 +216,31 @@ interface TtdDao {
     @Query("SELECT SUM(actualWorkTime) FROM thing_to_do_table WHERE isCompleted")
     suspend fun getTotalTimeWorked(): Long
 
-    @Query("SELECT SUM(actualWorkTime) FROM thing_to_do_table WHERE categoryId == :categoryId AND isCompleted")
-    suspend fun getCountCategoryTimeWorked(categoryId: Long): Long
+    @Query("SELECT SUM(actualWorkTime) FROM thing_to_do_table WHERE categoryId = :categoryId AND isCompleted")
+    suspend fun getSumCategoryTimeWorked(categoryId: Long): Long
 
     // TODO: clear intermediate class from this file
+    /*@Query(
+        "SELECT title, (actualWorkTime * 1.0 / Total.timeWorked) * 100 AS timePercentage " +
+                "FROM thing_to_do_table " +
+                "INNER JOIN " +
+                "( SELECT SUM(actualWorkTime) as timeWorked FROM thing_to_do_table WHERE categoryId = :categoryId) AS Total" +
+                "WHERE categoryId = :categoryId"
+    )
+    suspend fun getRateTimeWorkedPerTask(categoryId: Long): List<TimePercentageTask>
+
     @Query(
         "SELECT title, (actualWorkTime * 1.0 / Total.timeWorked) * 100 AS timePercentage " +
                 "FROM thing_to_do_table " +
                 "INNER JOIN " +
-                "( SELECT SUM(actualWorkTime) as timeWorked FROM thing_to_do_table WHERE categoryId == :categoryId) AS Total" +
-                "WHERE categoryId = :categoryId"
+                "( SELECT SUM(actualWorkTime) as timeWorked FROM thing_to_do_table WHERE categoryId = :categoryId) AS Total"
     )
-    suspend fun getRateTimeWorkedPerTask(categoryId: Long): List<TimePercentageTask>
-    data class TimePercentageTask(val title: String, val timePercentage: Float)
-
-    @Transaction
-    @Query("SELECT * FROM thing_to_do_table WHERE categoryId = :categoryId")
-    fun getCategoryTasks(categoryId: Long): Flow<List<CategoryTasks>>
-    data class CategoryTasks(
-        @Embedded
-        val category: Category,
-        @Relation(Category::class, parentColumn = "categoryId", entityColumn = "category_id")
-        val tasks: List<Ttd>
-    )
-
-    suspend fun getTimeWorked(categoryId: Long? = null): Long {
-        return if (categoryId != null)
-            getCountCategoryTimeWorked(categoryId)
-        else getTotalTimeWorked()
-    }
+    suspend fun getRateTimeWorkedPerCategory(categoryId: Long): List<TimePercentageTask>
+    data class TimePercentageTask(val title: String, val timePercentage: Float)*/
 
     /**
      * Get accuracy rate of estimated work time for all tasks completed.
-     * If the current working time is equal to estimated time +- @errorPercent so the task's time work is well estimated.
+     * If the current working time is equal to estimated time +- errorPercent so the task's time work is well estimated.
      */
     @Query(
         "SELECT " +
@@ -281,32 +310,32 @@ interface TtdDao {
     ): Float
 
     @Query(
-        "SELECT 1 - round(1.0 * COUNT(CASE WHEN completedOnTime THEN 1 END) / COUNT(*),1) " +
+        "SELECT round(100.0 * COUNT(CASE WHEN completedOnTime THEN 1 END) / COUNT(*),1) " +
                 "FROM thing_to_do_table " +
                 "WHERE isCompleted"
     )
-    suspend fun getLateCompletionTasksRate(): Float
+    suspend fun getOnTimeCompletionTasksRate(): Float
 
     @Query(
-        "SELECT 1 - round(1.0 * COUNT(CASE WHEN completedOnTime THEN 1 END) / COUNT(*),1) " +
+        "SELECT round(100.0 * COUNT(CASE WHEN completedOnTime THEN 1 END) / COUNT(*),1) " +
                 "FROM thing_to_do_table " +
                 "WHERE isCompleted AND task_due_date BETWEEN :startDate AND :endDate"
     )
-    suspend fun getLateCompletionTasksRateByPeriod(startDate: Long, endDate: Long): Float
+    suspend fun getOnTimeCompletionTasksRateByPeriod(startDate: Long, endDate: Long): Float
 
     @Query(
-        "SELECT 1 - round(1.0 * COUNT(CASE WHEN completedOnTime THEN 1 END) / COUNT(*),1) " +
+        "SELECT round(100.0 * COUNT(CASE WHEN completedOnTime THEN 1 END) / COUNT(*),1) " +
                 "FROM thing_to_do_table " +
                 "WHERE isCompleted AND categoryId = :categoryId"
     )
-    suspend fun getLateCompletionCategoryTasksRate(categoryId: Long): Float
+    suspend fun getOnTimeCompletionCategoryTasksRate(categoryId: Long): Float
 
     @Query(
-        "SELECT 1 - round(1.0 * COUNT(CASE WHEN completedOnTime THEN 1 END) / COUNT(*),1) " +
+        "SELECT round(100.0 * COUNT(CASE WHEN completedOnTime THEN 1 END) / COUNT(*),1) " +
                 "FROM thing_to_do_table " +
                 "WHERE isCompleted AND categoryId = :categoryId AND task_due_date BETWEEN :startDate AND :endDate"
     )
-    suspend fun getLateCompletionTasksRateByCategoryAndPeriod(
+    suspend fun getOnTimeCompletionTasksRateByCategoryAndPeriod(
         categoryId: Long,
         startDate: Long,
         endDate: Long
@@ -319,18 +348,18 @@ interface TtdDao {
     suspend fun getMaxCurrentStreakTask(): Ttd
 
     @Query(
-        "SELECT round(AVG(CASE WHEN totalRepetitionCount != 0 THEN 1.0 * successCount / totalRepetitionCount ELSE NULL END),1) " +
+        "SELECT round(AVG(CASE WHEN isRecurring AND totalRepetitionCount != 0 THEN 100.0 * successCount / totalRepetitionCount ELSE NULL END),1) " +
                 "FROM thing_to_do_table " +
                 "WHERE isRecurring"
     )
     suspend fun getHabitCompletionRate(): Float
 
     @Query(
-        "SELECT round(AVG(CASE WHEN totalRepetitionCount != 0 THEN 1.0 * successCount / totalRepetitionCount ELSE NULL END),1) " +
+        "SELECT round(AVG(CASE WHEN totalRepetitionCount != 0 THEN 100.0 * successCount / totalRepetitionCount ELSE NULL END),1) " +
                 "FROM thing_to_do_table " +
                 "WHERE isRecurring AND categoryId = :categoryId"
     )
-    suspend fun getCategoryHabitCompletionRate(categoryId: Long): Ttd
+    suspend fun getCategoryHabitCompletionRate(categoryId: Long): Float
 
     // ************ Base Method *************** //
 
@@ -353,13 +382,19 @@ interface TtdDao {
     suspend fun getTask(id: Long): Ttd
 
     // TODO: use type to retrieve projects
-    @Query("SELECT * FROM thing_to_do_table WHERE parent_task_id IS NULL AND isCompleted == 0")
-    fun getTaskComposed(): Flow<List<Ttd>>
+    @Transaction
+    @Query("SELECT * FROM thing_to_do_table WHERE parent_task_id IS NULL AND isCompleted == 0 AND type = 'PROJECT'")
+    fun getProjects(): Flow<List<TaskWithSubTasks>>
 
+    @Query("SELECT * FROM thing_to_do_table WHERE isCompleted == 0")
+    fun getPotentialProject(): Flow<List<Ttd>>
+
+    @Transaction
     @Query(
         "SELECT * FROM thing_to_do_table " +
                 "WHERE isRecurring " +
                 "ORDER BY estimatedTime ASC, priority ASC, skillLevel ASC, urgency DESC, importance DESC"
     )
-    fun getRecurringTasks(): Flow<List<Ttd>>
+    fun getRecurringTasks(): Flow<List<TaskWithSubTasks>>
+
 }

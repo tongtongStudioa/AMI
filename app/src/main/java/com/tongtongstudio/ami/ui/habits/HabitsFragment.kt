@@ -2,8 +2,10 @@ package com.tongtongstudio.ami.ui.habits
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -14,6 +16,10 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.adapter.InteractionListener
+import com.tongtongstudio.ami.adapter.TaskAdapter
+import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
+import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
@@ -21,10 +27,11 @@ import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class HabitsFragment : Fragment(R.layout.fragment_main) {
+class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
     private val viewModel: HabitsViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var sharedViewModel: MainViewModel
+    private lateinit var taskAdapter: TaskAdapter
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -33,13 +40,14 @@ class HabitsFragment : Fragment(R.layout.fragment_main) {
         setUpToolbar()
 
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-
+        taskAdapter = TaskAdapter(this)
         binding.apply {
             fabAddTask.setOnClickListener {
                 sharedViewModel.onAddThingToDoDemand()
             }
 
             mainRecyclerView.apply {
+                adapter = taskAdapter
                 layoutManager = LinearLayoutManager(requireContext())
                 setHasFixedSize(true)
             }
@@ -61,7 +69,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main) {
                 when (event) {
                     is MainViewModel.SharedEvent.NavigateToEditScreen -> {
                         val action =
-                            EventFragmentDirections.actionEventFragmentToAddEditTaskFragment(
+                            HabitsFragmentDirections.actionEventFragmentToAddEditTaskFragment(
                                 getString(R.string.fragment_title_edit_thing_to_do),
                                 event.thingToDo
                                 // TODO: 06/09/2022 change to resource string
@@ -71,7 +79,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main) {
                     }
                     is MainViewModel.SharedEvent.NavigateToAddScreen -> {
                         val action =
-                            EventFragmentDirections.actionEventFragmentToAddEditTaskFragment(
+                            HabitsFragmentDirections.actionEventFragmentToAddEditTaskFragment(
                                 getString(R.string.fragment_title_add_thing_to_do),
                                 null
 
@@ -92,14 +100,12 @@ class HabitsFragment : Fragment(R.layout.fragment_main) {
                                 sharedViewModel.onUndoDeleteClick(event.thingToDo)
                             }.show()
                     }
-                    is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
-                        // do nothing
-                    }
-                    is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
-                        // do nothing
-                    }
-                    is MainViewModel.SharedEvent.ShowMissedRecurringTaskDialog -> {
-                        // do nothing
+                    is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
+                        val action =
+                            HabitsFragmentDirections.actionHabitsFragmentToDetailsFragment(
+                                event.task
+                            )
+                        findNavController().navigate(action)
                     }
                     else -> {
                         // do nothing
@@ -119,6 +125,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main) {
                 binding.emptyRecyclerView.textViewActionText.text =
                     getString(R.string.text_action_no_events)
             } else {
+                taskAdapter.submitList(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
             }
@@ -144,5 +151,31 @@ class HabitsFragment : Fragment(R.layout.fragment_main) {
         binding.toolbar.setNavigationOnClickListener {
             navController.navigateUp(appBarConfiguration)
         }
+    }
+
+    override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
+        sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
+    }
+
+    override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
+        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
+    }
+
+    override fun onTaskClick(thingToDo: Ttd) {
+        sharedViewModel.navigateToTaskDetailsScreen(thingToDo)
+    }
+
+    override fun onAddClick(composedTask: TaskWithSubTasks) {
+        // TODO: create another event for sub task add action which take composed task as argument
+        setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
+        sharedViewModel.onAddThingToDoDemand()
+    }
+
+    override fun onSubTaskRightSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
     }
 }

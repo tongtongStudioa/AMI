@@ -1,12 +1,12 @@
 package com.tongtongstudio.ami.ui.todaytasks
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.tongtongstudio.ami.data.PreferencesManager
 import com.tongtongstudio.ami.data.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.runBlocking
 import java.util.*
 import javax.inject.Inject
 
@@ -15,7 +15,6 @@ class TasksViewModel @Inject constructor(
     private val repository: Repository,
     preferencesManager: PreferencesManager,
 ) : ViewModel() {
-
     val preferencesFlow = preferencesManager.filterPreferencesFlow
 
     val startOfToday = Calendar.getInstance().run {
@@ -45,10 +44,8 @@ class TasksViewModel @Inject constructor(
         }
 
     val todayThingsToDo = todayThingsToDoFlow.asLiveData()
-    fun getUpcomingTtdCount() = runBlocking {
-        return@runBlocking repository.getCountUpcomingTasks(endOfToday)
-    }
-    /*combine(sortOrder, hideCompleted) { sortOrder, hideCompleted ->
-         Pair(sortOrder, hideCompleted)}*/
+    val upcomingTasksCount: LiveData<Int> =
+        repository.getUpcomingTasksCount(endOfToday).asLiveData()
+
 }
 

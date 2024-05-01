@@ -5,7 +5,6 @@ import androidx.lifecycle.asLiveData
 import com.tongtongstudio.ami.data.PreferencesManager
 import com.tongtongstudio.ami.data.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 @HiltViewModel
@@ -16,13 +15,5 @@ class HabitsViewModel @Inject constructor(
 
     private val preferencesFlow = preferencesManager.filterPreferencesFlow
 
-    // TODO: 04/04/2023 remove filter preferences for habits or add a local menu
-    private val habitsFlow = preferencesFlow
-        .flatMapLatest { filterPreferences ->
-            repository.getHabits(
-                /*filterPreferences.hideCompleted,
-                filterPreferences.sortOrder*/
-            )
-        }
-    val habits = habitsFlow.asLiveData()
+    val habits = repository.getHabits().asLiveData()
 }

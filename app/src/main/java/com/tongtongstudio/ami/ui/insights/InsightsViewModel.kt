@@ -1,111 +1,102 @@
 package com.tongtongstudio.ami.ui.insights
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
+import com.github.mikephil.charting.data.BarEntry
 import com.tongtongstudio.ami.data.Repository
-import com.tongtongstudio.ami.data.datatables.Project
-import com.tongtongstudio.ami.data.datatables.Task
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.runBlocking
 import java.util.*
 import javax.inject.Inject
-import kotlin.math.abs
 
 @HiltViewModel
 class InsightsViewModel @Inject constructor(
-    repository: Repository,
+    val repository: Repository,
 ) : ViewModel() {
-    val tasksCompletedLD = repository.getTasksCompletedStats().asLiveData()
-    val projectsLD = repository.getProjectCompletedStats().asLiveData()
 
-    // TODO: sql queries can get this faster
-    fun getAverageTimeCompletion(tasksCompleted: List<Task>): Long? {
-        var sum = 0L
-        var taskNoCount = 0
-        tasksCompleted.forEach {
-            sum += if (it.taskWorkTime != null && it.taskWorkTime != 0L)
-                it.taskWorkTime
-            else {
-                taskNoCount += 1
-                0L
+    private val _achievementsEntriesByPeriod = MutableLiveData<List<BarEntry>>()
+    val achievementsEntriesByPeriod: LiveData<List<BarEntry>>
+        get() = _achievementsEntriesByPeriod
+
+    val _categoryId = MutableLiveData<Long?>(null)
+
+    // TODO: use live data
+    val categoryId: Long? = null
+    val tasksAchievementRate =
+        runBlocking { return@runBlocking repository.getTasksAchievementRate(categoryId) }
+    val completedTasksCount =
+        runBlocking { return@runBlocking repository.getMCompletedTasksCount(categoryId) }
+    val projectsAchievementRate =
+        runBlocking { return@runBlocking repository.getProjectsAchievementRate(categoryId) }
+    val completedProjectsCount =
+        runBlocking { return@runBlocking repository.getMCompletedProjectsCount(categoryId) }
+    val timeWorked = runBlocking { return@runBlocking repository.getTimeWorked() }
+    val ttdMaxStreak = runBlocking { return@runBlocking repository.getMaxStreak() }
+    val ttdCurrentMaxStreak = runBlocking { return@runBlocking repository.getMaxStreak(true) }
+    val accuracyRateEstimation =
+        runBlocking { return@runBlocking repository.getAccuracyRateEstimation(categoryId) }
+    val onTimeCompletionRate =
+        runBlocking { return@runBlocking repository.getOnTimeCompletionRate(categoryId) }
+    val habitCompletionRate =
+        runBlocking { return@runBlocking repository.getHabitCompletionRate(categoryId) }
+
+    val startDate: Long = Calendar.getInstance().run {
+        add(Calendar.DAY_OF_MONTH, -7)
+        timeInMillis
+    }
+    val endDate: Long = Calendar.getInstance().run {
+        timeInMillis
+    }
+
+    fun updateAchievementEntries() {
+        val achievementsEntries = getAchievementsByPeriod(startDate, endDate)
+        _achievementsEntriesByPeriod.value = achievementsEntries
+    }
+
+    private fun getAchievementsByPeriod(startDate: Long, endDate: Long): List<BarEntry> {
+
+        val arrayListAchievements = ArrayList<BarEntry>()
+        val intermediateStartCalendar: Calendar = Calendar.getInstance()
+        var startDay = intermediateStartCalendar.run {
+            timeInMillis = startDate
+            timeInMillis
+        }
+        var endDay = intermediateStartCalendar.run {
+            add(Calendar.DAY_OF_MONTH, 1)
+            timeInMillis
+        }
+        /*var i = 0.0F
+        while (endDay < endDate) {
+            val achievementsByDay = (Math.random() * 25 + 25)/*runBlocking {
+                return@runBlocking repository.getMCompletedTasksCount(
+                    categoryId,
+                    startDay,
+                    endDay
+                )
+            }*/
+            i += 1.0F
+            arrayListAchievements.add(BarEntry(i,achievementsByDay.toFloat()))
+            startDay = intermediateStartCalendar.run {
+                timeInMillis = endDay
+                timeInMillis
             }
-        }
-        val averageTimeCompletion: Long? =
-            if (tasksCompleted.isEmpty() || (taskNoCount - tasksCompleted.size) == 0)
-                null
-            else
-                (sum.toFloat() / (tasksCompleted.size - taskNoCount)).toLong()
-        return averageTimeCompletion
-    }
-
-    // TODO: remove this method : display achievement rate in the project stat view or display with SQL queries advancement off project in their whole
-    fun getProjectAchievementRate(projectsList: List<Project>): Float? {
-        var sumSubTasks = 0
-        var sumSubTasksCompleted = 0
-        projectsList.forEach {
-            sumSubTasks += it.nb_sub_task
-            sumSubTasksCompleted += it.nb_sub_tasks_completed
-        }
-        return if (sumSubTasks == 0) null else sumSubTasksCompleted / sumSubTasks.toFloat() * 100
-    }
-
-    // TODO: displace this method in Ttd class and use sql queries with adapted class StatFinishedTask(estimatedTime, actualWorkTime, ...)
-    fun retrieveEstimationWorkTimeAccuracyRate(tasksCompleted: List<Task>): Float? {
-        var tasksStudied = 0
-        var rateSum = 0F
-        tasksCompleted.forEach {
-            val completionTime = it.taskWorkTime
-            val estimatedTimeInMillis = it.taskEstimatedTime //in minutes
-
-            if (completionTime != null && estimatedTimeInMillis != null) {
-                val difference = abs((completionTime - estimatedTimeInMillis))
-                rateSum += if (difference < estimatedTimeInMillis) {
-                    (1 - difference / estimatedTimeInMillis.toFloat())
-                } else {
-                    0F
-                }
-                tasksStudied += 1
+            endDay = intermediateStartCalendar.run {
+                add(Calendar.DAY_OF_MONTH, 1)
+                timeInMillis
             }
+        }*/
+        for (index in 0 until 7) {
+            arrayListAchievements.add(BarEntry(0F, getRandom(25F, 25F)))
         }
-        return if (tasksCompleted.isEmpty() || tasksStudied == 0) null else rateSum / tasksStudied * 100
+        return arrayListAchievements.toList()
     }
 
-    // TODO: sql queries
-    fun retrieveOnTimeCompletionRate(tasksCompleted: List<Task>): Float? {
-        val calendar = Calendar.getInstance()
-        var nbCompletedOnTime = 0
-        var tasksNoStudied = 0
-        tasksCompleted.forEach { task ->
-            if (!task.isRecurring) { // no count of recurring task (maybe later)
-                val completedDateInMillis = task.taskCompletedDate!!
-                val completedDate = calendar.run {
-                    timeInMillis = task.taskCompletedDate
-                    time
-                }
-                // task's deadline mustn't be null !! --> edit fragment: save method
-                if (task.deadline == null) {
-                    tasksNoStudied++
-                } else {
-                    val deadlineDate = calendar.run {
-                        timeInMillis = task.deadline
-                        set(Calendar.HOUR_OF_DAY, 23)
-                        set(Calendar.MINUTE, 59)
-                        time
-                    }
-                    val wasCompletedOnTime: Boolean =
-                        completedDate <= deadlineDate || completedDateInMillis < task.deadline
-                    if (wasCompletedOnTime) nbCompletedOnTime++
-                }
-            } else tasksNoStudied++
-        }
-        return if (tasksCompleted.isEmpty() || tasksNoStudied == tasksCompleted.size) null else nbCompletedOnTime / tasksCompleted.size.toFloat() * 100
+    fun getRandom(range: Float, start: Float): Float {
+        return (Math.random() * range).toFloat() + start
     }
 
-    // TODO: sql queries
-    fun getProjectsCompleted(projectsList: List<Project>): Int {
-        val projectCompleted = ArrayList<Project>()
-        projectsList.forEach {
-            if (it.isPjtCompleted) projectCompleted.add(it)
-        }
-        return projectCompleted.toList().size
+    fun updateCategoryId(id: Long?) {
+        _categoryId.value = id
     }
 }

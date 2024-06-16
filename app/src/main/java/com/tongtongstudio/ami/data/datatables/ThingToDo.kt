@@ -6,9 +6,6 @@ import kotlinx.parcelize.Parcelize
 import java.text.SimpleDateFormat
 import java.util.*
 
-const val PATTERN_FORMAT_DATE = "E dd/MM"
-enum class Nature { PROJECT, TASK, EVENT }
-
 @Parcelize
 open class ThingToDo(
     @Ignore open val name: String,

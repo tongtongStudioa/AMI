@@ -6,7 +6,7 @@
     <string name="menu_drawer_today_s_tasks">My day</string>
     <string name="menu_drawer_others_tasks">Upcoming</string>
     <string name="menu_drawer_all_projects">My projects</string>
-    <string name="menu_drawer_all_events">My events</string>
+    <string name="menu_drawer_habits">Habits</string>
     <string name="date_picker_menu_today">Today</string>
     <string name="date_picker_menu_tomorrow">Tomorrow</string>
     <string name="menu_personalized">Personalized</string>
@@ -22,7 +22,7 @@
     <string name="Fragment_title_projects">Projects</string>
     <string name="fragment_title_events">Events</string>
     <string name="fragment_title_completed">Completed</string>
-    <string name="fragment_title_chronometer">Time tracking work</string>
+    <string name="fragment_title_chronometer">Task completion tracking</string>
     <string name="fragment_title_other_tasks">Upcoming</string>
     <string name="menu_drawer_accomplishment">Insights</string>
     <string name="fragment_title_add_thing_to_do">New thingToDo</string>
@@ -90,7 +90,7 @@
     <string name="set_reminder">Set reminder</string>
     <string name="nb_sub_tasks_project">%1$d/%2$d sub tasks completed</string>
     <string name="fragment_title_achievements">My Insights</string>
-    <string name="no_information">_</string>
+    <string name="no_information" translatable="false">_</string>
     <string name="no_estimated_work_time">No estimated work time</string>
     <string name="times_completed">Times completed</string>
     <string name="maximum_streak">Maximum streak</string>
@@ -111,7 +111,9 @@
     <string name="filter">Filter</string>
     <string name="nb_projects_info">%d projects</string>
     <string name="nb_job_completed_info">%d jobs completed</string>
-    <string name="nb_future_tasks_info">%d future assignments</string>
+    <string name="nb_future_tasks_tomorrow">%d assignments tomorrow</string>
+    <string name="nb_future_tasks_nex_week">%d assignments next week</string>
+    <string name="nb_future_tasks_later">%d future assignments later</string>
     <string name="sub_pages_title">Sub pages</string>
     <string name="menu_title_achievements">Achievements</string>
     <string name="menu_title_principals">Principals</string>
@@ -157,9 +159,19 @@
     <string name="max_streak_title">Max streak</string>
     <string name="completion_rate_value" translatable="false">%.1f%%</string>
     <string name="time_worked">Time Worked</string>
-    <string name="tracking_notification_text">Work on %1s : %2s</string>
-    <string name="tracking_notification_title">Suivi du temps de travail</string>
-    <string name="action_pause_title">Pause</string>
-    <string name="action_cancel_title">Cancel</string>
-    <string name="action_resume_titile">Resume</string>
+    <string name="tracking_notification_text">Work on %1s : \n%2s</string>
+    <string name="tracking_notification_title">Tracking working time</string>
+    <string name="action_pause_title" translatable="false">Pause</string>
+    <string name="action_cancel_title" translatable="false">Cancel</string>
+    <string name="action_resume_title" translatable="false">Resume</string>
+    <string name="fragment_title_habits">Habits</string>
+    <string name="category_others">Others</string>
+    <string name="msg_work_session_saved">Work session saved</string>
+    <string name="type_of_thing_to_do_description">Type of thing to do</string>
+    <string name="hint_title">Title</string>
+    <string name="title_helper_text">Thing to do\'s title</string>
+    <string name="weekly_interval">Weekly on %s</string>
+    <string name="achievements_sum_up">Achievements sum up</string>
+    <string name="global_completion_rate_title">Global completion rate</string>
+    <string name="total_time_worked_title">Total time worked</string>
 </resources>

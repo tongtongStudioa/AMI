@@ -3,12 +3,15 @@ package com.tongtongstudio.ami.data.datatables
 import android.os.Parcelable
 import android.text.format.DateUtils.DAY_IN_MILLIS
 import androidx.room.*
-import com.tongtongstudio.ami.data.RecurringTaskInterval
 import kotlinx.parcelize.Parcelize
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
+
+const val PATTERN_FORMAT_DATE = "E dd/MM"
+
+enum class Nature { PROJECT, TASK, EVENT }
 
 @Parcelize
 @Entity(tableName = "thing_to_do_table")
@@ -27,7 +30,9 @@ data class Ttd(
     val isCompleted: Boolean = false,
     val completionDate: Long? = null,
     val completedOnTime: Boolean? = null,
+    // TODO: replace with estimated working time
     val estimatedTime: Long? = null,
+    // TODO: replace with currentWorkingTime
     val actualWorkTime: Long? = null,
     val isRecurring: Boolean = false,
     val currentStreak: Int = 0,
@@ -73,7 +78,8 @@ data class Ttd(
             else -> {
                 this.copy(
                     isCompleted = false,
-                    completionDate = null
+                    completionDate = null,
+                    completedOnTime = null
                 )
             }
         }
@@ -162,6 +168,15 @@ data class TaskWithSubTasks(
     fun getNbSubTasks(): Int = subTasks.size
 }
 
+data class TtdAchieved(
+    val completionDate: Long,
+    val completedCount: Float
+)
+
+data class TtdStreakInfo(
+    val title: String?,
+    val streakInfo: Int?
+)
 
 /**
  * Evaluation class and entity of Room database.
@@ -214,6 +229,15 @@ data class Category(
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 )
 
+data class TimeWorkedDistribution(val title: String?, val totalTimeWorked: Long?)
+
+data class CategoryTasks(
+    @Embedded
+    val category: Category,
+    @Relation(entity = Ttd::class, parentColumn = "category_id", entityColumn = "categoryId")
+    val tasks: List<Ttd>
+)
+
 @Entity
 data class Reminder(
     @ColumnInfo(name = "parent_id")
@@ -225,8 +249,6 @@ data class Reminder(
     @ColumnInfo(name = "reminder_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 ) {
-    // TODO: change to return format DD/MM HH:mm
-
     private fun getReminderDueDateFormatted(): String {
         return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
     }
@@ -247,3 +269,5 @@ data class Reminder(
         return DateFormat.getDateInstance(DateFormat.MEDIUM).format(calendar.time)
     }
 }
+
+// TODO: Create TimeWorked sessions entry

@@ -16,13 +16,8 @@ class ProjectViewModel @Inject constructor(
 
     val preferencesFlow = preferencesManager.filterPreferencesFlow
 
-    private val projectsFlow = preferencesFlow
-        .flatMapLatest { filterPreferences ->
-            repository.getAllProjects(
-                filterPreferences.sortOrder,
-                filterPreferences.hideCompleted,
-            )
-        }
-
-    val projects = projectsFlow.asLiveData()
+    val projects =
+        preferencesFlow.flatMapLatest {
+            repository.getProjects(it.hideCompleted)
+        }.asLiveData()
 }

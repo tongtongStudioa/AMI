@@ -64,7 +64,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val thingToDo = completedAdapter.getTaskList()[viewHolder.adapterPosition]
                     if (direction == ItemTouchHelper.RIGHT) {
-                        sharedViewModel.onThingToDoRightSwiped(thingToDo)
+                        sharedViewModel.deleteTask(thingToDo)
                     }
                 }
 
@@ -194,7 +194,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo)
     }
 
-    override fun onAddClick(composedTask: TaskWithSubTasks) {
+    override fun onProjectAddClick(composedTask: TaskWithSubTasks) {
         // do nothing
     }
 

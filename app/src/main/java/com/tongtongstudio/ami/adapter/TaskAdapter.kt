@@ -152,7 +152,7 @@ class TaskAdapter(private val listener: InteractionListener) :
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
                         val composedTask = taskList[position]
-                        listener.onAddClick(composedTask)
+                        listener.onProjectAddClick(composedTask)
                     }
                 }
                 subCardView.setOnClickListener {

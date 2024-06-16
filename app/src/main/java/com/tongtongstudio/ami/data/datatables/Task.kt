@@ -4,7 +4,6 @@ import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.tongtongstudio.ami.data.RecurringTaskInterval
 import kotlinx.parcelize.Parcelize
 import java.text.DateFormat
 import java.text.SimpleDateFormat

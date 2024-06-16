@@ -5,7 +5,6 @@
     <string name="menu_drawer_today_s_tasks">Ma journée</string>
     <string name="menu_drawer_others_tasks">À venir</string>
     <string name="menu_drawer_all_projects">Mes projets</string>
-    <string name="menu_drawer_all_events">Mes événements</string>
     <string name="date_picker_menu_today">Aujourd\'hui</string>
     <string name="date_picker_menu_tomorrow">Demain</string>
     <string name="menu_personalized">Personalisé</string>
@@ -21,7 +20,7 @@
     <string name="Fragment_title_projects">Projects</string>
     <string name="fragment_title_events">Evénements</string>
     <string name="fragment_title_completed">Effectuées</string>
-    <string name="fragment_title_chronometer">Suivi du temps de travail</string>
+    <string name="fragment_title_chronometer">Suivi d\'achèvement de la tâche</string>
     <string name="fragment_title_other_tasks">À venir</string>
     <string name="menu_drawer_accomplishment">Mes accomplissements</string>
     <string name="fragment_title_add_thing_to_do">Nouvelle tâche</string>
@@ -64,7 +63,6 @@
     <string name="select_date">"Choisir une date "</string>
     <string name="thing_to_do_title">Tître</string>
     <string name="fragment_title_achievements">Mes achèvements</string>
-    <string name="no_information">_</string>
     <string name="no_estimated_work_time">Pas de durée estimée</string>
     <string name="times_completed">Nombre de fois complété</string>
     <string name="maximum_streak">Série maximum</string>
@@ -84,7 +82,6 @@
     <string name="filter">Filtre</string>
     <string name="nb_projects_info">%d projets</string>
     <string name="nb_job_completed_info">%d complétées</string>
-    <string name="nb_future_tasks_info">%d futures tâches</string>
     <string name="sub_pages_title">Sous pages</string>
     <string name="menu_title_achievements">Achèvements</string>
     <string name="menu_title_principals">Principaux</string>
@@ -132,5 +129,21 @@
     <string name="view_pager_screen_title">Stats et suivi du temps</string>
     <string name="completion_rate_title">Taux d\'achévement</string>
     <string name="max_streak_title">Série maximale</string>
+    <string name="time_worked">Temps travaillé</string>
+    <string name="tracking_notification_text">Travaille sur %1s : \n%2s</string>
     <string name="tracking_notification_title">Suivi du temps de travail</string>
+    <string name="menu_drawer_habits">Habitudes</string>
+    <string name="fragment_title_habits">Habitudes</string>
+    <string name="category_others">Autre</string>
+    <string name="msg_work_session_saved">Session de travail enregistré</string>
+    <string name="type_of_thing_to_do_description">Type de chose à faire</string>
+    <string name="hint_title">Titre</string>
+    <string name="title_helper_text">Nom de la chose à faire</string>
+    <string name="weekly_interval">Chaque semaine le %s</string>
+    <string name="nb_future_tasks_tomorrow">%d tâches pour demain</string>
+    <string name="nb_future_tasks_nex_week">%d tâches  la semaine prochaine</string>
+    <string name="nb_future_tasks_later">%d tâches plus tard</string>
+    <string name="achievements_sum_up">Résumé des achèvements</string>
+    <string name="global_completion_rate_title">Taux d\'achèvement global</string>
+    <string name="total_time_worked_title">Temps travaillé total</string>
 </resources>

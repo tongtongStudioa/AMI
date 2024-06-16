@@ -5,12 +5,12 @@
             <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/todayTasksFragment"
-                    android:title="@string/menu_drawer_today_s_tasks"
-                    android:icon="@drawable/ic_baseline_today_24" />
+                    android:icon="@drawable/ic_baseline_today_24"
+                    android:title="@string/menu_drawer_today_s_tasks" />
                 <item
                     android:id="@+id/othersTasksFragment"
-                    android:title="@string/menu_drawer_others_tasks"
-                    android:icon="@drawable/baseline_pending_actions_24" />
+                    android:icon="@drawable/baseline_pending_actions_24"
+                    android:title="@string/menu_drawer_others_tasks" />
             </group>
         </menu>
     </item>
@@ -19,12 +19,12 @@
             <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/projectFragment"
-                    android:title="@string/menu_drawer_all_projects"
-                    android:icon="@drawable/ic_project_24" />
+                    android:icon="@drawable/ic_project_24"
+                    android:title="@string/menu_drawer_all_projects" />
                 <item
-                    android:id="@+id/eventFragment"
-                    android:title="@string/menu_drawer_all_events"
-                    android:icon="@drawable/baseline_calendar_24" />
+                    android:id="@+id/habitsFragment"
+                    android:icon="@drawable/baseline_calendar_24"
+                    android:title="@string/menu_drawer_habits" />
             </group>
         </menu>
     </item>
@@ -33,12 +33,30 @@
             <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/completedThingToDoFragment"
-                    android:title="@string/fragment_title_completed"
-                    android:icon="@drawable/ic_baseline_checklist_24" />
+                    android:icon="@drawable/ic_baseline_checklist_24"
+                    android:title="@string/fragment_title_completed" />
                 <item
-                    android:title="@string/menu_drawer_accomplishment"
                     android:id="@id/achievementsFragment"
-                    android:icon="@drawable/ic_baseline_leaderboard_24" />
+                    android:icon="@drawable/ic_baseline_leaderboard_24"
+                    android:title="@string/menu_drawer_accomplishment" />
+            </group>
+        </menu>
+    </item>
+    <item android:title="Other">
+        <menu>
+            <group>
+                <item
+                    android:id="@+id/about_item"
+                    android:icon="@drawable/baseline_outlined_flag_24"
+                    android:title="About" />
+                <item
+                    android:id="@+id/share_item"
+                    android:icon="@drawable/baseline_share_24"
+                    android:title="Share" />
+                <item
+                    android:id="@+id/rate_item"
+                    android:icon="@drawable/baseline_rate_review_24"
+                    android:title="Rate" />
             </group>
         </menu>
     </item>

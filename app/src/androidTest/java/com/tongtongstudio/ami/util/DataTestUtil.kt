@@ -46,8 +46,63 @@ class DataTestUtil(private val ttdDao: TtdDao) {
             urgency = 8,
             estimatedTime = util.getTimeInMillis(2, 30),
             dependency = true,
-            skillLevel = 10
+            skillLevel = 10,
+            isRecurring = true,
+            totalRepetitionCount = 15,
+            successCount = 10
+        ),
+        Ttd(
+            "Créer un test pour la base de donnée",
+            4,
+            util.getRdPastDate(),
+            importance = 4,
+            urgency = 8,
+            estimatedTime = util.getTimeInMillis(1, 30),
+            dependency = false,
+            skillLevel = 10,
+            isCompleted = true,
+            actualWorkTime = util.getTimeInMillis(1),
+            completedOnTime = true
+        ),
+        Ttd(
+            "Examen de math",
+            1,
+            util.getRdPastDate(),
+            importance = 9,
+            urgency = 2,
+            estimatedTime = util.getTimeInMillis(4, 0),
+            dependency = false,
+            skillLevel = 4,
+            isCompleted = true,
+            actualWorkTime = util.getTimeInMillis(4, 0),
+            completedOnTime = false
+        ),
+        Ttd(
+            "Faire une lessive",
+            2,
+            util.getRdPastDate(),
+            importance = 6,
+            urgency = 10,
+            estimatedTime = util.getTimeInMillis(0, 30),
+            dependency = true,
+            isCompleted = true,
+            actualWorkTime = util.getTimeInMillis(2),
+            completedOnTime = false
+        ),
+        Ttd(
+            "Boire de l'eau",
+            4,
+            util.getRdPastDate(),
+            importance = 4,
+            urgency = 8,
+            estimatedTime = util.getTimeInMillis(2, 30),
+            dependency = true,
+            skillLevel = 10,
+            isCompleted = true,
+            actualWorkTime = util.getTimeInMillis(3, 40),
+            completedOnTime = false
         )
+
     )
 
     val startOfDay: Long = Calendar.getInstance().run {

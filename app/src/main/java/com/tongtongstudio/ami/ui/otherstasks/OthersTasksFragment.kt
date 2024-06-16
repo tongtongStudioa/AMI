@@ -65,7 +65,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
             }
 
             fabAddTask.setOnClickListener {
-                sharedViewModel.onAddThingToDoDemand()
+                sharedViewModel.addThingToDo()
             }
 
             mainRecyclerView.apply {
@@ -86,9 +86,9 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val thingToDo = mainAdapter.getTaskList()[viewHolder.absoluteAdapterPosition]
                     if (direction == ItemTouchHelper.RIGHT) {
-                        sharedViewModel.onThingToDoRightSwiped(thingToDo)
+                        sharedViewModel.deleteTask(thingToDo)
                     } else if (direction == ItemTouchHelper.LEFT) {
-                        sharedViewModel.onThingToDoLeftSwiped(thingToDo)
+                        sharedViewModel.updateTask(thingToDo)
                     }
                 }
 
@@ -130,12 +130,16 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
 
             }).attachToRecyclerView(mainRecyclerView)
         }
+
+        viewModel.preferencesLiveData.observe(viewLifecycleOwner) {
+            viewModel.laterFilter = it.filter
+        }
         // TODO: 04/02/2023 change appearance of later ttd fragment
         viewModel.otherThingsToDo.observe(viewLifecycleOwner) {
+            updateTextExplication(viewModel.laterFilter, it.size)
             if (it.isEmpty()) {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = true
                 binding.mainRecyclerView.isVisible = false
-                binding.textSup.text = getString(R.string.nb_future_tasks_info, 0)
                 binding.emptyRecyclerView.textViewExplication.text = textExplication
                 binding.emptyRecyclerView.textViewActionText.text =
                     getString(R.string.text_action_no_tasks)
@@ -143,7 +147,6 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                 mainAdapter.submitList(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
-                binding.textSup.text = getString(R.string.nb_future_tasks_info, it.size)
             }
         }
 
@@ -196,19 +199,32 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                             )
                         findNavController().navigate(action)
                     }
-                    is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
-                        // do nothing
-                    }
                     is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
-                        //do nothing
+                        val action =
+                            OthersTasksFragmentDirections.actionOthersTasksFragmentToLocalProjectStatsFragment2(
+                                event.composedTaskData
+                            )
+                        findNavController().navigate(action)
                     }
-                    is MainViewModel.SharedEvent.ShowMissedRecurringTaskDialog -> {
-                        // do nothing
-                    }
+                    else -> {}
                 }.exhaustive
             }
         }
         setHasOptionsMenu(true)
+    }
+
+    private fun updateTextExplication(laterFilter: LaterFilter?, tasksCount: Int) {
+        when (laterFilter) {
+            LaterFilter.TOMORROW -> {
+                binding.textSup.text =
+                    getString(R.string.nb_future_tasks_tomorrow, tasksCount)
+            }
+            LaterFilter.NEXT_WEEK -> binding.textSup.text =
+                getString(R.string.nb_future_tasks_nex_week, tasksCount)
+            LaterFilter.LATER -> binding.textSup.text =
+                getString(R.string.nb_future_tasks_later, tasksCount)
+            else -> {}//do nothing
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -256,7 +272,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
         binding.toolbar.setNavigationOnClickListener {
             navController.navigateUp(appBarConfiguration)
         }
-        //binding.toolbar.subtitle = "Things to do later"
+        binding.toolbar.subtitle = "Things to do later"
     }
 
     override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
@@ -264,16 +280,16 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
     }
 
     override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
-        //do nothing
+        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
     override fun onTaskClick(thingToDo: Ttd) {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo)
     }
 
-    override fun onAddClick(composedTask: TaskWithSubTasks) {
+    override fun onProjectAddClick(composedTask: TaskWithSubTasks) {
         setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
-        sharedViewModel.onAddThingToDoDemand()
+        sharedViewModel.addThingToDo()
     }
 
     override fun onSubTaskRightSwipe(thingToDo: Ttd) {

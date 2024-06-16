@@ -3,6 +3,7 @@ package com.tongtongstudio.ami.data.datatables
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.tongtongstudio.ami.data.SortOrder
 import com.tongtongstudio.ami.data.ThingToDoDatabase
 import com.tongtongstudio.ami.data.dao.TtdDao
 import com.tongtongstudio.ami.util.DataTestUtil
@@ -51,7 +52,7 @@ internal class TtdTest {
     @Throws(IOException::class)
     fun getAllTasks_EisenhowerMatrixSort_returnSortedList() = runBlocking {
         val resultedFlow = ttdDao.getTodayTasks(
-            "EisenhowerMatrixSort",
+            SortOrder.BY_EISENHOWER_MATRIX,
             false,
             dataTestUtil.startOfDay,
             dataTestUtil.endOfDay
@@ -61,13 +62,13 @@ internal class TtdTest {
         dataTestUtil.getTasks().forEach { println(it.title) }
 
         println("Sorted data:")
-        result.forEach { println(it.title) }
+        result.forEach { println(it.mainTask.title) }
 
         assertEquals(result, result.sortedWith(
-            compareBy<Ttd> { it.priority }
-                .thenByDescending { it.importance }
-                .thenByDescending { it.urgency }
-                .thenByDescending { it.estimatedTime })
+            compareBy<TaskWithSubTasks> { it.mainTask.priority }
+                .thenByDescending { it.mainTask.importance }
+                .thenByDescending { it.mainTask.urgency }
+                .thenByDescending { it.mainTask.estimatedTime })
         )
     }
 
@@ -89,20 +90,60 @@ internal class TtdTest {
             timeInMillis
         }
 
-        val resultedFlow = ttdDao.getLaterTasks(endOfDay, endOfDayWeek)
+        val resultedFlow = ttdDao.getLaterTasksFilter(endOfDay, endOfDayWeek)
         val result = resultedFlow.first()
 
         println("Result :")
-        result.forEach { println(it.title + " " + it.dueDate) }
+        result.forEach { println(it.mainTask.title + " " + it.mainTask.dueDate) }
 
         assertEquals(result, result.sortedWith(
-            compareBy<Ttd> { it.dueDate }
-                .thenBy { it.deadline }
-                .thenBy { it.startDate }
-                .thenBy { it.priority }
-                .thenByDescending { it.estimatedTime }
+            compareBy<TaskWithSubTasks> { it.mainTask.dueDate }
+                .thenBy { it.mainTask.deadline }
+                .thenBy { it.mainTask.startDate }
+                .thenBy { it.mainTask.priority }
+                .thenByDescending { it.mainTask.estimatedTime }
         ))
     }
+
+    @Test
+    fun getAchievementRate_allTasks_correctRate() = runBlocking {
+
+        val resultingRate = ttdDao.getTotalAchievementRate()
+
+        // actually rate must be 50.0 (%)
+        assertEquals(50.0F, resultingRate)
+
+    }
+
+    @Test
+    fun getHabitCompletionRate_allRecurringTasks_correctRate() = runBlocking {
+
+        val resultingRate = ttdDao.getHabitCompletionRate()
+
+        // actually rate must be 66.7 (%)
+        assertEquals(66.7F, resultingRate)
+
+    }
+
+    @Test
+    fun getOnTimeCompletionRate_allCompletedTasks_correctRate() = runBlocking {
+
+        val resultingRate = ttdDao.getOnTimeCompletionTasksRate()
+
+        // actually rate must be 25.0 (%)
+        assertEquals(25.0F, resultingRate)
+    }
+
+    @Test
+    fun getEstimationAccuracyRate_allCompletedTasks_correctRate() = runBlocking {
+
+        val resultingRate = ttdDao.getAccuracyRateOfEstimatedWorkTime(0.2F)
+
+        // actually rate must be 25.0 (%)
+        assertEquals(25.0F, resultingRate)
+
+    }
+
 
     @Test
     fun getLaterTasks_tomorrow_listWithoutUnexpectedTasks() = runBlocking {
@@ -122,7 +163,7 @@ internal class TtdTest {
             timeInMillis
         }
 
-        val resultedFlow = ttdDao.getLaterTasks(endOfDay, endOfDayTomorrow)
+        val resultedFlow = ttdDao.getLaterTasksFilter(endOfDay, endOfDayTomorrow)
         val result = resultedFlow.first()
 
         val list = dataTestUtil.getTasks()

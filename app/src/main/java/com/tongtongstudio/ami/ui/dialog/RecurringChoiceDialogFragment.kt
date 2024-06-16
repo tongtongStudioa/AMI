@@ -12,7 +12,7 @@ import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.RecurringTaskInterval
+import com.tongtongstudio.ami.data.datatables.RecurringTaskInterval
 import com.tongtongstudio.ami.databinding.DialogSelectRecurringProtocolBinding
 import java.util.*
 
@@ -82,7 +82,7 @@ class RecurringChoiceDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         stringItems = resources.getStringArray(R.array.period_list)
-        val adapter = ArrayAdapter(requireContext(), R.layout.list_options, stringItems)
+        val adapter = ArrayAdapter(requireContext(), R.layout.item_options, stringItems)
 
         setFragmentResultListener(CURRENT_RECURRING_INFO_REQUEST_KEY) { _, bundle ->
             val times = bundle.getInt(TIMES_KEY)

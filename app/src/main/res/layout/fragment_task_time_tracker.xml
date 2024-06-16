@@ -66,7 +66,7 @@
             app:layout_constraintEnd_toEndOf="@+id/circularProgressIndicator"
             app:layout_constraintStart_toStartOf="@+id/circularProgressIndicator"
             app:layout_constraintTop_toTopOf="@+id/circularProgressIndicator"
-            tools:text="15:23" />
+            tools:text="15m 23s" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_time_estimated"

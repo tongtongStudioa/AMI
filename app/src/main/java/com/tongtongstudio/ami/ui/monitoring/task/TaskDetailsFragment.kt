@@ -11,6 +11,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentTaskInformationBinding
+import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -65,25 +66,23 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_information) {
             else getString(R.string.no_information)
 
             viewModel.actualWorkTime.observe(viewLifecycleOwner) {
+                totalDurationView.isVisible = it != null
                 tvTotalDuration.text =
-                    Ttd.getFormattedTime(it) ?: getString(R.string.no_information)
+                    TrackingTimeUtility.getFormattedTimeWorked(it)
+                        ?: getString(R.string.no_information)
             }
 
             // TODO: show graph and assessments comments
-            chartView.isVisible = false
+            chartView.isVisible = true
             // in this example, a LineChart is initialized from xml
             val entries = ArrayList<Entry>()
             entries.add(Entry(1.0F, 8.0F))
             entries.add(Entry(2.0F, 12.0F))
             entries.add(Entry(3.0F, 4.0F))
             entries.add(Entry(4.0F, 25.0F))
-            entries.add(Entry(5.0F, 26.0F))
-            entries.add(Entry(6.0F, 15.0F))
-            entries.add(Entry(7.0F, 19.0F))
-            entries.add(Entry(8.0F, 27.0F))
             val dataSet = LineDataSet(entries, "1 serie")
             val lineData = LineData(dataSet)
-            //chartView.data = lineData
+            chartView.data = lineData
             chartView.invalidate() // refresh
         }
     }

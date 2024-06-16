@@ -16,6 +16,7 @@ class OthersTasksViewModel @Inject constructor(
     preferencesManager: PreferencesManager
 ) : ViewModel() {
 
+    var laterFilter: LaterFilter? = null
     private val preferencesFlow = preferencesManager.filterPreferencesFlow
 
     // TODO: 24/10/2022 simplify and place it in mainViewModel
@@ -38,6 +39,8 @@ class OthersTasksViewModel @Inject constructor(
         add(Calendar.DAY_OF_MONTH, 7)
         timeInMillis
     }
+
+    val preferencesLiveData = preferencesFlow.asLiveData()
 
     private val thingsToDoFlow = preferencesFlow
         .flatMapLatest { filterPreferences ->

@@ -1,111 +1,80 @@
 package com.tongtongstudio.ami.ui.insights
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
+import androidx.lifecycle.*
+import com.github.mikephil.charting.data.PieEntry
 import com.tongtongstudio.ami.data.Repository
-import com.tongtongstudio.ami.data.datatables.Project
-import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.TimeWorkedDistribution
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
-import kotlin.math.abs
 
 @HiltViewModel
 class InsightsViewModel @Inject constructor(
-    repository: Repository,
+    val repository: Repository,
 ) : ViewModel() {
-    val tasksCompletedLD = repository.getTasksCompletedStats().asLiveData()
-    val projectsLD = repository.getProjectCompletedStats().asLiveData()
 
-    // TODO: sql queries can get this faster
-    fun getAverageTimeCompletion(tasksCompleted: List<Task>): Long? {
-        var sum = 0L
-        var taskNoCount = 0
-        tasksCompleted.forEach {
-            sum += if (it.taskWorkTime != null && it.taskWorkTime != 0L)
-                it.taskWorkTime
-            else {
-                taskNoCount += 1
-                0L
-            }
-        }
-        val averageTimeCompletion: Long? =
-            if (tasksCompleted.isEmpty() || (taskNoCount - tasksCompleted.size) == 0)
-                null
-            else
-                (sum.toFloat() / (tasksCompleted.size - taskNoCount)).toLong()
-        return averageTimeCompletion
+    private val _categoryId = MutableLiveData<Long?>(null)
+    val categoryId: LiveData<Long?>
+        get() = _categoryId
+
+    val tasksAchievementRate =
+        categoryId.asFlow().flatMapLatest { repository.getTasksAchievementRate(it) }.asLiveData()
+    val completedTasksCount =
+        categoryId.asFlow().flatMapLatest { repository.getCompletedTasksCount(it) }.asLiveData()
+    val projectsAchievementRate =
+        categoryId.asFlow().flatMapLatest { repository.getProjectsAchievementRate(it) }.asLiveData()
+    val completedProjectsCount =
+        categoryId.asFlow().flatMapLatest { repository.getCompletedProjectsCount(it) }.asLiveData()
+    val timeWorked = categoryId.asFlow().flatMapLatest { repository.getTimeWorked(it) }.asLiveData()
+    val ttdMaxStreak =
+        categoryId.asFlow().flatMapLatest { repository.getMaxStreak(it) }.asLiveData()
+    val ttdCurrentMaxStreak =
+        categoryId.asFlow().flatMapLatest { repository.getCurrentMaxStreak(it) }.asLiveData()
+    val accuracyRateEstimation =
+        categoryId.asFlow().flatMapLatest { repository.getAccuracyRateEstimation(it) }.asLiveData()
+    val onTimeCompletionRate =
+        categoryId.asFlow().flatMapLatest { repository.getOnTimeCompletionRate(it) }.asLiveData()
+    val habitCompletionRate =
+        categoryId.asFlow().flatMapLatest { repository.getHabitCompletionRate(it) }.asLiveData()
+    val timeWorkedDistribution =
+        categoryId.asFlow().flatMapLatest { repository.getTimeWorkedGrouped(it) }.asLiveData()
+
+    val startDate: Long = Calendar.getInstance().run {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        add(Calendar.DAY_OF_MONTH, -7)
+        timeInMillis
+    }
+    val endDate: Long = Calendar.getInstance().run {
+        timeInMillis
     }
 
-    // TODO: remove this method : display achievement rate in the project stat view or display with SQL queries advancement off project in their whole
-    fun getProjectAchievementRate(projectsList: List<Project>): Float? {
-        var sumSubTasks = 0
-        var sumSubTasksCompleted = 0
-        projectsList.forEach {
-            sumSubTasks += it.nb_sub_task
-            sumSubTasksCompleted += it.nb_sub_tasks_completed
+    val achievementsByPeriod =
+        categoryId.asFlow()
+            .flatMapLatest { repository.getCompletedTasksCountByPeriod(it, startDate, endDate) }
+            .asLiveData()
+
+    fun getTimeWorkedDistributionEntries(listTimeWorkedDistribution: List<TimeWorkedDistribution>): List<PieEntry> {
+        val arrayListEntries = ArrayList<PieEntry>()
+        for (detail in listTimeWorkedDistribution) {
+            if (detail.totalTimeWorked != null)
+                arrayListEntries.add(
+                    PieEntry(
+                        detail.totalTimeWorked.toFloat(),
+                        detail.title ?: "Others" // TODO: extract string resource
+                    )
+                )
         }
-        return if (sumSubTasks == 0) null else sumSubTasksCompleted / sumSubTasks.toFloat() * 100
+        return arrayListEntries
     }
 
-    // TODO: displace this method in Ttd class and use sql queries with adapted class StatFinishedTask(estimatedTime, actualWorkTime, ...)
-    fun retrieveEstimationWorkTimeAccuracyRate(tasksCompleted: List<Task>): Float? {
-        var tasksStudied = 0
-        var rateSum = 0F
-        tasksCompleted.forEach {
-            val completionTime = it.taskWorkTime
-            val estimatedTimeInMillis = it.taskEstimatedTime //in minutes
-
-            if (completionTime != null && estimatedTimeInMillis != null) {
-                val difference = abs((completionTime - estimatedTimeInMillis))
-                rateSum += if (difference < estimatedTimeInMillis) {
-                    (1 - difference / estimatedTimeInMillis.toFloat())
-                } else {
-                    0F
-                }
-                tasksStudied += 1
-            }
-        }
-        return if (tasksCompleted.isEmpty() || tasksStudied == 0) null else rateSum / tasksStudied * 100
+    fun updateCategoryId(title: String) = viewModelScope.launch {
+        val category = repository.getCategoryByTitle(title)
+        _categoryId.value = category?.id
     }
 
-    // TODO: sql queries
-    fun retrieveOnTimeCompletionRate(tasksCompleted: List<Task>): Float? {
-        val calendar = Calendar.getInstance()
-        var nbCompletedOnTime = 0
-        var tasksNoStudied = 0
-        tasksCompleted.forEach { task ->
-            if (!task.isRecurring) { // no count of recurring task (maybe later)
-                val completedDateInMillis = task.taskCompletedDate!!
-                val completedDate = calendar.run {
-                    timeInMillis = task.taskCompletedDate
-                    time
-                }
-                // task's deadline mustn't be null !! --> edit fragment: save method
-                if (task.deadline == null) {
-                    tasksNoStudied++
-                } else {
-                    val deadlineDate = calendar.run {
-                        timeInMillis = task.deadline
-                        set(Calendar.HOUR_OF_DAY, 23)
-                        set(Calendar.MINUTE, 59)
-                        time
-                    }
-                    val wasCompletedOnTime: Boolean =
-                        completedDate <= deadlineDate || completedDateInMillis < task.deadline
-                    if (wasCompletedOnTime) nbCompletedOnTime++
-                }
-            } else tasksNoStudied++
-        }
-        return if (tasksCompleted.isEmpty() || tasksNoStudied == tasksCompleted.size) null else nbCompletedOnTime / tasksCompleted.size.toFloat() * 100
-    }
-
-    // TODO: sql queries
-    fun getProjectsCompleted(projectsList: List<Project>): Int {
-        val projectCompleted = ArrayList<Project>()
-        projectsList.forEach {
-            if (it.isPjtCompleted) projectCompleted.add(it)
-        }
-        return projectCompleted.toList().size
-    }
+    val categories = repository.getCategories().asLiveData()
 }

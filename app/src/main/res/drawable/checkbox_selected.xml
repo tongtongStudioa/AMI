@@ -7,10 +7,10 @@
     android:tintMode="add">
 
     <path
-        android:fillColor="#1CC500"
+        android:fillColor="#3083E4"
         android:pathData="M10,10m-9.5,0a9.5,9.5 0,1 1,19 0a9.5,9.5 0,1 1,-19 0"
         android:strokeWidth="1"
-        android:strokeColor="#1CC500" />
+        android:strokeColor="#3083E4" />
     <!-- #1CC500-->
 
     <path

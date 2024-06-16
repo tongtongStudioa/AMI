@@ -1,12 +1,12 @@
 package com.tongtongstudio.ami.ui.insights
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.github.mikephil.charting.data.BarEntry
+import androidx.lifecycle.*
+import com.github.mikephil.charting.data.PieEntry
 import com.tongtongstudio.ami.data.Repository
+import com.tongtongstudio.ami.data.datatables.TimeWorkedDistribution
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
@@ -15,33 +15,36 @@ class InsightsViewModel @Inject constructor(
     val repository: Repository,
 ) : ViewModel() {
 
-    private val _achievementsEntriesByPeriod = MutableLiveData<List<BarEntry>>()
-    val achievementsEntriesByPeriod: LiveData<List<BarEntry>>
-        get() = _achievementsEntriesByPeriod
+    private val _categoryId = MutableLiveData<Long?>(null)
+    val categoryId: LiveData<Long?>
+        get() = _categoryId
 
-    val _categoryId = MutableLiveData<Long?>(null)
-
-    // TODO: use live data
-    val categoryId: Long? = null
     val tasksAchievementRate =
-        runBlocking { return@runBlocking repository.getTasksAchievementRate(categoryId) }
+        categoryId.asFlow().flatMapLatest { repository.getTasksAchievementRate(it) }.asLiveData()
     val completedTasksCount =
-        runBlocking { return@runBlocking repository.getMCompletedTasksCount(categoryId) }
+        categoryId.asFlow().flatMapLatest { repository.getCompletedTasksCount(it) }.asLiveData()
     val projectsAchievementRate =
-        runBlocking { return@runBlocking repository.getProjectsAchievementRate(categoryId) }
+        categoryId.asFlow().flatMapLatest { repository.getProjectsAchievementRate(it) }.asLiveData()
     val completedProjectsCount =
-        runBlocking { return@runBlocking repository.getMCompletedProjectsCount(categoryId) }
-    val timeWorked = runBlocking { return@runBlocking repository.getTimeWorked() }
-    val ttdMaxStreak = runBlocking { return@runBlocking repository.getMaxStreak() }
-    val ttdCurrentMaxStreak = runBlocking { return@runBlocking repository.getMaxStreak(true) }
+        categoryId.asFlow().flatMapLatest { repository.getCompletedProjectsCount(it) }.asLiveData()
+    val timeWorked = categoryId.asFlow().flatMapLatest { repository.getTimeWorked(it) }.asLiveData()
+    val ttdMaxStreak =
+        categoryId.asFlow().flatMapLatest { repository.getMaxStreak(it) }.asLiveData()
+    val ttdCurrentMaxStreak =
+        categoryId.asFlow().flatMapLatest { repository.getCurrentMaxStreak(it) }.asLiveData()
     val accuracyRateEstimation =
-        runBlocking { return@runBlocking repository.getAccuracyRateEstimation(categoryId) }
+        categoryId.asFlow().flatMapLatest { repository.getAccuracyRateEstimation(it) }.asLiveData()
     val onTimeCompletionRate =
-        runBlocking { return@runBlocking repository.getOnTimeCompletionRate(categoryId) }
+        categoryId.asFlow().flatMapLatest { repository.getOnTimeCompletionRate(it) }.asLiveData()
     val habitCompletionRate =
-        runBlocking { return@runBlocking repository.getHabitCompletionRate(categoryId) }
+        categoryId.asFlow().flatMapLatest { repository.getHabitCompletionRate(it) }.asLiveData()
+    val timeWorkedDistribution =
+        categoryId.asFlow().flatMapLatest { repository.getTimeWorkedGrouped(it) }.asLiveData()
 
     val startDate: Long = Calendar.getInstance().run {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
         add(Calendar.DAY_OF_MONTH, -7)
         timeInMillis
     }
@@ -49,54 +52,29 @@ class InsightsViewModel @Inject constructor(
         timeInMillis
     }
 
-    fun updateAchievementEntries() {
-        val achievementsEntries = getAchievementsByPeriod(startDate, endDate)
-        _achievementsEntriesByPeriod.value = achievementsEntries
-    }
+    val achievementsByPeriod =
+        categoryId.asFlow()
+            .flatMapLatest { repository.getCompletedTasksCountByPeriod(it, startDate, endDate) }
+            .asLiveData()
 
-    private fun getAchievementsByPeriod(startDate: Long, endDate: Long): List<BarEntry> {
-
-        val arrayListAchievements = ArrayList<BarEntry>()
-        val intermediateStartCalendar: Calendar = Calendar.getInstance()
-        var startDay = intermediateStartCalendar.run {
-            timeInMillis = startDate
-            timeInMillis
-        }
-        var endDay = intermediateStartCalendar.run {
-            add(Calendar.DAY_OF_MONTH, 1)
-            timeInMillis
-        }
-        /*var i = 0.0F
-        while (endDay < endDate) {
-            val achievementsByDay = (Math.random() * 25 + 25)/*runBlocking {
-                return@runBlocking repository.getMCompletedTasksCount(
-                    categoryId,
-                    startDay,
-                    endDay
+    fun getTimeWorkedDistributionEntries(listTimeWorkedDistribution: List<TimeWorkedDistribution>): List<PieEntry> {
+        val arrayListEntries = ArrayList<PieEntry>()
+        for (detail in listTimeWorkedDistribution) {
+            if (detail.totalTimeWorked != null)
+                arrayListEntries.add(
+                    PieEntry(
+                        detail.totalTimeWorked.toFloat(),
+                        detail.title ?: "Others" // TODO: extract string resource
+                    )
                 )
-            }*/
-            i += 1.0F
-            arrayListAchievements.add(BarEntry(i,achievementsByDay.toFloat()))
-            startDay = intermediateStartCalendar.run {
-                timeInMillis = endDay
-                timeInMillis
-            }
-            endDay = intermediateStartCalendar.run {
-                add(Calendar.DAY_OF_MONTH, 1)
-                timeInMillis
-            }
-        }*/
-        for (index in 0 until 7) {
-            arrayListAchievements.add(BarEntry(0F, getRandom(25F, 25F)))
         }
-        return arrayListAchievements.toList()
+        return arrayListEntries
     }
 
-    fun getRandom(range: Float, start: Float): Float {
-        return (Math.random() * range).toFloat() + start
+    fun updateCategoryId(title: String) = viewModelScope.launch {
+        val category = repository.getCategoryByTitle(title)
+        _categoryId.value = category?.id
     }
 
-    fun updateCategoryId(id: Long?) {
-        _categoryId.value = id
-    }
+    val categories = repository.getCategories().asLiveData()
 }

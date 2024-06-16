@@ -5,6 +5,7 @@ import androidx.lifecycle.asLiveData
 import com.tongtongstudio.ami.data.PreferencesManager
 import com.tongtongstudio.ami.data.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
 @HiltViewModel
@@ -15,5 +16,8 @@ class ProjectViewModel @Inject constructor(
 
     val preferencesFlow = preferencesManager.filterPreferencesFlow
 
-    val projects = repository.getProjects().asLiveData()
+    val projects =
+        preferencesFlow.flatMapLatest {
+            repository.getProjects(it.hideCompleted)
+        }.asLiveData()
 }

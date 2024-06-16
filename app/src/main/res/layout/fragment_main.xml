@@ -62,10 +62,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="25dp"
-        android:text="@string/fab_text_add"
+        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
         app:icon="@drawable/ic_add"
         android:contentDescription="@string/fab_add_description" />
-
-    <!--app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"-->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

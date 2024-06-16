@@ -5,8 +5,10 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -49,7 +51,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
         binding.apply {
             fabAddTask.setOnClickListener {
-                sharedViewModel.onAddThingToDoDemand()
+                sharedViewModel.addThingToDo()
             }
 
             mainRecyclerView.apply {
@@ -137,7 +139,11 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                         // val action
                     }
                     is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
-                        // do nothing
+                        val action =
+                            ProjectFragmentDirections.actionProjectFragmentToTabPageTrackingStats(
+                                event.task
+                            )
+                        findNavController().navigate(action)
                     }
                 }.exhaustive
             }
@@ -199,26 +205,28 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
     }
 
     override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
-        //TODO("Not yet implemented")
+        sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
     override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
-        //TODO("Not yet implemented")
+        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
     override fun onTaskClick(thingToDo: Ttd) {
-        //TODO("Not yet implemented")
+        sharedViewModel.navigateToTaskDetailsScreen(thingToDo)
     }
 
-    override fun onAddClick(composedTask: TaskWithSubTasks) {
-        //TODO("Not yet implemented")
+    override fun onProjectAddClick(composedTask: TaskWithSubTasks) {
+        // TODO: create another event for sub task add action which take composed task as argument
+        setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
+        sharedViewModel.addThingToDo()
     }
 
     override fun onSubTaskRightSwipe(thingToDo: Ttd) {
-        //TODO("Not yet implemented")
+        sharedViewModel.deleteSubTask(thingToDo)
     }
 
     override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
-        //TODO("Not yet implemented")
+        sharedViewModel.updateSubTask(thingToDo)
     }
 }

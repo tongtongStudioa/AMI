@@ -106,7 +106,7 @@ class EditAssessmentDialogFragment : DialogFragment() {
                 autocompleteTextViewUnit.setText(unit)
             val unitOptions = arrayOf("Number", "Kg", "Minutes")
             val unitAdapter =
-                ArrayAdapter(requireContext(), R.layout.list_options, unitOptions)
+                ArrayAdapter(requireContext(), R.layout.item_options, unitOptions)
             autocompleteTextViewUnit.setAdapter(unitAdapter)
             autocompleteTextViewUnit.doOnTextChanged { text, start, before, count ->
                 if (count > 0) {

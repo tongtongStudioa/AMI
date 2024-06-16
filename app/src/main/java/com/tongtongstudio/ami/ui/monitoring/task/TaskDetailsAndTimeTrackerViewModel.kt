@@ -36,15 +36,16 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
 
     val estimatedWorkingTime = task?.estimatedTime
 
-    val primaryWorkTime = task?.actualWorkTime ?: 0
-    private val _actualWorkTime = MutableLiveData<Long>(primaryWorkTime)
-    val actualWorkTime: LiveData<Long>
+    val primaryWorkTime = task?.actualWorkTime
+    private val _actualWorkTime = MutableLiveData<Long?>(primaryWorkTime)
+    val actualWorkTime: LiveData<Long?>
         get() = _actualWorkTime
 
     var curTimeInMillis: Long = 0L
     var isTracking = false
     var timeWorked = 0L
 
+    // TODO: create another entity to save work session apart
     fun saveTrackingTime(newWorkTimeSession: Long = timeWorked) = viewModelScope.launch {
         if (task != null) {
             if (task!!.parentTaskId != null) {

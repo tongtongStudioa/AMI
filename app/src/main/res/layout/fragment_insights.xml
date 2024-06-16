@@ -43,7 +43,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat_medium"
-                    android:text="Achievements sum up"
+                    android:text="@string/achievements_sum_up"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -56,7 +56,8 @@
                     android:background="#00000000"
                     app:layout_constraintStart_toEndOf="@+id/tv_title_section1"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:tint="?attr/colorOnPrimaryContainer" />
+                    app:tint="?attr/colorOnPrimaryContainer"
+                    android:contentDescription="Arrow : show categories" />
 
                 <HorizontalScrollView
                     android:layout_width="match_parent"
@@ -114,7 +115,7 @@
 
                         <com.google.android.material.card.MaterialCardView
                             android:id="@+id/tasks_achievement_rate"
-                            style="@style/Widget.Material3.CardView.Filled"
+                            style="@style/Widget.Material3.CardView.Elevated"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
@@ -197,7 +198,7 @@
 
                         <com.google.android.material.card.MaterialCardView
                             android:id="@+id/projects_achievement_rate_view"
-                            style="@style/Widget.Material3.CardView.Filled"
+                            style="@style/Widget.Material3.CardView.Elevated"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_margin="10dp"
@@ -253,7 +254,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/section1">
 
-                <com.github.mikephil.charting.charts.CombinedChart
+                <com.github.mikephil.charting.charts.BarChart
                     android:id="@+id/achievement_combined_chart"
                     android:layout_width="match_parent"
                     android:layout_height="250dp"
@@ -270,6 +271,7 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
+                android:scrollbars="none"
                 app:layout_constraintTop_toBottomOf="@+id/tasks_achievement_by_period">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -297,6 +299,7 @@
                                 style="@style/TextAppearance.Ami.InsightsSubtitleStyle"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                                 android:text="@string/on_time_completion_rate_information"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toTopOf="parent" />
@@ -318,8 +321,8 @@
 
                     <com.github.mikephil.charting.charts.LineChart
                         android:id="@+id/late_completion_line_chart"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="250dp"
+                        android:layout_height="190dp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
@@ -339,7 +342,8 @@
                     android:id="@+id/time_worked_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Total time worked"
+                    android:text="@string/total_time_worked_title"
+                    android:fontFamily="@font/montserrat_medium"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -357,6 +361,7 @@
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tv_time_worked"
+                    android:fontFamily="@font/montserrat_medium"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="45 h 35 min"
@@ -367,7 +372,7 @@
                 <com.github.mikephil.charting.charts.PieChart
                     android:id="@+id/pie_chart"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="300dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/tv_time_worked" />
@@ -379,7 +384,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@+id/work_time_committement_section"
-                tools:layout_editor_absoluteX="15dp">
+                android:scrollbars="none">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="wrap_content"
@@ -427,8 +432,8 @@
 
                     <com.github.mikephil.charting.charts.LineChart
                         android:id="@+id/estimation_accuracy_line_chart"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="250dp"
+                        android:layout_height="190dp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@id/time_estimation_accuracy_view"
@@ -537,7 +542,7 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:id="@+id/habit_completion_rate_view"
                     android:layout_height="wrap_content"
                     android:layout_margin="10dp"
@@ -546,7 +551,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/max_streak_view">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="10dp">
 
@@ -555,7 +560,7 @@
                             style="@style/TextAppearance.Ami.InsightsSubtitleStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Comletion Rate"
+                            android:text="@string/global_completion_rate_title"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />

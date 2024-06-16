@@ -28,6 +28,7 @@ import com.tongtongstudio.ami.data.SortOrder
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
+import com.tongtongstudio.ami.notification.SoundPlayer
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.ui.todaytasks.TodayTasksFragmentDirections.Companion.actionTodayTasksFragmentToAddEditTaskFragment
@@ -46,6 +47,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     private lateinit var binding: FragmentMainBinding
     private lateinit var newTaskAdapter: TaskAdapter
     private lateinit var sharedViewModel: MainViewModel
+    private lateinit var soundPlayer: SoundPlayer
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -54,14 +56,15 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
 
         //collapse toolbar
         setUpToolbar()
-        //view model and adapter
+        //view model, sound player and adapter
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
         newTaskAdapter = TaskAdapter(this)
+        soundPlayer = SoundPlayer(requireContext())
 
         // implement UI
         binding.apply {
             fabAddTask.setOnClickListener {
-                sharedViewModel.onAddThingToDoDemand()
+                sharedViewModel.addThingToDo()
             }
 
             mainRecyclerView.apply {
@@ -75,10 +78,10 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 //sharedViewModel.addSubTask(newSubTask,parentId)
             },
                 { taskWithSubTasks ->
-                    sharedViewModel.onThingToDoRightSwiped(taskWithSubTasks)
+                    sharedViewModel.deleteTask(taskWithSubTasks)
                 },
                 { taskWithSubTasks ->
-                    sharedViewModel.onThingToDoLeftSwiped(taskWithSubTasks)
+                    sharedViewModel.updateTask(taskWithSubTasks)
                 })*/
             //ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
 
@@ -97,11 +100,11 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                     if (direction == ItemTouchHelper.RIGHT) {
                         // delete task
                         newTaskAdapter.notifyItemRemoved(viewHolder.absoluteAdapterPosition)
-                        sharedViewModel.onThingToDoRightSwiped(thingToDo)
+                        sharedViewModel.deleteTask(thingToDo)
                     } else if (direction == ItemTouchHelper.LEFT) {
                         // edit task
                         newTaskAdapter.notifyItemChanged(viewHolder.absoluteAdapterPosition)
-                        sharedViewModel.onThingToDoLeftSwiped(thingToDo)
+                        sharedViewModel.updateTask(thingToDo)
                     }
                 }
 
@@ -203,7 +206,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                     is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {
                         Snackbar.make(
                             requireView(),
-                            event.textShow,
+                            getString(R.string.msg_thing_to_do_deleted),
                             Snackbar.LENGTH_LONG
                         )
                             .setAction(getText(R.string.msg_action_undo)) {
@@ -298,13 +301,13 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
 
     override fun onItemTaskSwiped(subTask: Task, dir: Int) {
         if (dir == ItemTouchHelper.RIGHT)
-            sharedViewModel.onSubTaskRightSwiped(subTask)
-        else sharedViewModel.onSubTaskLeftSwiped(subTask)
+            sharedViewModel.deleteSubTask(subTask)
+        else sharedViewModel.updateSubTask(subTask)
     }
 
     override fun onProjectBtnAddSubTaskClicked(projectData: ProjectWithSubTasks) {
         setFragmentResult("is_new_sub_task", bundleOf("project_id" to projectData.project.p_id))
-        sharedViewModel.onAddThingToDoDemand()
+        sharedViewModel.addThingToDo()
     }*/
 
     // function to set up toolbar with collapse toolbar and link to drawer layout
@@ -334,8 +337,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
         if (isChecked) {
-            sharedViewModel.soundPool.load(this.context, R.raw.task_check, 1)
-            sharedViewModel.soundPool.play(1, 0.25F, 0.25F, 0, 0, 1.1F)
+            soundPlayer.playSuccessSound()
         }
     }
 
@@ -347,9 +349,9 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         sharedViewModel.navigateToTaskInfoScreen(thingToDo)
     }
 
-    override fun onAddClick(composedTask: TaskWithSubTasks) {
+    override fun onProjectAddClick(composedTask: TaskWithSubTasks) {
         setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
-        sharedViewModel.onAddThingToDoDemand()
+        sharedViewModel.addThingToDo()
     }
 
     override fun onSubTaskRightSwipe(thingToDo: Ttd) {

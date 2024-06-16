@@ -19,7 +19,7 @@ interface CategoryDao {
     suspend fun getById(id: Long): Category
 
     @Query("SELECT * FROM Category WHERE category_title = :title LIMIT 1")
-    suspend fun getByTitle(title: String): Category
+    suspend fun getByTitle(title: String): Category?
 
     @Insert
     suspend fun insertMultipleCategories(categories: List<Category>)

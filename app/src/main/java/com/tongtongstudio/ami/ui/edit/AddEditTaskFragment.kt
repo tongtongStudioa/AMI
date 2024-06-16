@@ -35,8 +35,9 @@ import com.tongtongstudio.ami.adapter.AutoCompleteAdapter
 import com.tongtongstudio.ami.adapter.EditAttributesAdapter
 import com.tongtongstudio.ami.data.LayoutMode
 import com.tongtongstudio.ami.data.datatables.*
-import com.tongtongstudio.ami.databinding.AddEditTaskFragmentBinding
+import com.tongtongstudio.ami.databinding.FragmentAddEditTaskBinding
 import com.tongtongstudio.ami.notification.ReminderNotificationManager
+import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.ui.dialog.*
@@ -60,12 +61,12 @@ import java.util.*
 
 
 @AndroidEntryPoint
-class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
+class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
     private val viewModel: AddEditTaskViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var taskNotificationManager: ReminderNotificationManager
-    private lateinit var binding: AddEditTaskFragmentBinding
+    private lateinit var binding: FragmentAddEditTaskBinding
 
     private fun setReminderTriggerTime(date: Long, pickedHour: Int, pickedMinutes: Int): Long {
         return Calendar.getInstance().run {
@@ -105,7 +106,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         //main view model
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
-        binding = AddEditTaskFragmentBinding.bind(view)
+        binding = FragmentAddEditTaskBinding.bind(view)
 
         // set toolbar with menu and navigate up icon
         setUpToolbar()
@@ -341,7 +342,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 updateSpecificButtonText(
                     btnSetEstimatedTime, removeEstimatedTime,
                     viewModel.estimatedTime != null,
-                    Ttd.getFormattedTime(viewModel.estimatedTime),
+                    TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedTime),
                     getString(R.string.set_estimated_time)
                 )
             }
@@ -421,7 +422,10 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                     binding.btnSetEstimatedTime,
                     binding.removeEstimatedTime,
                     viewModel.estimatedTime != null,
-                    Ttd.getFormattedTime(viewModel.estimatedTime),
+                    getString(
+                        R.string.estimated_time_info,
+                        TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedTime)
+                    ),
                     getString(R.string.set_estimated_time)
                 )
             }
@@ -445,6 +449,7 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             )
         }
 
+        // TODO: create an action with safe args with nav component
         // from dialog edit project linked
         setFragmentResultListener(PROJECT_LINKED_LISTENER_REQUEST_KEY) { _, bundle ->
             val result = bundle.getLong(PROJECT_LINKED_RESULT_KEY)
@@ -489,9 +494,8 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                         Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_LONG).show()
                     }
                     is AddEditTaskViewModel.AddEditTaskEvent.NavigateBackWithResult -> {
-                        binding.editTextName.clearFocus()
-                        binding.editTextPriority.clearFocus()
-                        binding.editTextDescription.clearFocus()
+                        sharedViewModel.updateParentTask(viewModel.projectId)
+                        clearFocus()
                         setFragmentResult(
                             "add_edit_request",
                             bundleOf("add_edit_result" to event.result)
@@ -506,6 +510,12 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
             }
         }
         setHasOptionsMenu(true)
+    }
+
+    private fun clearFocus() {
+        binding.editTextName.clearFocus()
+        binding.editTextPriority.clearFocus()
+        binding.editTextDescription.clearFocus()
     }
 
     private fun validateSelectionDeadline(date: Long): Boolean {
@@ -575,19 +585,31 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         }
     }
 
-    // TODO: update start date as well as due date to track first commit
+
     private fun updateTaskRecurringStartDate(recurringTaskInterval: RecurringTaskInterval) {
 
         if (recurringTaskInterval.daysOfWeek == null && viewModel.dueDate == null) {
-            viewModel.dueDate = Calendar.getInstance().timeInMillis
+            viewModel.dueDate = Calendar.getInstance().apply {
+                set(Calendar.MILLISECOND, 0)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+            }.timeInMillis
         } else if (recurringTaskInterval.daysOfWeek != null) {
             viewModel.dueDate = recurringTaskInterval.setStartDateSpecificDay()
+            viewModel.startDate = viewModel.dueDate
         }
         updateDateButtonText(
             binding.btnSetDueDate,
             viewModel.dueDate,
             binding.removeDueDate,
             getString(R.string.set_due_date)
+        )
+        updateDateButtonText(
+            binding.btnSetStartDate,
+            viewModel.startDate,
+            binding.removeStartDate,
+            getString(R.string.set_start_date)
         )
     }
 
@@ -626,9 +648,13 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                     getString(R.string.set_deadline)
                 )
                 updateSpecificButtonText(
-                    btnSetEstimatedTime, removeEstimatedTime,
+                    btnSetEstimatedTime,
+                    removeEstimatedTime,
                     viewModel.estimatedTime != null,
-                    Ttd.getFormattedTime(viewModel.estimatedTime),
+                    getString(
+                        R.string.estimated_time_info,
+                        TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedTime)
+                    ),
                     getString(R.string.set_estimated_time)
                 )
                 // TODO: assessments
@@ -697,7 +723,12 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         dropDownMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_today -> {
-                    val todayDate = Calendar.getInstance().timeInMillis
+                    val todayDate = Calendar.getInstance().apply {
+                        set(Calendar.MILLISECOND, 0)
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                    }.timeInMillis
                     if (actionValidationDate.invoke(todayDate)) {
                         updateButtonSelection(button, getStringFromLong(todayDate), removeButton)
                         updateDataAction(todayDate)
@@ -707,6 +738,10 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
                 R.id.action_tomorrow -> {
                     val tomorrowDate =
                         Calendar.getInstance().apply {
+                            set(Calendar.MILLISECOND, 0)
+                            set(Calendar.HOUR_OF_DAY, 0)
+                            set(Calendar.MINUTE, 0)
+                            set(Calendar.SECOND, 0)
                             add(Calendar.DAY_OF_MONTH, 1)
                         }.timeInMillis
                     if (actionValidationDate.invoke(tomorrowDate)) {
@@ -792,7 +827,6 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
     private fun validateTitle(): Boolean {
         return if (viewModel.title.isBlank()) {
             binding.inputLayoutName.error = getString(R.string.error_no_title)
-            //viewModel.showInvalidInputMessage(getString(R.string.error_no_name))
             false
         } else true
     }
@@ -833,6 +867,9 @@ class AddEditTaskFragment : Fragment(R.layout.add_edit_task_fragment) {
         selection: Long?,
         constraints: CalendarConstraints
     ): MaterialDatePicker<Long> {
+        // clear focus of input to dismiss keyboard
+        clearFocus()
+
         val datePicker =
             MaterialDatePicker.Builder.datePicker()
                 .setTitleText(getString(R.string.select_date))

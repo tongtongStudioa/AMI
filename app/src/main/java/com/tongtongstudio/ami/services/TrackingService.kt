@@ -82,14 +82,14 @@ class TrackingService : LifecycleService() {
         // set up sonification
         soundPool = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val audioAttributes = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+                .setUsage(AudioAttributes.USAGE_ALARM)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .build()
             SoundPool.Builder()
                 .setAudioAttributes(audioAttributes)
                 .build()
         } else {
-            SoundPool(1, AudioManager.STREAM_MUSIC, 0)
+            SoundPool(1, AudioManager.STREAM_ALARM, 0)
         }
         soundRestOver = soundPool.load(this, R.raw.rest_time_over, 1)
         soundPomodoroOver = soundPool.load(this, R.raw.pomodoro_sessions_over, 1)
@@ -187,7 +187,7 @@ class TrackingService : LifecycleService() {
     }
 
     private fun playSound(soundId: Int) {
-        soundPool.play(soundId, 0.6F, 0.6F, 1, 0, 1.1F)
+        soundPool.play(soundId, 0.6F, 0.6F, 1, 0, 1.2F)
     }
 
     private fun postInitialValues() {
@@ -204,7 +204,7 @@ class TrackingService : LifecycleService() {
             0,
             NotificationCompat.Action(
                 0,
-                getString(R.string.action_resume_titile),
+                getString(R.string.action_resume_title),
                 NotificationHelper.resumePendingIntent(this)
             )
         )
@@ -237,7 +237,7 @@ class TrackingService : LifecycleService() {
             val contentText = getString(
                 R.string.tracking_notification_text,
                 taskName,
-                TrackingTimeUtility.getFormattedWorkTime(
+                TrackingTimeUtility.getFormattedWorkingTime(
                     it,
                     timerType.value!!
                 )

@@ -121,6 +121,10 @@ class RecurringTaskInterval(
     private fun findNextOccurrenceDay(oldDueDate: Long, checked: Boolean): UpdatedStartDate {
         var timesSkipped = 0
         val newStartDate = Calendar.getInstance().run {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
             val todayDateInMillis = timeInMillis
             timeInMillis = oldDueDate
             do {
@@ -149,6 +153,10 @@ class RecurringTaskInterval(
         var timesSkipped = 0
         var todayTimeInMillis: Long
         val newStartDate = Calendar.getInstance().run {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
             todayTimeInMillis = timeInMillis
             // Set the new due date to the next occurrence of the task's due day
             timeInMillis = oldDueDate
@@ -192,7 +200,6 @@ class RecurringTaskInterval(
         } else Calendar.getInstance().timeInMillis
     }
 
-    // TODO: problem get string method without context
     fun getRecurringIntervalReadable(resources: Resources): String {
         return if (times == 1 && daysOfWeek == null) {
             when (period) {
@@ -203,11 +210,11 @@ class RecurringTaskInterval(
                 else -> resources.getString(R.string.each_days)
             }
         } else if (daysOfWeek != null) {
-            if (times == 1) {
-                // TODO: format with string resource
-                "Weekly on $daysOfWeek"
-
-            } else "On $daysOfWeek every $times weeks"
+            // TODO: create function to retrieve E from int : Mon, Tue, Wed, Thu, Fri (Lun, Mar, Mer, Jeu, Ven, ...)
+            if (times == 1) resources.getString(
+                R.string.weekly_interval,
+                daysOfWeek.toString()
+            ) else "On $daysOfWeek every $times weeks"
         } else {
             when (period) {
                 Period.DAYS.name -> resources.getString(R.string.every_x_days, times)

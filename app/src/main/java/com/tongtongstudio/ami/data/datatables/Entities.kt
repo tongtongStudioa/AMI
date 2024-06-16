@@ -168,6 +168,15 @@ data class TaskWithSubTasks(
     fun getNbSubTasks(): Int = subTasks.size
 }
 
+data class TtdAchieved(
+    val completionDate: Long,
+    val completedCount: Float
+)
+
+data class TtdStreakInfo(
+    val title: String?,
+    val streakInfo: Int?
+)
 
 /**
  * Evaluation class and entity of Room database.
@@ -219,6 +228,8 @@ data class Category(
     @ColumnInfo(name = "category_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 )
+
+data class TimeWorkedDistribution(val title: String?, val totalTimeWorked: Long?)
 
 data class CategoryTasks(
     @Embedded

@@ -84,13 +84,6 @@ class AddEditTaskViewModel @Inject constructor(
             state["estimatedTime"] = value
         }
 
-    private var thingToDoIsSubTask =
-        state.get<Boolean>("thingToDoIsSubTask") ?: (thingToDo?.parentTaskId != null)
-        set(value) {
-            field = value
-            state["thingToDoIsSubTask"] = value
-        }
-
     var startDate =
         state.get<Long>("thingToDoStartDate") ?: thingToDo?.startDate
         set(value) {

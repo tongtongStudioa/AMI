@@ -43,7 +43,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         taskAdapter = TaskAdapter(this)
         binding.apply {
             fabAddTask.setOnClickListener {
-                sharedViewModel.onAddThingToDoDemand()
+                sharedViewModel.addThingToDo()
             }
 
             mainRecyclerView.apply {
@@ -165,17 +165,17 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo)
     }
 
-    override fun onAddClick(composedTask: TaskWithSubTasks) {
+    override fun onProjectAddClick(composedTask: TaskWithSubTasks) {
         // TODO: create another event for sub task add action which take composed task as argument
         setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
-        sharedViewModel.onAddThingToDoDemand()
+        sharedViewModel.addThingToDo()
     }
 
     override fun onSubTaskRightSwipe(thingToDo: Ttd) {
-        //TODO("Not yet implemented")
+        TODO("Not yet implemented")
     }
 
     override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
-        //TODO("Not yet implemented")
+        TODO("Not yet implemented")
     }
 }

@@ -82,7 +82,7 @@ class RecurringChoiceDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         stringItems = resources.getStringArray(R.array.period_list)
-        val adapter = ArrayAdapter(requireContext(), R.layout.list_options, stringItems)
+        val adapter = ArrayAdapter(requireContext(), R.layout.item_options, stringItems)
 
         setFragmentResultListener(CURRENT_RECURRING_INFO_REQUEST_KEY) { _, bundle ->
             val times = bundle.getInt(TIMES_KEY)

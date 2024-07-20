@@ -16,7 +16,7 @@ buildscript {
         fragmentVersion = '1.6.0-alpha09'
         gradleVersion = '7.4.2'
         hiltAndroidXVersion = '1.0.0'
-        hiltVersion = '2.45'
+        hiltVersion = '2.51.1'
         junitVersion = '4.13.2'
         kotlinVersion = '1.8.21'
         ktxVersion = '1.10.0'

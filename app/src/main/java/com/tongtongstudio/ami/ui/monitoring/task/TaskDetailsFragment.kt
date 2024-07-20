@@ -5,9 +5,6 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentTaskInformationBinding
@@ -37,6 +34,7 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_information) {
             if (viewModel.name != null) {
                 taskName.text = viewModel.task!!.title
             }
+            taskCategory.text = viewModel.category
             taskDescription.text = viewModel.description
             taskDescription.isVisible = viewModel.description != null
             taskStartDate.text = Ttd.getDateFormatted(viewModel.startDate)
@@ -71,19 +69,6 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_information) {
                     TrackingTimeUtility.getFormattedTimeWorked(it)
                         ?: getString(R.string.no_information)
             }
-
-            // TODO: show graph and assessments comments
-            chartView.isVisible = true
-            // in this example, a LineChart is initialized from xml
-            val entries = ArrayList<Entry>()
-            entries.add(Entry(1.0F, 8.0F))
-            entries.add(Entry(2.0F, 12.0F))
-            entries.add(Entry(3.0F, 4.0F))
-            entries.add(Entry(4.0F, 25.0F))
-            val dataSet = LineDataSet(entries, "1 serie")
-            val lineData = LineData(dataSet)
-            chartView.data = lineData
-            chartView.invalidate() // refresh
         }
     }
 }

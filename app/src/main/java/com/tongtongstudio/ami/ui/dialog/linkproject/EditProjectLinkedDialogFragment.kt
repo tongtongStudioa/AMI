@@ -13,8 +13,8 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.AttributeListener
-import com.tongtongstudio.ami.adapter.EditAttributesAdapter
+import com.tongtongstudio.ami.adapter.simple.AttributeListener
+import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.DialogEditProjectLinkedBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -84,7 +84,7 @@ class EditProjectLinkedDialogFragment : DialogFragment() {
         }
         /*viewModel.projectId.observe(viewLifecycleOwner) {
             projectLinkAdapter.actionBindView = { binding, composedTask ->
-                binding.titleOverview.text = composedTask.title
+                binding.titleOverview.text = composedTask.goalTitle
             }
         }*/
         viewModel.projects.observe(viewLifecycleOwner) {

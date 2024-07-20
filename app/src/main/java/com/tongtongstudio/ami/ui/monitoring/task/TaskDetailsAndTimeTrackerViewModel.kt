@@ -7,6 +7,7 @@ import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.timer.TimerType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -14,6 +15,13 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
     private val repository: Repository,
     private val state: SavedStateHandle
 ) : ViewModel() {
+    val category: String = runBlocking {
+        return@runBlocking task?.id?.let {
+            repository.getCategoryById(
+                it
+            ).title
+        } ?: ""
+    }
     var fragmentPos: Int = state.get<Int>("fragment_pos") ?: 0
         set(value) {
             field = value

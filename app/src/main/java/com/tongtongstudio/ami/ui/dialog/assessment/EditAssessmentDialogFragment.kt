@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.ui.dialog.asessment
+package com.tongtongstudio.ami.ui.dialog.assessment
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -19,12 +19,15 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.databinding.DialogEditAssessmentBinding
+import com.tongtongstudio.ami.ui.edit.CalendarCustomFunction
 import java.text.DateFormat
+import java.util.*
 
 const val NEW_USER_ASSESSMENT_REQUEST_KEY = "new_user_assessment_request_key"
 const val ASSESSMENT_RESULT_KEY = "assessment_result_key"
 const val USER_ASSESSMENT_TAG = "user_assessment_tag"
 
+// TODO: receive updated assessment and max due date of global goal
 class EditAssessmentDialogFragment : DialogFragment() {
 
     private lateinit var binding: DialogEditAssessmentBinding
@@ -42,7 +45,7 @@ class EditAssessmentDialogFragment : DialogFragment() {
             binding = DialogEditAssessmentBinding.inflate(inflater)
             val dialogBuilder = MaterialAlertDialogBuilder(fragmentActivity)
                 .setView(binding.root)
-                .setTitle("Edit an evaluation")
+                .setTitle(getString(R.string.edit_assessment_dialog_title))
                 // Add action buttons
                 .setPositiveButton(R.string.ok) { dialog, wich ->
                     onDialogPositiveClick(this)
@@ -67,7 +70,7 @@ class EditAssessmentDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         binding.apply {
-            // assessment's title
+            // assessment's goalTitle
             if (title != null)
                 inputLayoutTitle.editText?.setText(title)
             inputLayoutTitle.editText?.addTextChangedListener {
@@ -127,7 +130,13 @@ class EditAssessmentDialogFragment : DialogFragment() {
 
             setEvaluationDate.setOnClickListener {
                 val dueDatePicker =
-                    showDatePickerMaterial(dueDate, CalendarConstraints.Builder().build())
+                    showDatePickerMaterial(
+                        dueDate,
+                        CalendarCustomFunction.buildConstraintsForDueDate(
+                            Calendar.getInstance().timeInMillis - 24 * 3600 * 1000,
+                            null
+                        )
+                    )
                 dueDatePicker.addOnPositiveButtonClickListener {
                     dueDate = it
                     setEvaluationDate.text = DateFormat.getDateInstance().format(dueDate)
@@ -160,7 +169,6 @@ class EditAssessmentDialogFragment : DialogFragment() {
 
     private fun safeSave(): Boolean {
         return isTitleNotNull() && isGoalNotNull() && isUnitNotNull() && isDueDateNotNull()
-        //Snackbar.make(requireView(),R.string.error_no_date, Snackbar.LENGTH_SHORT).show()
     }
 
     private fun isDueDateNotNull(): Boolean {

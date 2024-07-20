@@ -1,11 +1,17 @@
 package com.tongtongstudio.ami.ui
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.*
+import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.receiver.ReminderBroadcastReceiver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -61,6 +67,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    // TODO: cancel  all reminders
     fun deleteTask(thingToDo: TaskWithSubTasks) = viewModelScope.launch {
         repository.deleteTask(thingToDo.mainTask)
         if (thingToDo.mainTask.parentTaskId != null) {
@@ -71,6 +78,19 @@ class MainViewModel @Inject constructor(
         )
     }
 
+    fun cancelReminder(context: Context, reminderId: Long) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, ReminderBroadcastReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            reminderId.toInt(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        alarmManager.cancel(pendingIntent)
+    }
+
     fun updateTask(thingToDo: TaskWithSubTasks) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToEditScreen(thingToDo.mainTask))
     }
@@ -79,24 +99,12 @@ class MainViewModel @Inject constructor(
         mainEventChannel.send(SharedEvent.NavigateToAddScreen)
     }
 
-    // TODO: move in main activity
-    fun onAddEditResult(result: Int, stringsAdded: Array<String>, stringsUpdated: Array<String>) {
-        when (result) {
-            ADD_TASK_RESULT_OK -> showThingToDoSavedConfirmationMessage(stringsAdded[0])
-            ADD_EVENT_RESULT_OK -> showThingToDoSavedConfirmationMessage(stringsAdded[1])
-            ADD_PROJECT_RESULT_OK -> showThingToDoSavedConfirmationMessage(stringsAdded[2])
-            EDIT_TASK_RESULT_OK -> showThingToDoSavedConfirmationMessage(stringsUpdated[0])
-            EDIT_PROJECT_RESULT_OK -> showThingToDoSavedConfirmationMessage(stringsUpdated[1])
-            EDIT_EVENT_RESULT_OK -> showThingToDoSavedConfirmationMessage(stringsUpdated[2])
-        }
-    }
-
     fun onUndoDeleteClick(thingToDo: Ttd) = viewModelScope.launch {
         repository.insertTask(thingToDo.copy())
     }
 
-    private fun showThingToDoSavedConfirmationMessage(text: String) = viewModelScope.launch {
-        mainEventChannel.send(SharedEvent.ShowTaskSavedConfirmationMessage(text))
+    fun showConfirmationMessage(result: Int) = viewModelScope.launch {
+        mainEventChannel.send(SharedEvent.ShowConfirmationMessage(result))
     }
 
     fun updateSubTask(subTask: Ttd) = viewModelScope.launch {
@@ -135,12 +143,15 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun showCompleteAssessmentDialog(assessment: Assessment) = viewModelScope.launch {
+        mainEventChannel.send(SharedEvent.ShowCompleteAssessmentDialog(assessment))
+    }
+
     fun updateRecurringTasksMissed(missedTasks: List<Ttd>) = viewModelScope.launch {
         for (task in missedTasks) {
             val updatedTask = task.updateCheckedState(false)
             repository.updateTask(updatedTask)
         }
-        showThingToDoSavedConfirmationMessage("Recurring tasks updated")
     }
 
     sealed class SharedEvent {
@@ -159,10 +170,12 @@ class MainViewModel @Inject constructor(
         data class NavigateToLocalProjectStatsScreen(val composedTaskData: TaskWithSubTasks) :
             SharedEvent()
 
-        data class ShowTaskSavedConfirmationMessage(val msg: String) : SharedEvent()
+        data class ShowConfirmationMessage(val result: Int) : SharedEvent()
         data class ShowUndoDeleteTaskMessage(val thingToDo: Ttd) :
             SharedEvent()
 
         data class ShowMissedRecurringTaskDialog(val missedTasks: List<Ttd>) : SharedEvent()
+
+        data class ShowCompleteAssessmentDialog(val assessment: Assessment) : SharedEvent()
     }
 }

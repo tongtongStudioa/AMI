@@ -20,4 +20,8 @@ interface AssessmentDao {
 
     @Delete
     suspend fun delete(assessment: Assessment)
+
+    // TODO: parent id nullable
+    @Query("SELECT * FROM Assessment WHERE task_id = 111 ORDER BY assessment_due_date")
+    fun getGlobalGoals(): Flow<List<Assessment>>
 }

@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.ui.monitoring.projectStats
+package com.tongtongstudio.ami.ui.monitoring.project
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

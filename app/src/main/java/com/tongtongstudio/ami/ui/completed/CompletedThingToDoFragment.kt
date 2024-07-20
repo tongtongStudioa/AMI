@@ -16,8 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.InteractionListener
-import com.tongtongstudio.ami.adapter.TaskAdapter
+import com.tongtongstudio.ami.adapter.task.InteractionListener
+import com.tongtongstudio.ami.adapter.task.TaskAdapter
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentMainBinding

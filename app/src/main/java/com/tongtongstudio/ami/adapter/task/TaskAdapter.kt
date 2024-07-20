@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.adapter
+package com.tongtongstudio.ami.adapter.task
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.adapter.ItemTouchHelperAdapter
+import com.tongtongstudio.ami.adapter.ViewHolder
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
@@ -205,7 +207,7 @@ class TaskAdapter(private val listener: InteractionListener) :
                     data.getNbSubTasksCompleted(),
                     data.getNbSubTasks()
                 )
-                // TODO: is there that we make the sub task adapter alive ?
+                // TODO: is it here we make the sub task adapter alive ?
                 rvSubTasks.apply {
                     layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
                     adapter = SubTaskAdapter(listener, data.subTasks)

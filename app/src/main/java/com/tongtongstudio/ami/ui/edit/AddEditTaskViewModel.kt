@@ -2,7 +2,10 @@ package com.tongtongstudio.ami.ui.edit
 
 import androidx.lifecycle.*
 import com.tongtongstudio.ami.data.Repository
-import com.tongtongstudio.ami.data.datatables.*
+import com.tongtongstudio.ami.data.datatables.Category
+import com.tongtongstudio.ami.data.datatables.Nature
+import com.tongtongstudio.ami.data.datatables.Reminder
+import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.EDIT_TASK_RESULT_OK
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,19 +31,12 @@ class AddEditTaskViewModel @Inject constructor(
     private val _reminders = MutableLiveData<MutableList<Reminder>>()
     val reminders: LiveData<MutableList<Reminder>>
         get() = _reminders
-    private val _assessments = MutableLiveData<MutableList<Assessment>>()
-    val assessments: LiveData<MutableList<Assessment>>
-        get() = _assessments
+
 
     init {
         viewModelScope.launch {
             repository.getTaskReminders(thingToDo?.id)?.collect { reminders ->
                 _reminders.value = reminders
-            }
-        }
-        viewModelScope.launch {
-            repository.getTasksAssessments(thingToDo?.id)?.collect { assessments ->
-                _assessments.value = assessments
             }
         }
     }
@@ -177,15 +173,6 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 
-    private fun updateAssessmentsList(idTtd: Long) {
-        if (assessments.value != null) {
-            for (assessment in assessments.value!!) {
-                if (assessment.taskId != idTtd)
-                    insertNewAssessment(idTtd, assessment)
-            }
-        }
-    }
-
     fun updateReminder(oldReminder: Reminder, updatedReminder: Reminder) = viewModelScope.launch {
         if (oldReminder.parentId == null) {
             val currentReminders = _reminders.value ?: mutableListOf()
@@ -216,11 +203,6 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     fun getCategories() = repository.getCategories().asLiveData()
-
-    private fun insertNewAssessment(taskId: Long, newAssessment: Assessment) =
-        viewModelScope.launch {
-            repository.insertAssessment(newAssessment.copy(taskId = taskId))
-        }
 
     private fun saveThingToDo(modeExtent: Boolean) = viewModelScope.launch {
         val taskId: Long
@@ -254,7 +236,6 @@ class AddEditTaskViewModel @Inject constructor(
         } else repository.insertTask(newThingToDo)
 
         updateRemindersList(taskId)
-        updateAssessmentsList(taskId)
 
         addEditChannelEvent.send(
             AddEditTaskEvent.NavigateBackWithResult(
@@ -294,7 +275,7 @@ class AddEditTaskViewModel @Inject constructor(
                 repository.updateTask(updatedThingToDoExtent)
             } else repository.updateTask(updatedThingToDo)
 
-            // TODO: move out this method (to insure that update method assessment, categories and reminder is well saved
+            // TODO: move out this method (to insure that update method categories and reminder is well saved
             addEditChannelEvent.send(
                 AddEditTaskEvent.NavigateBackWithResult(
                     EDIT_TASK_RESULT_OK
@@ -315,28 +296,14 @@ class AddEditTaskViewModel @Inject constructor(
     fun addNewReminder(reminderTriggerTime: Long) {
         val newReminder = Reminder(
             dueDate = reminderTriggerTime,
-            isRecurrent = false
+            isRecurrent = isRecurring,
+            repetitionFrequency = recurringTaskInterval
         )
         if (thingToDo?.id == null) { // is a new task ?
             val currentReminders = reminders.value ?: mutableListOf()
             currentReminders.add(newReminder)
             _reminders.value = currentReminders
         } else insertNewReminder(newReminder.copy(parentId = thingToDo.id))
-    }
-
-    fun addNewAssessment(result: Assessment) {
-        if (thingToDo?.id == null) { // is a new task ?
-            val currentAssessments = assessments.value ?: mutableListOf()
-            currentAssessments.add(result)
-            _assessments.value = currentAssessments
-        } else insertNewAssessment(thingToDo.id, result)
-    }
-
-    fun removeAssessment(assessment: Assessment) = viewModelScope.launch {
-        val updatedList: MutableList<Assessment> = _assessments.value ?: mutableListOf()
-        updatedList.remove(assessment)
-        _assessments.value = updatedList
-        repository.deleteAssessment(assessment)
     }
 
     fun removeReminder(attribute: Reminder) = viewModelScope.launch {

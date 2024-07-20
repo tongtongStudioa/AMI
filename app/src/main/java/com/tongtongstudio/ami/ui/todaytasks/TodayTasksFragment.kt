@@ -10,7 +10,6 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
-import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -22,16 +21,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.InteractionListener
-import com.tongtongstudio.ami.adapter.TaskAdapter
+import com.tongtongstudio.ami.adapter.task.InteractionListener
+import com.tongtongstudio.ami.adapter.task.TaskAdapter
 import com.tongtongstudio.ami.data.SortOrder
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.notification.SoundPlayer
+import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.ui.todaytasks.TodayTasksFragmentDirections.Companion.actionTodayTasksFragmentToAddEditTaskFragment
+import com.tongtongstudio.ami.ui.todaytasks.TodayTasksFragmentDirections.Companion.actionTodayTasksFragmentToTabPageTrackingStats
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
@@ -147,16 +148,6 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             }).attachToRecyclerView(mainRecyclerView)
         }
 
-        // listen to request's result
-        setFragmentResultListener("add_edit_request") { _, bundle ->
-            val result = bundle.getInt("add_edit_result")
-            sharedViewModel.onAddEditResult(
-                result,
-                resources.getStringArray(R.array.thing_to_do_added),
-                resources.getStringArray(R.array.thing_to_do_updated)
-            )
-        }
-
         // adapt data in recycler view
         viewModel.todayThingsToDo.observe(viewLifecycleOwner) {
             if (it.isEmpty()) {
@@ -200,8 +191,11 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                             )
                         findNavController().navigate(action)
                     }
-                    is MainViewModel.SharedEvent.ShowTaskSavedConfirmationMessage -> {
-                        Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_SHORT).show()
+                    is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
+                        val msg = if (event.result == ADD_TASK_RESULT_OK)
+                            getString(R.string.task_added)
+                        else getString(R.string.task_updated)
+                        Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
                     }
                     is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {
                         Snackbar.make(
@@ -215,7 +209,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                     }
                     is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
                         val action =
-                            TodayTasksFragmentDirections.actionTodayTasksFragmentToTabPageTrackingStats(
+                            actionTodayTasksFragmentToTabPageTrackingStats(
                                 event.task
                             )
                         findNavController().navigate(action)
@@ -234,8 +228,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                             )
                         findNavController().navigate(action)
                     }
-                    is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
-                        //do nothing
+                    else -> {
+                        // do nothing
                     }
                 }.exhaustive
             }

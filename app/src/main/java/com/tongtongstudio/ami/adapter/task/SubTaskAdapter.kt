@@ -1,10 +1,11 @@
-package com.tongtongstudio.ami.adapter
+package com.tongtongstudio.ami.adapter.task
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.adapter.ViewHolder
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.ItemTaskBinding
 import java.util.*

@@ -101,8 +101,8 @@ class Repository @Inject constructor(
         else null
     }
 
-    suspend fun insertAssessment(newAssessment: Assessment) {
-        assessmentDao.insert(newAssessment)
+    suspend fun insertAssessment(newAssessment: Assessment): Long {
+        return assessmentDao.insert(newAssessment)
     }
 
     suspend fun updateAssessment(assessment: Assessment) {
@@ -245,6 +245,10 @@ class Repository @Inject constructor(
 
     suspend fun getComposedTask(parentTaskId: Long): TaskWithSubTasks {
         return ttdDao.getComposedTask(parentTaskId)
+    }
+
+    fun getGlobalGoals(): Flow<List<Assessment>> {
+        return assessmentDao.getGlobalGoals()
     }
 
 }

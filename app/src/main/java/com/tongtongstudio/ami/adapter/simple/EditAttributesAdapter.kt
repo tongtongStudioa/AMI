@@ -1,8 +1,9 @@
-package com.tongtongstudio.ami.adapter
+package com.tongtongstudio.ami.adapter.simple
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.tongtongstudio.ami.adapter.ViewHolder
 import com.tongtongstudio.ami.databinding.ItemOverviewDataEditBinding
 
 class EditAttributesAdapter<T>(

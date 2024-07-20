@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.ui.monitoring.projectStats
+package com.tongtongstudio.ami.ui.monitoring.project
 
 import android.os.Bundle
 import android.view.View
@@ -11,8 +11,8 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.AttributeListener
-import com.tongtongstudio.ami.adapter.EditAttributesAdapter
+import com.tongtongstudio.ami.adapter.simple.AttributeListener
+import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentProjectStatsBinding
 import com.tongtongstudio.ami.timer.TrackingTimeUtility

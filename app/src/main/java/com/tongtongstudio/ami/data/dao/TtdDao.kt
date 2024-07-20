@@ -417,6 +417,7 @@ interface TtdDao {
     )
     fun getRecurringTasks(): Flow<List<TaskWithSubTasks>>
 
+    @Transaction
     @Query("SELECT * FROM thing_to_do_table WHERE id_ttd = :parentTaskId LIMIT 1")
     suspend fun getComposedTask(parentTaskId: Long): TaskWithSubTasks
 

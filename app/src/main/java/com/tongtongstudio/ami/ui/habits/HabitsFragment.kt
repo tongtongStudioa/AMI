@@ -6,7 +6,6 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
-import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -16,11 +15,12 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.InteractionListener
-import com.tongtongstudio.ami.adapter.TaskAdapter
+import com.tongtongstudio.ami.adapter.task.InteractionListener
+import com.tongtongstudio.ami.adapter.task.TaskAdapter
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
+import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.util.exhaustive
@@ -53,15 +53,6 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
             }
         }
 
-        setFragmentResultListener("add_edit_request") { _, bundle ->
-            val result = bundle.getInt("add_edit_result")
-            sharedViewModel.onAddEditResult(
-                result,
-                resources.getStringArray(R.array.thing_to_do_added),
-                resources.getStringArray(R.array.thing_to_do_updated)
-            )
-        }
-
         loadEvents()
 
         viewLifecycleOwner.lifecycleScope.launchWhenCreated {
@@ -86,8 +77,11 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                             )
                         findNavController().navigate(action)
                     }
-                    is MainViewModel.SharedEvent.ShowTaskSavedConfirmationMessage -> {
-                        Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_SHORT).show()
+                    is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
+                        val msg = if (event.result == ADD_TASK_RESULT_OK)
+                            getString(R.string.task_added)
+                        else getString(R.string.task_updated)
+                        Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
                     }
 
                     is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {

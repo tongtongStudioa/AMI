@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.adapter
+package com.tongtongstudio.ami.adapter.simple
 
 interface AttributeListener<T> {
     fun onItemClicked(attribute: T)

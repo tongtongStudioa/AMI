@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.MissedTaskAdapter
+import com.tongtongstudio.ami.adapter.task.MissedTaskAdapter
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.DialogInformationMissedRecurringTasksBinding
 import com.tongtongstudio.ami.ui.MainViewModel

@@ -146,4 +146,7 @@
     <string name="achievements_sum_up">Résumé des achèvements</string>
     <string name="global_completion_rate_title">Taux d\'achèvement global</string>
     <string name="total_time_worked_title">Temps travaillé total</string>
+    <string name="reminder_channel_notifications_title">Notifications de rappels</string>
+    <string name="reminder_title">Rappel de tâche</string>
+    <string name="reminder_content_text">Hey ! C\'est ton rappel : %s</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.adapter
+package com.tongtongstudio.ami.adapter.task
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -20,7 +20,6 @@ class MissedTaskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun swapData(newData: List<Ttd>) {
         data.clear()
         data.addAll(newData)
-        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -46,29 +45,11 @@ class MissedTaskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 tvTaskName.text = thingToDo.title
                 tvNature.text = Nature.TASK.name
                 tvDeadline.text = Ttd.getDateFormatted(thingToDo.dueDate)
-                // todo: show missed times count
+                tvMissedCount.text = "Missed ${thingToDo.timesMissed} times"
                 tvMissedCount.isVisible = false
                 //tvMissedCount.text = countMissedTimes(task)
 
             }
         }
-
-        // TODO: count number task where missed
-        /*private fun countMissedTimes(task: Task): String {
-            val todayDate = Calendar.getInstance().run {
-                set(Calendar.HOUR_OF_DAY,23)
-                set(Calendar.MINUTE,59)
-                timeInMillis
-            }
-            if (task.taskStartDate != null) {
-                Calendar.getInstance().run {
-                    while (task.taskStartDate< todayDate) {
-                        add(Calendar.DAY_OF_MONTH,1)
-                        if (task.taskStartDate)
-                    }
-                }
-            }
-
-        }*/
     }
 }

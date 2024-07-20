@@ -44,6 +44,7 @@ data class Ttd(
     val dependency: Boolean? = null, // dependency on other people
     val skillLevel: Int? = null, // task mastery level posses
     val creationDate: Long = System.currentTimeMillis(),
+    // TODO: add subjective score ? and commentary ?
     @ColumnInfo(name = "id_ttd")
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val categoryId: Long? = null,
@@ -157,6 +158,7 @@ data class Ttd(
 
 }
 
+// TODO: add category in data class
 @Parcelize
 data class TaskWithSubTasks(
     @Embedded
@@ -180,25 +182,29 @@ data class TtdStreakInfo(
 
 /**
  * Evaluation class and entity of Room database.
- * Help to track and analyse impact of a task.
+ * Help to track and analyse details on objective advancement.
  */
 @Parcelize
 @Entity
 data class Assessment(
+    // TODO: change name parent id : assessment ref to an assessment = global objective
+    // parent id nullable
     @ColumnInfo(name = "task_id")
     val taskId: Long,
     @ColumnInfo(name = "assessment_title")
     val title: String,
     val description: String? = null,
+    // TODO: add comment on recurring task too
     val comment: String? = null,
     val goal: Int,
+    // TODO: add type attribute : quantity, time or boolean
     val unit: String,
     @ColumnInfo(name = "assessment_due_date")
     val dueDate: Long,
     val isRecurrent: Boolean = false,
     val interval: RecurringTaskInterval? = null,
     val rehearsalEndDate: Long? = null,
-    val score: Int? = null, // result that the user enter at the due date
+    val score: Int? = null, // result that the user enter at the due date // maybe change name to "rating"
     @ColumnInfo(name = "assessment_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 ) : Parcelable {
@@ -210,6 +216,10 @@ data class Assessment(
             null
     }
 
+    fun getFormattedDueDate(): String {
+        return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
+    }
+
     fun getSumUp(): String {
         val evaluationDateFormatted =
             SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
@@ -218,6 +228,7 @@ data class Assessment(
     }
 }
 
+// TODO: add color
 @Entity
 data class Category(
     @ColumnInfo(name = "category_title")
@@ -238,6 +249,7 @@ data class CategoryTasks(
     val tasks: List<Ttd>
 )
 
+// TODO: mark as passed if it is
 @Entity
 data class Reminder(
     @ColumnInfo(name = "parent_id")
@@ -260,6 +272,7 @@ data class Reminder(
     fun getReminderInformation(): String {
         val dueDateFormatted = getReminderDueDateFormatted()
         val dueTimeFormatted = getReminderTimeFormatted()
+        // TODO: create string resource
         return "$dueDateFormatted at $dueTimeFormatted"
     }
 
@@ -271,3 +284,5 @@ data class Reminder(
 }
 
 // TODO: Create TimeWorked sessions entry
+// TODO: Create Unit entry
+// TODO: Create Pomodoro sessions for later upgrade

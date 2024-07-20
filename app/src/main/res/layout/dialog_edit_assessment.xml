@@ -54,8 +54,10 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/input_layout_goal"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-        android:layout_width="120dp"
+        android:layout_width="0dp"
+        app:layout_constraintHorizontal_weight="3"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
         android:layout_marginTop="5dp"
         android:hint="Goal"
         app:endIconMode="clear_text"
@@ -75,7 +77,8 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/input_layout_unit"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
+        app:layout_constraintHorizontal_weight="2"
         android:layout_height="wrap_content"
         android:hint="Unit"
         app:layout_constraintEnd_toEndOf="parent"
@@ -89,15 +92,39 @@
             android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/set_evaluation_date"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="wrap_content"
+    <!--due date -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/due_date_selection_group"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:text="Evaluation date"
+        android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/input_layout_goal" />
+        app:layout_constraintTop_toBottomOf="@+id/input_layout_unit">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/set_evaluation_date"
+            style="@style/ButtonEditTask.AMI.Style"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Due Date"
+            app:icon="@drawable/ic_commit_24"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/remove_due_date"
+            style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="button to remove due date"
+            android:src="@drawable/baseline_clear_24"
+            app:layout_constraintBottom_toBottomOf="@id/set_evaluation_date"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/set_evaluation_date" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

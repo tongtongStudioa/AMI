@@ -42,6 +42,7 @@
                 tools:text="Created date" />
 
             <RadioGroup
+                android:layout_marginTop="15dp"
                 android:id="@+id/radio_group_choice_nature"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -53,26 +54,16 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/text_view_created_date">
 
-                <!--<com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/rb_event"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:background="@drawable/radio_button_selector"
-                    android:button="@android:color/transparent"
-                    android:gravity="center"
-                    android:padding="16dp"
-                    android:text="@string/event"
-                    android:textColor="@color/text_radio_button_selector" />-->
-
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/rb_task"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
                     android:background="@drawable/radio_button_selector"
                     android:button="@android:color/transparent"
                     android:checked="true"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="5dp"
                     android:gravity="center"
                     android:padding="16dp"
                     android:text="@string/task"
@@ -80,9 +71,11 @@
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/rb_project"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginStart="5dp"
                     android:background="@drawable/radio_button_selector"
                     android:button="@android:color/transparent"
                     android:gravity="center"
@@ -236,6 +229,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/start_date_selection_group" />
 
+            <!--due date -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/due_date_selection_group"
                 android:layout_width="match_parent"
@@ -371,24 +365,15 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/repeat_selection_group">
 
-                <ImageView
-                    android:id="@+id/icon_add_reminder"
-                    style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="13dp"
-                    android:src="@drawable/baseline_notification_add_24"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_add_reminder"
                     style="@style/ButtonEditTask.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="@string/set_reminder"
+                    app:icon="@drawable/baseline_notification_add_24"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_reminder"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -396,7 +381,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_reminder"
+                    android:layout_marginStart="54dp"
+                    app:layout_constraintStart_toStartOf="@id/btn_add_reminder"
                     app:layout_constraintTop_toBottomOf="@id/btn_add_reminder"
                     tools:itemCount="1"
                     tools:listitem="@layout/item_overview_data_edit" />
@@ -471,6 +457,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/baseline_clear_24"
+                    app:layout_constraintStart_toEndOf="@id/btn_attach_project"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -509,48 +496,6 @@
                     android:maxLength="1" />
 
             </com.google.android.material.textfield.TextInputLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/assessments_group"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/input_layout_user_level">
-
-                <ImageView
-                    android:id="@+id/icon_add_assessments"
-                    style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="13dp"
-                    android:src="@drawable/ic_list_alt_add_24"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_add_assessment"
-                    style="@style/ButtonEditTask.AMI.Style"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="Create an assessment"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_assessments"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_assessments"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_assessments"
-                    app:layout_constraintTop_toBottomOf="@id/btn_add_assessment"
-                    tools:itemCount="1"
-                    tools:listitem="@layout/item_overview_data_edit" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>

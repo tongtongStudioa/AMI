@@ -46,10 +46,10 @@
         <action
             android:id="@+id/action_todayTasksFragment_to_addEditTaskFragment"
             app:destination="@id/addEditTaskFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:popExitAnim="@android:anim/slide_out_right" />
 
         <action
             android:id="@+id/action_todayTasksFragment_to_localProjectStatsFragment2"
@@ -60,6 +60,7 @@
         <action
             android:id="@+id/action_todayTasksFragment_to_tabPageTrackingStats"
             app:destination="@id/viewPagerTrackingAndStatsFragment" />
+
     </fragment>
     <fragment
         android:id="@+id/projectFragment"
@@ -102,11 +103,13 @@
             android:id="@+id/action_completedThingToDoFragment_to_localProjectStatsFragment2"
             app:destination="@id/localProjectStatsFragment2" />
     </fragment>
+
     <dialog
         android:id="@+id/recurringChoiceDialogFragment"
         android:name="com.tongtongstudio.ami.ui.dialog.RecurringChoiceDialogFragment"
         android:label="RecurringChoiceDialogFragment"
         tools:layout="@layout/dialog_select_recurring_protocol" />
+
     <fragment
         android:id="@+id/detailsFragment"
         android:name="com.tongtongstudio.ami.ui.monitoring.task.TaskDetailsFragment"
@@ -123,7 +126,7 @@
         tools:layout="@layout/fragment_insights" />
     <fragment
         android:id="@+id/localProjectStatsFragment2"
-        android:name="com.tongtongstudio.ami.ui.monitoring.projectStats.ProjectStatsFragment"
+        android:name="com.tongtongstudio.ami.ui.monitoring.project.ProjectStatsFragment"
         android:label="@string/fragment_title_local_project_stats"
         tools:layout="@layout/fragment_project_stats">
         <argument
@@ -169,4 +172,40 @@
             android:name="task"
             app:argType="com.tongtongstudio.ami.data.datatables.Ttd" />
     </fragment>
+    <fragment
+        android:id="@+id/editGoalFragment"
+        android:name="com.tongtongstudio.ami.ui.edit.EditGoalFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_add_edit_goal">
+        <argument
+            android:name="global_goal"
+            android:defaultValue="@null"
+            app:argType="com.tongtongstudio.ami.data.datatables.Assessment"
+            app:nullable="true" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/globalObjectivesFragment"
+        android:name="com.tongtongstudio.ami.ui.goals.GlobalObjectivesFragment"
+        android:label="@string/fragment_global_goals_title"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_globalObjectivesFragment_to_editGoalFragment"
+            app:destination="@id/editGoalFragment" />
+    </fragment>
+    <dialog
+        android:id="@+id/completeAssessmentDialogFragment"
+        android:name="com.tongtongstudio.ami.ui.dialog.assessment.CompleteAssessmentDialogFragment"
+        android:label="@string/complete_assessment_dialog_title"
+        tools:layout="@layout/dialog_complete_assessment">
+        <argument
+            android:name="assessment"
+            app:argType="com.tongtongstudio.ami.data.datatables.Assessment" />
+    </dialog>
+    <action
+        android:id="@+id/action_global_completeAssessmentDialogFragment"
+        app:destination="@id/completeAssessmentDialogFragment" />
+
 </navigation>

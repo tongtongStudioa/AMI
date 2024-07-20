@@ -36,8 +36,8 @@
             app:trackCornerRadius="8dp"
             app:trackThickness="18dp" />
 
-        <!-- problem with switch material -->
-        <Switch
+        <!-- material switch -->
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/tracking_time_switch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

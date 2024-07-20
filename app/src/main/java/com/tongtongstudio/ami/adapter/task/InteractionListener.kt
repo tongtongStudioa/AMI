@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.adapter
+package com.tongtongstudio.ami.adapter.task
 
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd

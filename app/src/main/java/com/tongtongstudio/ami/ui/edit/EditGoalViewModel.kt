@@ -90,6 +90,18 @@ class EditGoalViewModel @Inject constructor(
         } else insertNewAssessment(objective.id, result)
     }
 
+    fun updateAssessment(oldAssessment: Assessment, updateAssessment: Assessment) =
+        viewModelScope.launch {
+            if (oldAssessment.taskId == null) {
+                val currentReminders = _assessments.value ?: mutableListOf()
+                val indexElement = currentReminders.indexOf(oldAssessment)
+                currentReminders.remove(oldAssessment)
+                currentReminders.add(indexElement, updateAssessment)
+                _assessments.value = currentReminders
+            } else
+                repository.updateAssessment(updateAssessment)
+        }
+
     fun removeAssessment(assessment: Assessment) = viewModelScope.launch {
         val updatedList: MutableList<Assessment> = _assessments.value ?: mutableListOf()
         updatedList.remove(assessment)

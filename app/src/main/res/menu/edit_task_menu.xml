@@ -4,13 +4,13 @@
 
     <item
         android:id="@+id/action_create_new_category"
-        android:title="New category"
+        android:title="@string/new_category"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_update_edit_layout"
         android:checkable="true"
-        android:title="Edit simplified"
+        android:title="@string/edit_simplified"
         app:showAsAction="never" />
 
 </menu>

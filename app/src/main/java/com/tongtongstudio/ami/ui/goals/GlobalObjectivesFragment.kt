@@ -14,6 +14,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,6 +27,7 @@ import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.notification.SoundPlayer
 import com.tongtongstudio.ami.ui.ADD_GOAL_RESULT_OK
+import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
@@ -53,6 +56,7 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentMainBinding.bind(view)
 
+        setUpToolbar()
         //view model, sound player and adapter
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
         goalsAdapter = GoalsAdapter(this)
@@ -149,7 +153,7 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                 binding.emptyRecyclerView.textViewExplication.text =
                     getText(R.string.no_objectives_yet)
                 binding.emptyRecyclerView.textViewActionText.text = ""
-                binding.toolbar.collapseActionView()
+                //binding.toolbar.collapseActionView()
             } else {
                 goalsAdapter.submitList(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
@@ -158,7 +162,6 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
         }
 
         // respond to event
-        // TODO: change this with the good life cycle state : if not all event respond to that collect method
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 viewModel.goalsEvents.collect { event ->
@@ -181,7 +184,7 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                             findNavController().navigate(action)
                         }
                         is GlobalObjectivesViewModel.GoalsEvent.NavigateToDetailsGlobalGoalScreen -> {
-                            // TODO: do something cool
+                            // TODO: navigate to global objective screen details
                         }
                         is GlobalObjectivesViewModel.GoalsEvent.ShowUndoDeleteGlobalGoalMessage -> {
                             Snackbar.make(
@@ -197,6 +200,27 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                     }
                 }
             }
+        }
+    }
+
+    // function to set up toolbar with collapse toolbar and link to drawer layout
+    private fun setUpToolbar() {
+        val mainActivity = activity as MainActivity
+        // imperative to see option menu and navigation icon (hamburger)
+        mainActivity.setSupportActionBar(binding.toolbar)
+
+        val navController = findNavController()
+        // retrieve app bar configuration : see MainActivity.class
+        val appBarConfiguration = mainActivity.appBarConfiguration
+
+        // to set hamburger menu work and open drawer layout
+        binding.collapseToolbar.setupWithNavController(
+            binding.toolbar,
+            navController,
+            appBarConfiguration
+        )
+        binding.toolbar.setNavigationOnClickListener {
+            navController.navigateUp(appBarConfiguration)
         }
     }
 

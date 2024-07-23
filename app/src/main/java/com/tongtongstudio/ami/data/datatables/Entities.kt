@@ -106,6 +106,15 @@ data class Ttd(
         return DateFormat.getDateInstance().format(creationDate)
     }
 
+    fun isLate(): Boolean {
+        val todayDate = Calendar.getInstance().run {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            timeInMillis
+        }
+        return dueDate < todayDate && isCompleted
+    }
+
     companion object {
         /**
          * Function that calculate urgency.

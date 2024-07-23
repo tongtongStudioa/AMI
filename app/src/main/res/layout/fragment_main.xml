@@ -16,7 +16,7 @@
             android:id="@+id/collapse_toolbar"
             android:layout_width="match_parent"
             android:layout_height="150dp"
-            app:layout_scrollFlags="scroll|snap|exitUntilCollapsed"
+            app:layout_scrollFlags="snap|scroll|exitUntilCollapsed"
             app:toolbarId="@id/toolbar">
 
             <com.google.android.material.textview.MaterialTextView
@@ -52,9 +52,10 @@
         android:id="@+id/main_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:listitem="@layout/item_task"
-        tools:itemCount="5" />
+        tools:itemCount="5"
+        tools:listitem="@layout/item_task" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_add_task"
@@ -62,8 +63,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="25dp"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
+        android:contentDescription="@string/fab_add_description"
         app:icon="@drawable/ic_add"
-        android:contentDescription="@string/fab_add_description" />
-
+        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -113,8 +113,8 @@
     <fragment
         android:id="@+id/detailsFragment"
         android:name="com.tongtongstudio.ami.ui.monitoring.task.TaskDetailsFragment"
-        android:label="@string/task_details_screen_title"
-        tools:layout="@layout/fragment_task_information">
+        android:label="@string/fragment_task_details_title"
+        tools:layout="@layout/fragment_task_details">
         <argument
             android:name="task"
             app:argType="com.tongtongstudio.ami.data.datatables.Ttd" />
@@ -122,7 +122,7 @@
     <fragment
         android:id="@+id/achievementsFragment"
         android:name="com.tongtongstudio.ami.ui.insights.InsightsFragment"
-        android:label="@string/fragment_title_achievements"
+        android:label="@string/fragment_achievements_title"
         tools:layout="@layout/fragment_insights" />
     <fragment
         android:id="@+id/localProjectStatsFragment2"

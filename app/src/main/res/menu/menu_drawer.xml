@@ -46,21 +46,21 @@
             </group>
         </menu>
     </item>
-    <item android:title="Other">
+    <item android:title="@string/others">
         <menu>
             <group>
                 <item
                     android:id="@+id/about_item"
                     android:icon="@drawable/baseline_info_24"
-                    android:title="About" />
+                    android:title="@string/about_project" />
                 <item
                     android:id="@+id/rate_item"
                     android:icon="@drawable/baseline_rate_review_24"
-                    android:title="Rate" />
+                    android:title="@string/rate" />
                 <item
                     android:id="@+id/share_item"
                     android:icon="@drawable/baseline_share_24"
-                    android:title="Share" />
+                    android:title="@string/share" />
             </group>
         </menu>
     </item>

@@ -40,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
 
@@ -58,6 +59,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.globalObjectivesFragment
             ), drawerLayout
         )
+        navView.setupWithNavController(navController)
 
         // change status color bar
         /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -73,7 +75,6 @@ class MainActivity : AppCompatActivity() {
             window.statusBarColor = ContextCompat.getColor(this, R.color.md_theme_light_surface)
         }*/
 
-        navView.setupWithNavController(navController)
 
         // implementation for specific actions
         navView.setNavigationItemSelectedListener { menuItem ->

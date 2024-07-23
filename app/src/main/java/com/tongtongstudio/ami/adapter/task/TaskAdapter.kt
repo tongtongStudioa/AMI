@@ -207,13 +207,12 @@ class TaskAdapter(private val listener: InteractionListener) :
                     data.getNbSubTasksCompleted(),
                     data.getNbSubTasks()
                 )
-                // TODO: is it here we make the sub task adapter alive ?
                 rvSubTasks.apply {
                     layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
                     adapter = SubTaskAdapter(listener, data.subTasks)
                 }
 
-                // TODO: search for help on this helper
+                // TODO: resolve sub item touch behavior
                 ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
                     0,
                     ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT

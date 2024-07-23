@@ -8,7 +8,6 @@ import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ViewHolder
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.ItemTaskBinding
-import java.util.*
 
 class SubTaskAdapter(private val listener: InteractionListener, private val subTasks: List<Ttd>) :
     RecyclerView.Adapter<SubTaskAdapter.SubTaskViewHolder>() {
@@ -60,13 +59,7 @@ class SubTaskAdapter(private val listener: InteractionListener, private val subT
                         thingToDo.priority
                     )
 
-                // TODO: no creation date here
-                val todayDate = Calendar.getInstance().run {
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    timeInMillis
-                }
-                if (thingToDo.dueDate < todayDate && !thingToDo.isCompleted) {
+                if (thingToDo.isLate()) {
                     tvTaskName.setTextColor(
                         this@SubTaskViewHolder.itemView.context.resources.getColor(
                             R.color.design_default_color_error

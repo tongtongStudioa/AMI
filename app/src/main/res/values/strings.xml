@@ -83,7 +83,7 @@
     <string name="title_notification_channel">Task notifications channel</string>
     <string name="set_reminder">Set reminder</string>
     <string name="nb_sub_tasks_project">%1$d/%2$d sub tasks completed</string>
-    <string name="fragment_title_achievements">My Insights</string>
+    <string name="fragment_achievements_title">My Insights</string>
     <string name="no_information" translatable="false">_</string>
     <string name="no_estimated_work_time">No estimated work time</string>
     <string name="times_completed">Times completed</string>
@@ -130,7 +130,7 @@
     <string name="set_recurring_end">Set recurring end</string>
     <string name="text_nb_missed_recurring_tasks">You have missed %d tasks!</string>
     <string name="task_description_view">Task\'s description</string>
-    <string name="task_s_evaluation">Task\'s evaluation</string>
+    <string name="assessment_description">Task\'s evaluation</string>
     <string name="current_streak">Current Streak</string>
     <string name="productivity_sum_up">Productivity sum up</string>
     <string name="tasks_completed">Tasks completed</string>
@@ -147,7 +147,7 @@
     <string name="launch_chronometer_content_description">Launch chronometer or set pause</string>
     <string name="missed_tasks_dialog_title">Recurring tasks missed</string>
     <string name="completed_tasks_subtitle">Things already completed !</string>
-    <string name="task_details_screen_title">Task information</string>
+    <string name="fragment_task_details_title">Task information</string>
     <string name="view_pager_screen_title">Stats and time tracker</string>
     <string name="completion_rate_title">Completion rate</string>
     <string name="max_streak_title">Max streak</string>
@@ -172,14 +172,14 @@
     <string name="reminder_title">Task reminder</string>
     <string name="reminder_content_text">Hey ! It\'s your friendly reminder : %s</string>
     <string name="select_reminder_time_title">Select reminder time</string>
-    <string name="fragment_global_goals_title">Goals</string>
+    <string name="fragment_global_goals_title">My goals</string>
     <string name="share_message">Hey, check out this awesome app I developed! It\'s a fun and intelligent to-do list app that\'ll help you stay organized and motivated. Give it a try! %s</string>
     <string name="no_objectives_yet">No global objectives yet...</string>
     <string name="fragment_title_edit_global_goal">Edit global goal</string>
     <string name="fragment_title_add_global_goal">Add global goal</string>
     <string name="msg_gloabl_goal_deleted">Global goal deleted</string>
-    <string name="error_no_goal">Goal can\'t be empty</string>
-    <string name="error_no_unit">Unit can\'t be blank</string>
+    <string name="error_no_goal">Goal can\'t be empty !</string>
+    <string name="error_no_unit">Unit can\'t be blank !</string>
     <string name="assessment_channel_description">Assessment notification channel</string>
     <string name="share_with">Share with</string>
     <string name="edit_category_dialog_title">Edit an category</string>
@@ -188,6 +188,45 @@
     <string name="edit_assessment_dialog_title">Edit assessment</string>
     <string name="complete_assessment_dialog_title">Complete assessment</string>
     <string name="remind_me_later">Remind me later</string>
-    <string name="assessment_notification_title">Assessment time</string>
+    <string name="assessment_notification_title">Assessment time !</string>
     <string name="complete_assessment_notification_content">Fill out your assessment : %s</string>
+    <string name="msg_invalid_deadline">Deadline can\'t be set before start date or due date</string>
+    <string name="msg_invalid_due_date">Due date can\'t be set after deadline or before start date</string>
+    <string name="msg_invalid_startdate">Start date can\'t be set after due date or deadline</string>
+    <string name="description">Description</string>
+    <string name="priority">Priority</string>
+    <string name="category">Category</string>
+    <string name="remove_start_date_description" translatable="false">Button to remove start date</string>
+    <string name="remove_due_date_description" translatable="false">Button to remove due date</string>
+    <string name="remove_deadline_description" translatable="false">Button to remove deadline</string>
+    <string name="dependency">Dependency ?</string>
+    <string name="mastery_level">Mastery level</string>
+    <string name="objective_title">Objective\'s title</string>
+    <string name="selector_quantity">Quantity</string>
+    <string name="selector_time">Time</string>
+    <string name="selector_boolean">Boolean</string>
+    <string name="unit">Unit</string>
+    <string name="goal">Goal</string>
+    <string name="create_intermediate_assessments">Create intermediate assessments</string>
+    <string name="results">Results :</string>
+    <string name="assessment_title">Assessment\'s title</string>
+    <string name="category_title">Category\'s title</string>
+    <string name="category_description">Category\'s description</string>
+    <string name="clear">Clear</string>
+    <string name="hours">Hours</string>
+    <string name="minutes" translatable="false">Minutes</string>
+    <string name="period">Period</string>
+    <string name="recurring_end">Recurring end :</string>
+    <string name="las_due_date">Last due date : %s</string>
+    <string name="task_times_missed">%d times missed</string>
+    <string name="new_category">New category</string>
+    <string name="edit_simplified">Edit simplified</string>
+    <string name="others">Others</string>
+    <string name="about_project">About project</string>
+    <string name="rate">Rate</string>
+    <string name="share">Share</string>
+    <string name="by_eisenhower_matrix">Eisenhower matrix</string>
+    <string name="by_2_minutes_rules">2 minutes rules</string>
+    <string name="by_eat_the_frog" translatable="false">Eat The Frog</string>
+    <string name="creator_sort">Creator sort</string>
 </resources>

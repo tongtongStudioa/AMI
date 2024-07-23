@@ -237,6 +237,7 @@ class AddEditTaskViewModel @Inject constructor(
 
         updateRemindersList(taskId)
 
+        // navigate back with result "OK"
         addEditChannelEvent.send(
             AddEditTaskEvent.NavigateBackWithResult(
                 ADD_TASK_RESULT_OK
@@ -275,7 +276,6 @@ class AddEditTaskViewModel @Inject constructor(
                 repository.updateTask(updatedThingToDoExtent)
             } else repository.updateTask(updatedThingToDo)
 
-            // TODO: move out this method (to insure that update method categories and reminder is well saved
             addEditChannelEvent.send(
                 AddEditTaskEvent.NavigateBackWithResult(
                     EDIT_TASK_RESULT_OK

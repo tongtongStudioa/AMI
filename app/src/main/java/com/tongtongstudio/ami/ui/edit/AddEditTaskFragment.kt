@@ -14,6 +14,8 @@ import android.widget.PopupMenu
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.os.bundleOf
 import androidx.core.util.Pair
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
@@ -325,7 +327,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
             // attach to a project
             btnAttachProject.setOnClickListener {
-                // TODO: show dialog to attach, detach or change of project attached
                 showDialogAttachProject()
             }
             updateSpecificButtonText(
@@ -436,6 +437,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_LONG).show()
                     }
                     is AddEditTaskViewModel.AddEditTaskEvent.NavigateBackWithResult -> {
+                        // update project if task is linked
                         sharedViewModel.updateParentTask(viewModel.projectId)
                         clearFocus()
                         sharedViewModel.showConfirmationMessage(event.result)
@@ -444,7 +446,35 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 }.exhaustive
             }
         }
-        setHasOptionsMenu(true)
+        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.edit_task_menu, menu)
+                lifecycleScope.launch {
+                    val layoutMode = sharedViewModel.globalPreferencesFlow.first().layoutMode
+                    menu.findItem(R.id.action_update_edit_layout).isChecked =
+                        layoutMode == LayoutMode.SIMPLIFIED
+                }
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_create_new_category -> {
+                        showUpdateCategoryDialog()
+                        true
+                    }
+                    R.id.action_update_edit_layout -> {
+                        menuItem.isChecked = !menuItem.isChecked
+                        val layoutMode = if (menuItem.isChecked) {
+                            LayoutMode.SIMPLIFIED
+                        } else LayoutMode.EXTENT
+                        sharedViewModel.onLayoutModeSelected(layoutMode)
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+        }, viewLifecycleOwner)
     }
 
     private fun clearFocus() {
@@ -459,7 +489,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         } else {
             Snackbar.make(
                 requireView(),
-                "Deadline can't be set before start date or due date",
+                getString(R.string.msg_invalid_deadline),
                 Snackbar.LENGTH_SHORT
             ).show()
             false
@@ -472,7 +502,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         } else {
             Snackbar.make(
                 requireView(),
-                "Due date can't be set after deadline or before start date",
+                getString(R.string.msg_invalid_due_date),
                 Snackbar.LENGTH_SHORT
             ).show()
             false
@@ -485,38 +515,10 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         } else {
             Snackbar.make(
                 requireView(),
-                "Start date can't be set after due date or deadline",
+                getString(R.string.msg_invalid_startdate),
                 Snackbar.LENGTH_SHORT
             ).show()
             false
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.edit_task_menu, menu)
-        lifecycleScope.launch {
-            val layoutMode = sharedViewModel.globalPreferencesFlow.first().layoutMode
-            menu.findItem(R.id.action_update_edit_layout).isChecked =
-                layoutMode == LayoutMode.SIMPLIFIED
-        }
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_create_new_category -> {
-                showUpdateCategoryDialog()
-                true
-            }
-            R.id.action_update_edit_layout -> {
-                item.isChecked = !item.isChecked
-                val layoutMode = if (item.isChecked) {
-                    LayoutMode.SIMPLIFIED
-                } else LayoutMode.EXTENT
-                sharedViewModel.onLayoutModeSelected(layoutMode)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -696,7 +698,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         }
     }
 
-    // TODO: change color when dark mode is activate
     private fun updateDateButtonText(
         button: MaterialButton,
         date: Long?,
@@ -729,7 +730,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         newFragment.show(parentFragmentManager, ESTIMATED_TIME_DIALOG_TAG)
     }
 
-    // TODO: 11/02/2023 delete this method to free up space
     private fun getStringFromLong(long: Long): String {
         return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(long)
     }
@@ -785,7 +785,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         dueDateTime: Long? = null,
         actionSaveReminder: (Long) -> Unit
     ) {
-        // TODO: be able to create custom interval (like repetition until due date)
         var reminderTriggerTime: Long
         // create the calendar constraint builder
         val endDateConstraints = CalendarCustomFunction.buildConstraintsForDeadline(
@@ -902,7 +901,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         return dateRangePicker
     }
 
-    // TODO: find best way to display that toolbar
     // function to set up toolbar with collapse toolbar and link to drawer layout
     private fun setUpToolbar() {
         val mainActivity = activity as MainActivity
@@ -914,7 +912,11 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         val appBarConfiguration = mainActivity.appBarConfiguration
 
         // to set hamburger menu work and open drawer layout
-        binding.toolbar.setupWithNavController(navController, appBarConfiguration)
+        binding.collapseToolbar.setupWithNavController(
+            binding.toolbar,
+            navController,
+            appBarConfiguration
+        )
         binding.toolbar.setNavigationOnClickListener {
             navController.navigateUp(appBarConfiguration)
         }

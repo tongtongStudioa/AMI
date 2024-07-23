@@ -3,7 +3,6 @@ package com.tongtongstudio.ami.ui.monitoring.task
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
@@ -135,8 +134,6 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
                         getString(R.string.msg_work_session_saved),
                         Snackbar.LENGTH_SHORT
                     ).show()
-                    if (viewModel.timerType == TimerType.STOPWATCH)
-                        Toast.makeText(context, "stopwatch", Toast.LENGTH_SHORT).show()
                     binding.timerTextView.text = TrackingTimeUtility.getFormattedWorkingTime(
                         viewModel.actualWorkTime.value ?: 0,
                         TimerType.STOPWATCH

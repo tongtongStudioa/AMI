@@ -6,6 +6,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
@@ -45,7 +47,6 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
         binding = FragmentMainBinding.bind(view)
 
         setUpToolbar()
-
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
         newTaskAdapter = TaskAdapter(this)
 
@@ -74,7 +75,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                     newTaskAdapter.submitList(it)
                     emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                     mainRecyclerView.isVisible = true
-                    textSup.text = getString(R.string.nb_projects_info, it.size)
+                    //textSup.text = getString(R.string.nb_projects_info, it.size)
                 }
             }
         }
@@ -142,39 +143,46 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                 }.exhaustive
             }
         }
-        setHasOptionsMenu(true)
-    }
+        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.today_tasks_menu, menu)
+                lifecycleScope.launch {
+                    menu.findItem(R.id.action_hide_completed_tasks).isChecked =
+                        viewModel.preferencesFlow.first().hideCompleted
+                }
+            }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.today_tasks_menu, menu)
-        lifecycleScope.launch {
-            menu.findItem(R.id.action_hide_completed_tasks).isChecked =
-                viewModel.preferencesFlow.first().hideCompleted
-        }
-        super.onCreateOptionsMenu(menu, inflater)
-    }
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_sort_by_eisenhower_matrix -> {
+                        sharedViewModel.onSortOrderSelected(SortOrder.BY_EISENHOWER_MATRIX)
+                        true
+                    }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_sort_by_eisenhower_matrix -> {
-                sharedViewModel.onSortOrderSelected(SortOrder.BY_EISENHOWER_MATRIX)
-                true
+                    R.id.action_sort_by_2_minutes_rules -> {
+                        sharedViewModel.onSortOrderSelected(SortOrder.BY_2MINUTES_RULES)
+                        true
+                    }
+
+                    R.id.action_sort_by_eat_the_frog -> {
+                        sharedViewModel.onSortOrderSelected(SortOrder.BY_EAT_THE_FROG)
+                        true
+                    }
+
+                    R.id.action_sort_by_creator_sort -> {
+                        sharedViewModel.onSortOrderSelected(SortOrder.BY_CREATOR_SORT)
+                        true
+                    }
+
+                    R.id.action_hide_completed_tasks -> {
+                        menuItem.isChecked = !menuItem.isChecked
+                        sharedViewModel.onHideCompletedClick(menuItem.isChecked)
+                        true
+                    }
+                    else -> false
+                }
             }
-            R.id.action_hide_completed_tasks -> {
-                item.isChecked = !item.isChecked
-                sharedViewModel.onHideCompletedClick(item.isChecked)
-                true
-            }
-            R.id.action_sort_by_name -> {
-                sharedViewModel.onSortOrderSelected(SortOrder.BY_NAME)
-                true
-            }
-            R.id.action_sort_by_deadline -> {
-                sharedViewModel.onSortOrderSelected(SortOrder.BY_DEADLINE)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+        }, viewLifecycleOwner)
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout

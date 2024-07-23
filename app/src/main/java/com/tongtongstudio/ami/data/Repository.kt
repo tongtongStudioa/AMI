@@ -1,14 +1,14 @@
 package com.tongtongstudio.ami.data
 
-import com.tongtongstudio.ami.data.dao.*
+import com.tongtongstudio.ami.data.dao.AssessmentDao
+import com.tongtongstudio.ami.data.dao.CategoryDao
+import com.tongtongstudio.ami.data.dao.ReminderDao
+import com.tongtongstudio.ami.data.dao.TtdDao
 import com.tongtongstudio.ami.data.datatables.*
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class Repository @Inject constructor(
-    private val projectDao: ProjectDao,
-    private val taskDao: TaskDao,
-    private val eventDao: EventDao,
     private val ttdDao: TtdDao,
     private val categoryDao: CategoryDao,
     private val reminderDao: ReminderDao,
@@ -21,7 +21,6 @@ class Repository @Inject constructor(
         startOfToday: Long,
         endOfToday: Long,
     ): Flow<List<TaskWithSubTasks>> {
-        // TODO: Change sorOrder class (add ordering rules)
         return ttdDao.getTodayTasks(sortOrder, hideCompleted, startOfToday, endOfToday)
     }
 
@@ -135,11 +134,6 @@ class Repository @Inject constructor(
         return ttdDao.getRecurringTasks()
     }
 
-    // TODO: suppress this method and update composed task
-    suspend fun updateProject(project: Project) {
-        projectDao.update(project)
-    }
-
     fun getUpcomingTasksCount(endDate: Long, endDateFilter: Long? = null): Flow<Int> {
         return if (endDateFilter != null)
             ttdDao.getUpcomingTasksCountFilter(endDate, endDateFilter)
@@ -154,7 +148,6 @@ class Repository @Inject constructor(
         return if (categoryId != null) ttdDao.getCategoryProjectsAchievementRate(categoryId) else ttdDao.getAllProjectsAchievementRate()
     }
 
-    // TODO: change ttdDao method to retrieve projects count
     fun getCompletedProjectsCount(categoryId: Long? = null): Flow<Int> {
         return if (categoryId != null)
             ttdDao.getCategoryCompletedProjectsCount(categoryId)

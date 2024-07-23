@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
         android:id="@+id/category_title"
-        android:hint="Category's title"
+        android:hint="@string/category_title"
         app:counterEnabled="true"
         app:counterMaxLength="30"
         android:layout_marginTop="10dp"
@@ -44,7 +44,7 @@
         android:layout_height="wrap_content"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
         android:id="@+id/category_description"
-        android:hint="Category's description"
+        android:hint="@string/category_description"
         app:counterEnabled="true"
         app:endIconMode="clear_text"
         app:layout_constraintStart_toStartOf="parent"
@@ -69,7 +69,7 @@
         app:layout_constraintEnd_toStartOf="@+id/btn_clear_input_layout"
         app:layout_constraintStart_toStartOf="@+id/category_description"
         app:layout_constraintTop_toBottomOf="@+id/category_description"
-        android:text="Save" />
+        android:text="@string/save" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_clear_input_layout"
@@ -78,6 +78,6 @@
         app:layout_constraintEnd_toEndOf="@+id/category_description"
         app:layout_constraintStart_toEndOf="@+id/btn_save_edit"
         app:layout_constraintTop_toBottomOf="@+id/category_description"
-        android:text="Clear and add" />
+        android:text="@string/clear" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

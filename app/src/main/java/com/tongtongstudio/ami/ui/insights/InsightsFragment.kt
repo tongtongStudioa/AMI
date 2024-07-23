@@ -234,9 +234,6 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
 
         // to set hamburger menu work and open drawer layout
         binding.toolbar.setupWithNavController(navController, appBarConfiguration)
-        /*binding.toolbar.setNavigationOnClickListener {
-            navController.navigateUp(appBarConfiguration)
-        }*/
     }
 
     private fun createLineData(entries: List<Entry>): LineData {

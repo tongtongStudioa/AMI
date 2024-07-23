@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.*
-import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.receiver.ReminderBroadcastReceiver
@@ -67,7 +66,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // TODO: cancel  all reminders
+    // TODO: cancel and suppress task's reminders
     fun deleteTask(thingToDo: TaskWithSubTasks) = viewModelScope.launch {
         repository.deleteTask(thingToDo.mainTask)
         if (thingToDo.mainTask.parentTaskId != null) {
@@ -143,10 +142,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun showCompleteAssessmentDialog(assessment: Assessment) = viewModelScope.launch {
-        mainEventChannel.send(SharedEvent.ShowCompleteAssessmentDialog(assessment))
-    }
-
     fun updateRecurringTasksMissed(missedTasks: List<Ttd>) = viewModelScope.launch {
         for (task in missedTasks) {
             val updatedTask = task.updateCheckedState(false)
@@ -175,7 +170,5 @@ class MainViewModel @Inject constructor(
             SharedEvent()
 
         data class ShowMissedRecurringTaskDialog(val missedTasks: List<Ttd>) : SharedEvent()
-
-        data class ShowCompleteAssessmentDialog(val assessment: Assessment) : SharedEvent()
     }
 }

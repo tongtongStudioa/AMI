@@ -5,17 +5,20 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.setupWithNavController
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Ttd
-import com.tongtongstudio.ami.databinding.FragmentTaskInformationBinding
+import com.tongtongstudio.ami.databinding.FragmentTaskDetailsBinding
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
+import com.tongtongstudio.ami.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
-class TaskDetailsFragment : Fragment(R.layout.fragment_task_information) {
+class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
 
-    lateinit var binding: FragmentTaskInformationBinding
+    lateinit var binding: FragmentTaskDetailsBinding
     private val viewModel: TaskDetailsAndTimeTrackerViewModel by lazy {
         if (parentFragment is ViewPagerTrackingAndStatsFragment) { // when inside view pager
             ViewModelProvider(requireParentFragment())[TaskDetailsAndTimeTrackerViewModel::class.java]
@@ -26,7 +29,14 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_information) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = FragmentTaskInformationBinding.bind(view)
+
+        binding = FragmentTaskDetailsBinding.bind(view)
+
+        // show or hide app bar if fragment is in unique mode
+        if (parentFragment !is ViewPagerTrackingAndStatsFragment) {
+            binding.appBar.isVisible = true
+            setUpToolbar()
+        } else binding.appBar.isVisible = false
 
         // binding elements layout
         binding.apply {
@@ -71,4 +81,19 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_information) {
             }
         }
     }
+
+    // function to set up toolbar with collapse toolbar and link to drawer layout
+    private fun setUpToolbar() {
+        val mainActivity = activity as MainActivity
+        // imperative to see option menu and navigation icon (hamburger)
+        mainActivity.setSupportActionBar(binding.toolbar)
+
+        val navController = findNavController()
+        // retrieve app bar configuration : see MainActivity.class
+        val appBarConfiguration = mainActivity.appBarConfiguration
+
+        // to set hamburger menu work and open drawer layout
+        binding.toolbar.setupWithNavController(navController, appBarConfiguration)
+    }
+
 }

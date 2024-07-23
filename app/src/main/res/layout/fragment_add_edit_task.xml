@@ -11,11 +11,33 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapse_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            tools:title="Edit Task" />
+            android:layout_height="150dp"
+            app:layout_scrollFlags="snap|scroll|exitUntilCollapsed"
+            app:toolbarId="@id/toolbar">
+
+            <!--<com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/toolbar_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="15dp"
+                app:layout_collapseMode="parallax"
+                app:icon="@drawable/ic_save_task_24"
+                android:text="@string/save"
+                android:textColor="?attr/colorOnSurface" />-->
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:title="@string/fragment_title_edit_thing_to_do" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -115,7 +137,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="15dp"
-                android:hint="Description"
+                android:hint="@string/description"
                 app:counterEnabled="true"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -141,7 +163,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="15dp"
                 android:layout_marginBottom="10dp"
-                android:hint="Priority"
+                android:hint="@string/priority"
                 app:endIconMode="clear_text"
                 app:helperText="@string/importance_priority_1_9"
                 app:layout_constraintEnd_toStartOf="@id/input_layout_category"
@@ -164,7 +186,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="15dp"
-                android:hint="Category"
+                android:hint="@string/category"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/input_layout_priority"
                 app:layout_constraintTop_toBottomOf="@+id/input_layout_description"
@@ -201,7 +223,7 @@
                     style="@style/ButtonEditTask.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Start Date"
+                    android:text="@string/set_start_date"
                     app:icon="@drawable/ic_line_start_circle_24"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -215,7 +237,8 @@
                     android:src="@drawable/baseline_clear_24"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/btn_set_start_date"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:contentDescription="@string/remove_start_date_description" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -243,7 +266,7 @@
                     style="@style/ButtonEditTask.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Due Date"
+                    android:text="@string/set_due_date"
                     app:icon="@drawable/ic_commit_24"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -254,7 +277,7 @@
                     style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="button to remove due date"
+                    android:contentDescription="@string/remove_due_date_description"
                     android:src="@drawable/baseline_clear_24"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/btn_set_due_date"
@@ -285,7 +308,7 @@
                     style="@style/ButtonEditTask.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Deadline"
+                    android:text="@string/set_deadline"
                     app:icon="@drawable/ic_line_end_circle_24"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -296,7 +319,7 @@
                     style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="button to remove deadline"
+                    android:contentDescription="@string/remove_deadline_description"
                     android:src="@drawable/baseline_clear_24"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/btn_set_deadline"
@@ -445,7 +468,7 @@
                     style="@style/ButtonEditTask.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Attach to a project"
+                    android:text="@string/project_linked_default"
                     app:icon="@drawable/ic_add_task_24"
                     app:layout_constraintEnd_toStartOf="@+id/remove_project_linked"
                     app:layout_constraintStart_toStartOf="parent"
@@ -464,26 +487,14 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switch_dependency"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:text="Depend another person ?"
-                android:visibility="visible"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/input_layout_user_level"
-                app:layout_constraintTop_toBottomOf="@+id/project_selection_group" />
-
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_user_level"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
                 android:layout_width="175dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
-                android:hint="Mastery level"
+                android:hint="@string/mastery_level"
                 android:visibility="visible"
-                app:layout_constraintEnd_toStartOf="@+id/switch_dependency"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/project_selection_group">
 
@@ -496,6 +507,18 @@
                     android:maxLength="1" />
 
             </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switch_dependency"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:text="@string/dependency"
+                android:textAlignment="center"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@id/input_layout_user_level"
+                app:layout_constraintTop_toBottomOf="@+id/input_layout_user_level" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>
@@ -507,9 +530,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="25dp"
         android:contentDescription="Save task"
-        android:text="Save"
-        app:icon="@drawable/ic_save_task_24"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior" />
+        android:text="@string/save"
+        app:icon="@drawable/ic_save_task_24" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

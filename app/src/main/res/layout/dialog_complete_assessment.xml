@@ -56,7 +56,7 @@
             style="@style/TextAppearance.Ami.Headline6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Resultats :"
+            android:text="@string/results"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_goal" />
 
@@ -70,10 +70,9 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="5dp"
         android:layout_marginEnd="10dp"
-        android:hint="Input result"
         app:endIconMode="clear_text"
         app:boxStrokeWidth="0dp"
-        android:textColorHint="@color/white"
+        app:counterTextColor="@color/white"
         app:boxBackgroundColor="?attr/colorPrimary"
         app:boxCornerRadiusBottomStart="20dp"
         app:boxCornerRadiusBottomEnd="20dp"
@@ -89,7 +88,9 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:textAppearance="@style/TextAppearance.Ami.Body2"
+            tools:text="5"
+            android:textColor="?attr/colorOnPrimary"
+            android:textAppearance="@style/TextAppearance.Ami.Body1"
             android:inputType="numberDecimal"
             android:maxLength="6" />
     </com.google.android.material.textfield.TextInputLayout>

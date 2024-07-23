@@ -215,8 +215,6 @@ interface TtdDao {
                 "GROUP BY completionDate/ 86400000"
     )
     fun getCompletedTasksByPeriod(startDate: Long, endDate: Long): Flow<List<TtdAchieved?>?>
-
-    // TODO: update this method to get actual real time worked ...
     @Query("SELECT SUM(actualWorkTime) FROM thing_to_do_table WHERE isCompleted AND type != 'PROJECT'")
     fun getTotalTimeWorked(): Flow<Long>
 

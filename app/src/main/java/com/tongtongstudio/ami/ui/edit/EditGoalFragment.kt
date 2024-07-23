@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
-import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import androidx.core.os.bundleOf
@@ -16,8 +15,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -29,13 +31,14 @@ import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.databinding.FragmentAddEditGoalBinding
 import com.tongtongstudio.ami.receiver.ASSESSMENT_ID
 import com.tongtongstudio.ami.receiver.AssessmentBroadcastReceiver
-import com.tongtongstudio.ami.ui.MainViewModel
+import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.dialog.assessment.ASSESSMENT_RESULT_KEY
 import com.tongtongstudio.ami.ui.dialog.assessment.EditAssessmentDialogFragment
 import com.tongtongstudio.ami.ui.dialog.assessment.NEW_USER_ASSESSMENT_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.assessment.USER_ASSESSMENT_TAG
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.*
 
@@ -44,14 +47,13 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
 
     private var assessments: MutableList<Assessment> = mutableListOf()
     private val viewModel: EditGoalViewModel by viewModels()
-    private lateinit var sharedViewModel: MainViewModel
     private lateinit var binding: FragmentAddEditGoalBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         binding = FragmentAddEditGoalBinding.bind(view)
-
+        setUpToolbar()
 
         binding.apply {
 
@@ -132,9 +134,9 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
                 newFragment.show(parentFragmentManager, USER_ASSESSMENT_TAG)
             }
             val assessmentsAdapter =
-                EditAttributesAdapter<Assessment>(object : AttributeListener<Assessment> {
+                EditAttributesAdapter(object : AttributeListener<Assessment> {
                     override fun onItemClicked(attribute: Assessment) {
-                        //TODO: update assessment
+                        // TODO: add showAssessmentDialog function
                     }
 
                     override fun onRemoveCrossClick(attribute: Assessment) {
@@ -154,6 +156,7 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             }
         }
 
+        // TODO: edit this to update assessment
         // from edit assessment dialog
         setFragmentResultListener(NEW_USER_ASSESSMENT_REQUEST_KEY) { _, bundle ->
             val result = bundle.getParcelable<Assessment>(ASSESSMENT_RESULT_KEY)
@@ -162,23 +165,25 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.editGoalEvents.collect { event ->
-                when (event) {
-                    is EditGoalViewModel.EditGoalEvent.ShowInvalidInputMessage -> {
-                        Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_LONG).show()
-                    }
-                    is EditGoalViewModel.EditGoalEvent.NavigateBackWithResult -> {
-                        setFragmentResult(
-                            "add_edit_request",
-                            bundleOf("add_edit_result" to event.result)
-                        )
+        // respond to event
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.editGoalEvents.collect { event ->
+                    when (event) {
+                        is EditGoalViewModel.EditGoalEvent.ShowInvalidInputMessage -> {
+                            Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_LONG).show()
+                        }
+                        is EditGoalViewModel.EditGoalEvent.NavigateBackWithResult -> {
+                            setFragmentResult(
+                                "add_edit_request",
+                                bundleOf("add_edit_result" to event.result)
+                            )
                         findNavController().popBackStack()
                     }
                 }.exhaustive
             }
         }
-
+        }
     }
 
     private fun showDatePickerMaterial(
@@ -250,7 +255,20 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
         )
 
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, assessment.dueDate, pendingIntent)
-        Log.e("Alarm assessment", "Evaluation alarm set")
+    }
+
+    // function to set up toolbar with collapse toolbar and link to drawer layout
+    private fun setUpToolbar() {
+        val mainActivity = activity as MainActivity
+        // imperative to see option menu and navigation icon (hamburger)
+        mainActivity.setSupportActionBar(binding.toolbar)
+
+        val navController = findNavController()
+        // retrieve app bar configuration : see MainActivity.class
+        val appBarConfiguration = mainActivity.appBarConfiguration
+
+        // to set hamburger menu work and open drawer layout
+        binding.toolbar.setupWithNavController(navController, appBarConfiguration)
     }
 
 }

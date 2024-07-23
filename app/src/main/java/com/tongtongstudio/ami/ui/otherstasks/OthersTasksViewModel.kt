@@ -19,7 +19,6 @@ class OthersTasksViewModel @Inject constructor(
     var laterFilter: LaterFilter? = null
     private val preferencesFlow = preferencesManager.filterPreferencesFlow
 
-    // TODO: 24/10/2022 simplify and place it in mainViewModel
     private val endOfToday = Calendar.getInstance().run {
         set(Calendar.HOUR_OF_DAY, 23)
         set(Calendar.MINUTE, 59)

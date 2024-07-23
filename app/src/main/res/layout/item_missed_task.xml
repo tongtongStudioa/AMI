@@ -49,7 +49,7 @@
             android:textAppearance="@style/TextAppearance.Ami.Caption"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/tv_task_name"
-            tools:text="2 times missed" />
+            tools:text="@string/task_times_missed" />
 
         <!--android:textAppearance="@style/TextAppearance.Ami.Subtitle2.Day"-->
 
@@ -74,7 +74,7 @@
             app:drawableTint="@color/md_theme_light_onPrimaryContainer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/divider"
-            tools:text="15/07/2022" />
+            tools:text="@string/las_due_date" />
         <!--android:textAppearance="@style/TextAppearance.Ami.Caption"-->
 
         <!--<ImageView

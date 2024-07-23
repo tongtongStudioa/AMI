@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.adapter.TaskTouchHelperCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
 import com.tongtongstudio.ami.adapter.task.TaskAdapter
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
@@ -50,6 +51,23 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                 layoutManager = LinearLayoutManager(requireContext())
                 adapter = completedAdapter
             }
+
+            val callback = TaskTouchHelperCallback(
+                completedAdapter,
+                { newSubTask, parentId ->
+                    // TODO: use drag and drop to add subTTask
+                    //sharedViewModel.addSubTask(newSubTask,parentId)
+                },
+                { taskWithSubTasks ->
+                    //delete task
+                    //newTaskAdapter.notifyItemRemoved(viewHolder.absoluteAdapterPosition)
+                    sharedViewModel.deleteTask(taskWithSubTasks)
+                },
+                {
+                    // do nothing
+                }, requireContext()
+            )
+            ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
 
             ItemTouchHelper(object :
                 ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
@@ -129,11 +147,11 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                         findNavController().navigate(action)
                     }
                     is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
-                        /*val action =
-                            CompletedThingToDoFragmentDirections.action(
+                        val action =
+                            CompletedThingToDoFragmentDirections.actionCompletedThingToDoFragmentToLocalProjectStatsFragment2(
                                 event.composedTaskData
                             )
-                        findNavController().navigate(action)*/
+                        findNavController().navigate(action)
                     }
                     else -> {
                         //do nothing
@@ -158,6 +176,8 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                 binding.textSup.text = getString(R.string.nb_job_completed_info, it.size)
             }
         }
+
+
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout
@@ -199,11 +219,11 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
     }
 
     override fun onSubTaskRightSwipe(thingToDo: Ttd) {
-        //TODO("Not yet implemented")
+        sharedViewModel.deleteSubTask(thingToDo)
     }
 
     override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
-        //TODO("Not yet implemented")
+        sharedViewModel.updateSubTask(thingToDo)
     }
 
 }

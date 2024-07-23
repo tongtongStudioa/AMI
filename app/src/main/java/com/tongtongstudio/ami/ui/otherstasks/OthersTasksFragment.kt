@@ -7,6 +7,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
@@ -135,7 +137,6 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
         viewModel.preferencesLiveData.observe(viewLifecycleOwner) {
             viewModel.laterFilter = it.filter
         }
-        // TODO: 04/02/2023 change appearance of later ttd fragment
         viewModel.otherThingsToDo.observe(viewLifecycleOwner) {
             updateTextExplication(viewModel.laterFilter, it.size)
             if (it.isEmpty()) {
@@ -209,47 +210,33 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                 }.exhaustive
             }
         }
-        setHasOptionsMenu(true)
-    }
 
-    private fun updateTextExplication(laterFilter: LaterFilter?, tasksCount: Int) {
-        when (laterFilter) {
-            LaterFilter.TOMORROW -> {
-                binding.textSup.text =
-                    getString(R.string.nb_future_tasks_tomorrow, tasksCount)
+        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.later_tasks_menu, menu)
             }
-            LaterFilter.NEXT_WEEK -> binding.textSup.text =
-                getString(R.string.nb_future_tasks_nex_week, tasksCount)
-            LaterFilter.LATER -> binding.textSup.text =
-                getString(R.string.nb_future_tasks_later, tasksCount)
-            else -> {}//do nothing
-        }
-    }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.later_tasks_menu, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_filter_for_tomorrow -> {
-                textExplication = getString(R.string.text_explication_no_tasks_tomorrow)
-                sharedViewModel.onLaterFilterSelected(LaterFilter.TOMORROW)
-                true
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_filter_for_tomorrow -> {
+                        textExplication = getString(R.string.text_explication_no_tasks_tomorrow)
+                        sharedViewModel.onLaterFilterSelected(LaterFilter.TOMORROW)
+                        true
+                    }
+                    R.id.action_filter_for_next_week -> {
+                        textExplication = getString(R.string.text_explication_no_tasks_next_week)
+                        sharedViewModel.onLaterFilterSelected(LaterFilter.NEXT_WEEK)
+                        true
+                    }
+                    R.id.action_filter_all_later_things -> {
+                        textExplication = getString(R.string.text_explication_no_tasks_later)
+                        sharedViewModel.onLaterFilterSelected(LaterFilter.LATER)
+                        true
+                    }
+                    else -> false
+                }
             }
-            R.id.action_filter_for_next_week -> {
-                textExplication = getString(R.string.text_explication_no_tasks_next_week)
-                sharedViewModel.onLaterFilterSelected(LaterFilter.NEXT_WEEK)
-                true
-            }
-            R.id.action_filter_all_later_things -> {
-                textExplication = getString(R.string.text_explication_no_tasks_later)
-                sharedViewModel.onLaterFilterSelected(LaterFilter.LATER)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+        }, viewLifecycleOwner)
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout
@@ -271,7 +258,20 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
         binding.toolbar.setNavigationOnClickListener {
             navController.navigateUp(appBarConfiguration)
         }
-        binding.toolbar.subtitle = "Things to do later"
+    }
+
+    private fun updateTextExplication(laterFilter: LaterFilter?, tasksCount: Int) {
+        when (laterFilter) {
+            LaterFilter.TOMORROW -> {
+                binding.textSup.text =
+                    getString(R.string.nb_future_tasks_tomorrow, tasksCount)
+            }
+            LaterFilter.NEXT_WEEK -> binding.textSup.text =
+                getString(R.string.nb_future_tasks_nex_week, tasksCount)
+            LaterFilter.LATER -> binding.textSup.text =
+                getString(R.string.nb_future_tasks_later, tasksCount)
+            else -> {}//do nothing
+        }
     }
 
     override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {

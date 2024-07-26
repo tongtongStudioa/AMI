@@ -38,7 +38,7 @@ class EditProjectLinkedDialogFragment : DialogFragment() {
             // Inflate and set the layout for the dialog
             // Pass null as the parent view because its going in the dialog layout
             dialog.setView(binding.root)
-                .setTitle("Edit link's project")
+                .setTitle(getString(R.string.edit_task_link))
                 // Add action buttons
                 .setNegativeButton(
                     R.string.cancel

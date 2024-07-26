@@ -61,6 +61,10 @@
                     android:id="@+id/share_item"
                     android:icon="@drawable/baseline_share_24"
                     android:title="@string/share" />
+                <item
+                    android:id="@+id/support"
+                    android:icon="@drawable/ic_coffee_cup"
+                    android:title="@string/buy_me_a_coffe" />
             </group>
         </menu>
     </item>

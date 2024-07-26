@@ -7,10 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.databinding.DialogCompleteAssessmentBinding
@@ -55,7 +57,11 @@ class CompleteAssessmentDialogFragment : DialogFragment() {
     private fun onDialogPositiveClick(dialog: CompleteAssessmentDialogFragment) {
         viewModel.saveCompletedAssessment()
         // TODO: navigate back with result
-        Toast.makeText(requireContext(), "Evaluation completed !", Toast.LENGTH_SHORT).show()
+        Snackbar.make(
+            dialog.requireView(),
+            getString(R.string.assessment_completed),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     override fun onCreateView(
@@ -104,14 +110,13 @@ class CompleteAssessmentDialogFragment : DialogFragment() {
                 assessment.title.first(),
                 assessment.title.first().uppercaseChar()
             )
-
             // evaluation description
             tvAssessmentDescription.text = assessment.description
-            // evaluation rating
-            tvGoal.text = assessment.goal.toString()
+            tvAssessmentDescription.isVisible = assessment.description != null
 
-            // evaluation unit
-            tvUnit.text = assessment.unit
+            // evaluation target goal
+            tvTargetGoal.text =
+                getString(R.string.target_goal, assessment.goal.toString(), assessment.unit)
         }
     }
 }

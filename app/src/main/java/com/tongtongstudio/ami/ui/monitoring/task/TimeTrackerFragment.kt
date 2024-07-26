@@ -18,10 +18,10 @@ import com.tongtongstudio.ami.services.TrackingService
 import com.tongtongstudio.ami.timer.TimerType
 import com.tongtongstudio.ami.timer.TrackingConstants
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
+import com.tongtongstudio.ami.ui.dialog.CustomTimePickerDialogFragment
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_DIALOG_TAG
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_LISTENER_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_RESULT_KEY
-import com.tongtongstudio.ami.ui.dialog.EstimatedTimeDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -188,8 +188,9 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
         }
     }
 
+    // TODO: navigate with nav component
     private fun onBtnAddWorkTimeClicked() {
-        val newFragment = EstimatedTimeDialogFragment("Add work time")
+        val newFragment = CustomTimePickerDialogFragment(getString(R.string.add_working_time))
         newFragment.show(parentFragmentManager, ESTIMATED_TIME_DIALOG_TAG)
     }
 

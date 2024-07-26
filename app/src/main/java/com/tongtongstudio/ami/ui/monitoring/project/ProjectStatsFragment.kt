@@ -8,11 +8,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.snackbar.Snackbar
+import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.simple.AttributeListener
-import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
+import com.tongtongstudio.ami.adapter.task.InteractionListener
+import com.tongtongstudio.ami.adapter.task.SubTaskAdapter
+import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.FragmentProjectStatsBinding
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
@@ -21,7 +23,7 @@ import com.tongtongstudio.ami.ui.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ProjectStatsFragment : Fragment(R.layout.fragment_project_stats) {
+class ProjectStatsFragment : Fragment(R.layout.fragment_project_stats), InteractionListener {
     lateinit var binding: FragmentProjectStatsBinding
     private val viewModel: ProjectStatsViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
@@ -41,32 +43,38 @@ class ProjectStatsFragment : Fragment(R.layout.fragment_project_stats) {
                 ?: getText(R.string.no_information)
         updateEstimatedTimeIndicator()
 
-        val subTasksAdapter = EditAttributesAdapter<Ttd>(object : AttributeListener<Ttd> {
-            override fun onItemClicked(attribute: Ttd) {
-                // TODO: go to task information
-            }
-
-            override fun onRemoveCrossClick(attribute: Ttd) {
-                viewModel.deleteSubtask(attribute)
-                sharedViewModel.updateParentTask(attribute.parentTaskId!!)
-                Snackbar.make(view, getString(R.string.msg_sub_task_deleted), Snackbar.LENGTH_SHORT)
-                    .setAction(getString(R.string.msg_action_undo)) {
-                        viewModel.onUndoClick(attribute)
-                        sharedViewModel.updateParentTask(attribute.parentTaskId)
-                    }.show()
-            }
-
-        }
-        ) { binding, task ->
-            binding.titleOverview.text = task.title
-        }
-        subTasksAdapter.submitList(viewModel.subTasks)
+        val subTasksAdapter = SubTaskAdapter(this, viewModel.subTasks)
 
         binding.rvSubtasks.apply {
             layoutManager = LinearLayoutManager(context)
             setHasFixedSize(true)
             adapter = subTasksAdapter
         }
+
+        // TODO: resolve sub item touch behavior
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            0,
+            ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val subTask: Ttd =
+                    subTasksAdapter.subTasks[viewHolder.bindingAdapterPosition]
+                if (direction == ItemTouchHelper.RIGHT) {
+                    onSubTaskRightSwipe(subTask)
+                } else if (direction == ItemTouchHelper.LEFT) {
+                    onSubTaskLeftSwipe(subTask)
+                }
+            }
+
+        }).attachToRecyclerView(binding.rvSubtasks)
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout
@@ -107,6 +115,30 @@ class ProjectStatsFragment : Fragment(R.layout.fragment_project_stats) {
 
         //if (progress == 100F)
         //make a sound
+    }
+
+    override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onTaskClick(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onProjectAddClick(composedTask: TaskWithSubTasks) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onSubTaskRightSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
+        //TODO("Not yet implemented")
     }
 
 }

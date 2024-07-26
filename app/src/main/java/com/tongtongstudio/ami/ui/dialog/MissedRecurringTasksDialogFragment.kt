@@ -33,7 +33,6 @@ class MissedRecurringTasksDialogFragment : DialogFragment() {
             // Inflate and set the layout for the dialog
             // Pass null as the parent view because its going in the dialog layout
             builder.setView(binding.root)
-                .setTitle(getString(R.string.missed_tasks_dialog_title))
                 // Add action buttons
                 .setPositiveButton(R.string.ok) { _, _ ->
                     onDialogPositiveClick(this)
@@ -50,7 +49,7 @@ class MissedRecurringTasksDialogFragment : DialogFragment() {
         missedTasks = arguments?.let {
             MissedRecurringTasksDialogFragmentArgs.fromBundle(it).missedRecurringTasks
         }
-        val dialogAdapter = MissedTaskAdapter()
+        val dialogAdapter = MissedTaskAdapter(requireContext())
         binding.rvMissedTasks.apply {
             adapter = dialogAdapter
             layoutManager = LinearLayoutManager(context)

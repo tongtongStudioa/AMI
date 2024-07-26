@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.TaskTouchHelperCallback
+import com.tongtongstudio.ami.adapter.CustomItemTouchHelperCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
 import com.tongtongstudio.ami.adapter.task.TaskAdapter
 import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
@@ -52,7 +52,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                 adapter = completedAdapter
             }
 
-            val callback = TaskTouchHelperCallback(
+            val callback = CustomItemTouchHelperCallback(
                 completedAdapter,
                 { newSubTask, parentId ->
                     // TODO: use drag and drop to add subTTask

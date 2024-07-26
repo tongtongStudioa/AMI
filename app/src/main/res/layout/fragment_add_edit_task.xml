@@ -79,31 +79,21 @@
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/rb_task"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/radio_button_selector"
-                    android:button="@android:color/transparent"
                     android:checked="true"
+                    style="@style/RadioButton.AMI.Style"
                     android:layout_marginStart="15dp"
                     android:layout_marginEnd="5dp"
-                    android:gravity="center"
-                    android:padding="16dp"
-                    android:text="@string/task"
-                    android:textColor="@color/text_radio_button_selector" />
+                    android:text="@string/task" />
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/rb_project"
                     android:layout_width="0dp"
-                    android:layout_weight="1"
+                    style="@style/RadioButton.AMI.Style"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="15dp"
                     android:layout_marginStart="5dp"
-                    android:background="@drawable/radio_button_selector"
-                    android:button="@android:color/transparent"
-                    android:gravity="center"
-                    android:padding="16dp"
-                    android:text="@string/project"
-                    android:textColor="@color/text_radio_button_selector" />
+                    android:text="@string/project" />
 
             </RadioGroup>
 
@@ -490,7 +480,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_user_level"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
-                android:layout_width="175dp"
+                android:layout_width="235dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:hint="@string/mastery_level"

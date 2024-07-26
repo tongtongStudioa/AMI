@@ -3,18 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="10dp">
+    android:padding="15dp">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/input_layout_title"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        style="@style/TitleInputLayout.AMI.Style"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/assessment_title"
-        app:counterEnabled="true"
-        app:counterMaxLength="30"
-        app:errorEnabled="true"
-        app:errorContentDescription="Title can't be null"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -110,7 +106,6 @@
             android:text="@string/set_due_date"
             app:icon="@drawable/ic_commit_24"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

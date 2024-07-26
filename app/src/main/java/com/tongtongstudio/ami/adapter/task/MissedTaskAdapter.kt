@@ -1,15 +1,15 @@
 package com.tongtongstudio.ami.adapter.task
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.ItemMissedTaskBinding
 
-class MissedTaskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MissedTaskAdapter(private val context: Context) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     val data: MutableList<Ttd>
 
@@ -38,17 +38,19 @@ class MissedTaskAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         (holder as TaskMissedViewHolder).bind(task)
     }
 
-    class TaskMissedViewHolder(val binding: ItemMissedTaskBinding) :
+    inner class TaskMissedViewHolder(val binding: ItemMissedTaskBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(thingToDo: Ttd) {
+            // TODO: retrieve category with others infos
             binding.apply {
                 tvTaskName.text = thingToDo.title
-                tvNature.text = Nature.TASK.name
-                tvDeadline.text = Ttd.getDateFormatted(thingToDo.dueDate)
-                tvMissedCount.text = "Missed ${thingToDo.timesMissed} times"
-                tvMissedCount.isVisible = false
-                //tvMissedCount.text = countMissedTimes(task)
-
+                tvNature.text = "Category"
+                tvDeadline.text = context.getString(
+                    R.string.las_due_date,
+                    Ttd.getDateFormatted(thingToDo.dueDate)
+                )
+                tvMissedCount.text =
+                    context.getString(R.string.task_times_missed, thingToDo.timesMissed)
             }
         }
     }

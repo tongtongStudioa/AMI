@@ -1,5 +1,6 @@
 package com.tongtongstudio.ami.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -7,7 +8,7 @@ import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.databinding.ItemGoalBinding
 
-class GoalsAdapter(private val listener: GoalsListener) :
+class GoalsAdapter(private val context: Context, private val listener: GoalsListener) :
     RecyclerView.Adapter<ViewHolder<Assessment>>() {
 
     private val goalsList = mutableListOf<Assessment>()
@@ -34,8 +35,9 @@ class GoalsAdapter(private val listener: GoalsListener) :
         override fun bind(data: Assessment) {
             binding.apply {
                 tvGoalName.text = data.title
-                tvTargetScore.text = data.goal.toString() + " " + data.unit
+                tvTargetScore.text = context.getString(R.string.target_goal, data.goal, data.unit)
                 tvDeadline.text = data.getFormattedDueDate()
+                // TODO: adapt in function of type assessment view (checkbox, counter, timer)
             }
         }
     }

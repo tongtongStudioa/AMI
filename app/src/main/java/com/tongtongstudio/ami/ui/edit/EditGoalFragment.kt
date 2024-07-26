@@ -65,7 +65,11 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             inputLayoutGoalTitle.editText?.setText(viewModel.goalTitle)
             inputLayoutGoalTitle.editText?.addTextChangedListener {
                 if (isValidInput(it)) {
-                    viewModel.goalTitle = it.toString()
+                    val name = it.toString()
+                    viewModel.goalTitle = if (name != "") name.replaceFirst(
+                        name.first(),
+                        name.first().uppercaseChar()
+                    ) else ""
                     inputLayoutGoalTitle.error = null
                 } else {
                     inputLayoutGoalTitle.error = getString(R.string.error_no_title)
@@ -79,7 +83,24 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             inputLayoutDescription.editText?.doOnTextChanged { text, start, before, count ->
                 viewModel.description = text.toString()
             }
-            // evaluation rating
+
+            // evaluation type 
+            radioGroupUnitType.setOnCheckedChangeListener { radioGroup, i ->
+                when (radioGroup.checkedRadioButtonId) {
+                    // TODO: adapt goal type 
+                    rbQuantity.id -> {
+                        // TODO: remove unit and show "without unit" 
+                    }
+                    rbDuration.id -> {
+                        // TODO: adapt goal type
+                    }
+                    rbBoolean.id -> {
+                        // TODO: adapt goal type
+                    }
+                }
+            }
+
+            // evaluation target figure
             if (viewModel.goal != "null")
                 inputLayoutGoal.editText?.setText(viewModel.goal)
             inputLayoutGoal.editText?.addTextChangedListener {
@@ -95,7 +116,7 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             // evaluation unit
             if (viewModel.unit != "null" && viewModel.unit.isNotBlank())
                 autocompleteTextViewUnit.setText(viewModel.unit)
-            val unitOptions = arrayOf("Number", "Kg")
+            val unitOptions = resources.getStringArray(R.array.units)
             val unitAdapter =
                 ArrayAdapter(requireContext(), R.layout.item_options, unitOptions)
             autocompleteTextViewUnit.setAdapter(unitAdapter)
@@ -143,7 +164,11 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
                         viewModel.removeAssessment(attribute)
                     }
                 }) { binding, assessment ->
-                    binding.titleOverview.text = assessment.getSumUp()
+                    binding.titleOverview.text = getString(
+                        R.string.assessment_informations_overview,
+                        assessment.title,
+                        assessment.getFormattedDueDate()
+                    )
                 }
             viewModel.assessments.observe(viewLifecycleOwner) {
                 assessmentsAdapter.submitList(it)

@@ -140,8 +140,8 @@
     <string name="set_due_date">Set due date</string>
     <string name="project_linked_text">Project : %s</string>
     <string name="project_linked_default">Attach to a project</string>
-    <string name="error_unit">Assessment\'s unit can\'t be empty</string>
-    <string name="error_goal_empty">Assessment\'s goal can\'t be empty</string>
+    <string name="error_unit">Unit can\'t be empty</string>
+    <string name="error_goal_empty">Target\'s goal can\'t be empty</string>
     <string name="timer">Timer</string>
     <string name="stopwatch">StopWatch</string>
     <string name="launch_chronometer_content_description">Launch chronometer or set pause</string>
@@ -174,10 +174,10 @@
     <string name="select_reminder_time_title">Select reminder time</string>
     <string name="fragment_global_goals_title">My goals</string>
     <string name="share_message">Hey, check out this awesome app I developed! It\'s a fun and intelligent to-do list app that\'ll help you stay organized and motivated. Give it a try! %s</string>
-    <string name="no_objectives_yet">No global objectives yet...</string>
+    <string name="no_goal_yet">No global objectives yet…</string>
     <string name="fragment_title_edit_global_goal">Edit global goal</string>
     <string name="fragment_title_add_global_goal">Add global goal</string>
-    <string name="msg_gloabl_goal_deleted">Global goal deleted</string>
+    <string name="msg_global_goal_deleted">Global goal deleted</string>
     <string name="error_no_goal">Goal can\'t be empty !</string>
     <string name="error_no_unit">Unit can\'t be blank !</string>
     <string name="assessment_channel_description">Assessment notification channel</string>
@@ -192,7 +192,7 @@
     <string name="complete_assessment_notification_content">Fill out your assessment : %s</string>
     <string name="msg_invalid_deadline">Deadline can\'t be set before start date or due date</string>
     <string name="msg_invalid_due_date">Due date can\'t be set after deadline or before start date</string>
-    <string name="msg_invalid_startdate">Start date can\'t be set after due date or deadline</string>
+    <string name="msg_invalid_start_date">Start date can\'t be set after due date or deadline</string>
     <string name="description">Description</string>
     <string name="priority">Priority</string>
     <string name="category">Category</string>
@@ -201,12 +201,12 @@
     <string name="remove_deadline_description" translatable="false">Button to remove deadline</string>
     <string name="dependency">Dependency ?</string>
     <string name="mastery_level">Mastery level</string>
-    <string name="objective_title">Objective\'s title</string>
+    <string name="goal_title">Goal\'s title</string>
     <string name="selector_quantity">Quantity</string>
-    <string name="selector_time">Time</string>
+    <string name="selector_duration">Duration</string>
     <string name="selector_boolean">Boolean</string>
     <string name="unit">Unit</string>
-    <string name="goal">Goal</string>
+    <string name="goal">Target goal</string>
     <string name="create_intermediate_assessments">Create intermediate assessments</string>
     <string name="results">Results :</string>
     <string name="assessment_title">Assessment\'s title</string>
@@ -229,4 +229,21 @@
     <string name="by_2_minutes_rules">2 minutes rules</string>
     <string name="by_eat_the_frog" translatable="false">Eat The Frog</string>
     <string name="creator_sort">Creator sort</string>
+    <string name="objective_description">Objective\'s specific description</string>
+    <string name="assessment_completed">Assessment completed !</string>
+    <string name="target_goal">Target goal : %1s %2s</string>
+    <string name="estimated_time">Estimated time</string>
+    <string name="project_subtasks">Project\'s subtasks</string>
+    <string name="project_progress">Project Progress</string>
+    <string name="edit_task_link">Edit task\'s link</string>
+    <string name="add_working_time">Add working time</string>
+    <string name="buy_me_a_coffe">Buy me a coffee</string>
+    <string name="reminder_informtions_overview">%1s at %2s</string>
+    <string name="assessment_informations_overview">%1s on %2s</string>
+    <string-array name="units">
+        <item>No unit</item>
+        <item>Minutes</item>
+        <item>Hours</item>
+        <item>Kg</item>
+    </string-array>
 </resources>

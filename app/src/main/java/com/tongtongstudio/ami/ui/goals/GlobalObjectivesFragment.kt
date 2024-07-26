@@ -59,7 +59,7 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
         setUpToolbar()
         //view model, sound player and adapter
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-        goalsAdapter = GoalsAdapter(this)
+        goalsAdapter = GoalsAdapter(requireContext(), this)
         soundPlayer = SoundPlayer(requireContext())
 
         // implement UI
@@ -74,6 +74,7 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                 setHasFixedSize(false)
             }
 
+            // TODO: create custom touch helper with any class
             ItemTouchHelper(object :
                 ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT) {
                 override fun onMove(
@@ -151,7 +152,7 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = true
                 binding.mainRecyclerView.isVisible = false
                 binding.emptyRecyclerView.textViewExplication.text =
-                    getText(R.string.no_objectives_yet)
+                    getText(R.string.no_goal_yet)
                 binding.emptyRecyclerView.textViewActionText.text = ""
                 //binding.toolbar.collapseActionView()
             } else {
@@ -189,7 +190,7 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                         is GlobalObjectivesViewModel.GoalsEvent.ShowUndoDeleteGlobalGoalMessage -> {
                             Snackbar.make(
                                 requireView(),
-                                getString(R.string.msg_gloabl_goal_deleted),
+                                getString(R.string.msg_global_goal_deleted),
                                 Snackbar.LENGTH_LONG
                             )
                                 .setAction(getText(R.string.msg_action_undo)) {

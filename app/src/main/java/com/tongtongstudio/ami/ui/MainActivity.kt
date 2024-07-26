@@ -24,6 +24,7 @@ import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.receiver.ASSESSMENT_ID
 import dagger.hilt.android.AndroidEntryPoint
+import hotchemi.android.rate.AppRate
 
 
 @AndroidEntryPoint
@@ -40,6 +41,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        AppRate.with(this)
+            .setInstallDays(10) // default 10, 0 means install day.
+            .setLaunchTimes(3) // default 10
+            .setRemindInterval(10) // default 1
+            .setShowLaterButton(true) // default true
+            .monitor()
+
+        // Show a dialog if meets conditions
+        AppRate.showRateDialogIfMeetsConditions(this)
 
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
@@ -90,6 +101,11 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.rate_item -> {
                     rateMe()
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                    true
+                }
+                R.id.support -> {
+                    openBuyMeCoffeePage()
                     drawerLayout.closeDrawer(GravityCompat.START)
                     true
                 }
@@ -169,6 +185,13 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
+    }
+
+    private fun openBuyMeCoffeePage() {
+        val url = "https://www.buymeacoffee.com/tongtongStudioa"
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data = Uri.parse(url)
+        startActivity(intent)
     }
 
     /*fun onAddEditResult(result: Int, stringsAdded: Array<String>, stringsUpdated: Array<String>) {

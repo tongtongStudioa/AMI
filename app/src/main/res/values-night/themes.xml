@@ -50,6 +50,11 @@
         <item name="colorSurfaceVariant">@color/md_theme_dark_surfaceVariant</item>
         <item name="colorOnSurfaceVariant">@color/md_theme_dark_onSurfaceVariant</item>
         <item name="colorPrimaryInverse">@color/md_theme_dark_inversePrimary</item>
+
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Ami.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Ami.TitleMedium</item>
+        <item name="appBarLayoutStyle">@style/AppBarAmi.Night</item>
+        <item name="collapsingToolbarLayoutStyle">@style/CollapsingToolbarAmi.Night</item>
     </style>
 
 </resources>

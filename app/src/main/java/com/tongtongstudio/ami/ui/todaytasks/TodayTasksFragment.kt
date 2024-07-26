@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.TaskTouchHelperCallback
+import com.tongtongstudio.ami.adapter.CustomItemTouchHelperCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
 import com.tongtongstudio.ami.adapter.task.TaskAdapter
 import com.tongtongstudio.ami.data.SortOrder
@@ -76,7 +76,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 layoutManager = LinearLayoutManager(requireContext())
                 setHasFixedSize(false)
             }
-            val callback = TaskTouchHelperCallback(
+            val callback = CustomItemTouchHelperCallback(
                 newTaskAdapter,
                 { newSubTask, parentId ->
                     // TODO: use drag and drop to add subTTask

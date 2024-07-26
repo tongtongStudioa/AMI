@@ -38,20 +38,4 @@
         android:title="@string/hide_completed"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/about_item"
-        android:icon="@drawable/baseline_info_24"
-        android:title="@string/about_project"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/rate_item"
-        android:icon="@drawable/baseline_rate_review_24"
-        android:title="@string/rate"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/share_item"
-        android:icon="@drawable/baseline_share_24"
-        android:title="@string/share"
-        app:showAsAction="ifRoom" />
-
 </menu>

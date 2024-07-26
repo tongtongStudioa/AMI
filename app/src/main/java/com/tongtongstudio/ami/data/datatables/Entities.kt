@@ -13,6 +13,7 @@ const val PATTERN_FORMAT_DATE = "E dd/MM"
 
 enum class Nature { PROJECT, TASK, EVENT }
 
+// TODO: rename table to task
 @Parcelize
 @Entity(tableName = "thing_to_do_table")
 data class Ttd(
@@ -167,7 +168,8 @@ data class Ttd(
 
 }
 
-// TODO: add category in data class
+// TODO: add category and reminders in data class
+// TODO: rename data class to thing to do
 @Parcelize
 data class TaskWithSubTasks(
     @Embedded
@@ -179,11 +181,17 @@ data class TaskWithSubTasks(
     fun getNbSubTasks(): Int = subTasks.size
 }
 
+/**
+ * Class with task completed info to analyse productivity (number of task achieved in a period of time).
+ */
 data class TtdAchieved(
     val completionDate: Long,
     val completedCount: Float
 )
 
+/**
+ * Class with recurring task info for max and min streak.
+ */
 data class TtdStreakInfo(
     val title: String?,
     val streakInfo: Int?
@@ -228,13 +236,6 @@ data class Assessment(
     fun getFormattedDueDate(): String {
         return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
     }
-
-    fun getSumUp(): String {
-        val evaluationDateFormatted =
-            SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
-        // TODO: create a string resource
-        return "$title on $evaluationDateFormatted"
-    }
 }
 
 // TODO: add color
@@ -270,25 +271,12 @@ data class Reminder(
     @ColumnInfo(name = "reminder_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 ) {
-    private fun getReminderDueDateFormatted(): String {
+    fun getDueDateFormatted(): String {
         return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
     }
 
-    private fun getReminderTimeFormatted(): String {
+    fun getTimeFormatted(): String {
         return SimpleDateFormat("HH:mm", Locale.getDefault()).format(dueDate)
-    }
-
-    fun getReminderInformation(): String {
-        val dueDateFormatted = getReminderDueDateFormatted()
-        val dueTimeFormatted = getReminderTimeFormatted()
-        // TODO: create string resource
-        return "$dueDateFormatted at $dueTimeFormatted"
-    }
-
-    fun formatDueDate(): String {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = dueDate
-        return DateFormat.getDateInstance(DateFormat.MEDIUM).format(calendar.time)
     }
 }
 

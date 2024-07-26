@@ -14,9 +14,10 @@
             android:id="@+id/add_work_time_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add work time"
+            android:text="@string/add_working_time"
             android:layout_marginBottom="20dp"
             app:icon="@drawable/baseline_timer_24"
+            android:textAppearance="@style/TextAppearance.Ami.Button"
             app:layout_constraintBottom_toTopOf="@+id/circularProgressIndicator"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
@@ -51,13 +52,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/stopwatch"
+            android:textAppearance="@style/TextAppearance.Ami.Caption"
             app:layout_constraintEnd_toEndOf="@+id/tracking_time_switch"
             app:layout_constraintStart_toStartOf="@+id/tracking_time_switch"
             app:layout_constraintTop_toBottomOf="@+id/tracking_time_switch" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/timer_text_view"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="30dp"
             android:gravity="center"
@@ -73,7 +75,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/montserrat_medium"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            android:textAppearance="@style/TextAppearance.Ami.Headline6"
             android:textColor="?attr/colorOnBackground"
             app:layout_constraintEnd_toEndOf="@+id/timer_text_view"
             app:layout_constraintStart_toStartOf="@+id/timer_text_view"
@@ -88,7 +90,8 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_play_arrow"
         android:layout_margin="55dp"
-        android:layout_gravity="bottom|center" />
+        android:layout_gravity="bottom|center"
+        android:contentDescription="launch or pause chronometer/timer" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_reset"
@@ -97,6 +100,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/baseline_reset_24"
         android:layout_margin="55dp"
+        android:contentDescription="reset chronometer/timer"
         android:layout_gravity="bottom|center|right" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

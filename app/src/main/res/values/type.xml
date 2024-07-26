@@ -41,34 +41,34 @@
         <item name="fontFamily">@font/montserrat_semibold</item>
         <item name="android:fontFamily">@font/montserrat_semibold</item>
         <!--<item name="android:textColor">@color/tuna</item>-->
-        <item name="android:textSize">16sp</item>
+        <item name="android:textSize">15sp</item>
     </style>
 
     <style name="TextAppearance.Ami.Subtitle1.Night" parent="TextAppearance.MaterialComponents.Subtitle1">
         <item name="fontFamily">@font/montserrat_semibold</item>
         <item name="android:fontFamily">@font/montserrat_semibold</item>
         <!--<item name="android:textColor">@color/white</item>-->
-        <item name="android:textSize">16sp</item>
+        <item name="android:textSize">15sp</item>
     </style>
 
     <style name="TextAppearance.Ami.Subtitle2.Day" parent="TextAppearance.MaterialComponents.Subtitle2">
         <item name="fontFamily">@font/montserrat_medium</item>
         <item name="android:fontFamily">@font/montserrat_semibold</item>
         <!--<item name="android:textColor">@color/french_blue</item>-->
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">13sp</item>
     </style>
 
     <style name="TextAppearance.Ami.Subtitle2.Night" parent="TextAppearance.MaterialComponents.Subtitle2">
         <item name="fontFamily">@font/montserrat_medium</item>
         <item name="android:fontFamily">@font/montserrat_semibold</item>
         <!--<item name="android:textColor">@color/link_water</item>-->
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">13sp</item>
     </style>
 
     <style name="TextAppearance.Ami.Body1" parent="TextAppearance.MaterialComponents.Body1">
         <item name="fontFamily">@font/montserrat_medium</item>
         <item name="android:fontFamily">@font/montserrat_medium</item>
-        <item name="android:textSize">16sp</item>
+        <item name="android:textSize">14sp</item>
     </style>
 
     <style name="TextAppearance.Ami.Body2" parent="TextAppearance.MaterialComponents.Body2">
@@ -80,13 +80,14 @@
     <style name="TextAppearance.Ami.Button" parent="TextAppearance.MaterialComponents.Button">
         <item name="fontFamily">@font/montserrat_medium</item>
         <item name="android:fontFamily">@font/montserrat_medium</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">normal</item>
     </style>
 
     <style name="TextAppearance.Ami.Caption" parent="TextAppearance.MaterialComponents.Caption">
         <item name="fontFamily">@font/montserrat_medium</item>
         <item name="android:fontFamily">@font/montserrat_medium</item>
-        <item name="android:textSize">12sp</item>
+        <item name="android:textSize">13sp</item>
     </style>
 
     <style name="TextAppearance.Ami.Overline" parent="TextAppearance.MaterialComponents.Overline">
@@ -99,6 +100,11 @@
         <item name="android:textAlignment">center</item>
         <item name="android:fontFamily">@font/montserrat_light</item>
         <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="TextAppearance.Ami.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="fontFamily">@font/montserrat_medium</item>
+        <item name="android:fontFamily">@font/montserrat_medium</item>
     </style>
 
     <style name="TextAppearance.Ami.TitleLarge" parent="TextAppearance.Material3.TitleLarge">

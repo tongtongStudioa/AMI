@@ -27,15 +27,11 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_goal_title"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            style="@style/TitleInputLayout.AMI.Style"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:layout_margin="15dp"
-            android:hint="@string/objective_title"
-            app:counterEnabled="true"
-            app:counterMaxLength="50"
-            app:endIconMode="clear_text"
-            app:helperText="@string/title_helper_text"
+            android:layout_height="wrap_content"
+            android:hint="@string/goal_title"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -55,7 +51,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="15dp"
-            android:hint="@string/description"
+            android:hint="@string/objective_description"
             app:counterEnabled="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -92,41 +88,26 @@
                 android:id="@+id/rb_quantity"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                style="@style/RadioButton.AMI.Style"
                 android:layout_margin="5dp"
-                android:layout_weight="1"
-                android:background="@drawable/radio_button_selector"
-                android:button="@android:color/transparent"
                 android:checked="true"
-                android:gravity="center"
-                android:padding="16dp"
-                android:text="@string/selector_quantity"
-                android:textColor="@color/text_radio_button_selector" />
+                android:text="@string/selector_quantity" />
 
             <com.google.android.material.radiobutton.MaterialRadioButton
-                android:id="@+id/rb_time"
+                android:id="@+id/rb_duration"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
-                android:layout_weight="1"
-                android:background="@drawable/radio_button_selector"
-                android:button="@android:color/transparent"
-                android:gravity="center"
-                android:padding="16dp"
-                android:text="@string/selector_time"
-                android:textColor="@color/text_radio_button_selector" />
+                style="@style/RadioButton.AMI.Style"
+                android:text="@string/selector_duration" />
 
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/rb_boolean"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
-                android:layout_weight="1"
-                android:background="@drawable/radio_button_selector"
-                android:button="@android:color/transparent"
-                android:gravity="center"
-                android:padding="16dp"
-                android:text="@string/selector_boolean"
-                android:textColor="@color/text_radio_button_selector" />
+                style="@style/RadioButton.AMI.Style"
+                android:text="@string/selector_boolean" />
 
         </RadioGroup>
 
@@ -179,7 +160,7 @@
             android:layout_marginTop="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/input_layout_unit">
+            app:layout_constraintTop_toBottomOf="@+id/input_layout_goal">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_set_due_date"

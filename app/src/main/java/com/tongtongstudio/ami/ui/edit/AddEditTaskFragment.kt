@@ -5,7 +5,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -195,7 +194,11 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             )
             removeDueDate.setOnClickListener {
                 viewModel.dueDate = null
-                updateButtonNoDataSelected(btnSetDueDate, removeDueDate, "Set due date")
+                updateButtonNoDataSelected(
+                    btnSetDueDate,
+                    removeDueDate,
+                    getString(R.string.set_due_date)
+                )
             }
 
             // set deadline
@@ -244,7 +247,11 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         viewModel.removeReminder(attribute)
                     }
                 }) { binding, reminder ->
-                    binding.titleOverview.text = reminder.getReminderInformation()
+                    binding.titleOverview.text = getString(
+                        R.string.reminder_informtions_overview,
+                        reminder.getDueDateFormatted(),
+                        reminder.getTimeFormatted()
+                    )
                 }
 
             viewModel.reminders.observe(viewLifecycleOwner) {
@@ -515,7 +522,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         } else {
             Snackbar.make(
                 requireView(),
-                getString(R.string.msg_invalid_startdate),
+                getString(R.string.msg_invalid_start_date),
                 Snackbar.LENGTH_SHORT
             ).show()
             false
@@ -726,7 +733,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     }
 
     private fun showEstimatedTimePicker() {
-        val newFragment = EstimatedTimeDialogFragment(getString(R.string.set_estimated_time))
+        val newFragment = CustomTimePickerDialogFragment(getString(R.string.set_estimated_time))
         newFragment.show(parentFragmentManager, ESTIMATED_TIME_DIALOG_TAG)
     }
 
@@ -765,10 +772,10 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         )
 
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, reminder.dueDate, pendingIntent)
-        Log.e(
+        /*Log.e(
             "Schedule Reminder",
             "Alarm set for: ${Date(reminder.dueDate)} and is Recurrent : ${reminder.isRecurrent}"
-        )
+        )*/
     }
 
 
@@ -788,7 +795,10 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         var reminderTriggerTime: Long
         // create the calendar constraint builder
         val endDateConstraints = CalendarCustomFunction.buildConstraintsForDeadline(
-            Calendar.getInstance().timeInMillis
+            Calendar.getInstance().run {
+                add(Calendar.DAY_OF_MONTH, -1)
+                timeInMillis
+            }
         )
         val reminderDatePicker = showDatePickerMaterial(endDateConstraints, dueDateTime)
 

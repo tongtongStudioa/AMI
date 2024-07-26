@@ -9,7 +9,7 @@ import com.tongtongstudio.ami.adapter.ViewHolder
 import com.tongtongstudio.ami.data.datatables.Ttd
 import com.tongtongstudio.ami.databinding.ItemTaskBinding
 
-class SubTaskAdapter(private val listener: InteractionListener, private val subTasks: List<Ttd>) :
+class SubTaskAdapter(private val listener: InteractionListener, val subTasks: List<Ttd>) :
     RecyclerView.Adapter<SubTaskAdapter.SubTaskViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubTaskViewHolder {
         val binding = ItemTaskBinding.inflate(LayoutInflater.from(parent.context), parent, false)

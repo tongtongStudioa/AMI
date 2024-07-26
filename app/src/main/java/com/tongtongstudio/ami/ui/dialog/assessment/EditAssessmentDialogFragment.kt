@@ -107,7 +107,7 @@ class EditAssessmentDialogFragment : DialogFragment() {
             // evaluation unit
             if (unit != null)
                 autocompleteTextViewUnit.setText(unit)
-            val unitOptions = arrayOf("Number", "Kg", "Minutes")
+            val unitOptions = resources.getStringArray(R.array.units)
             val unitAdapter =
                 ArrayAdapter(requireContext(), R.layout.item_options, unitOptions)
             autocompleteTextViewUnit.setAdapter(unitAdapter)

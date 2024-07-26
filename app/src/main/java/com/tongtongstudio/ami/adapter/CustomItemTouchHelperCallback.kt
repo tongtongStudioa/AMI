@@ -10,7 +10,7 @@ import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
 import com.tongtongstudio.ami.data.datatables.Ttd
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
-class TaskTouchHelperCallback(
+class CustomItemTouchHelperCallback(
     private val adapter: TaskAdapter,
     private val actionOnTaskMove: (Ttd, Long) -> Unit,
     private val actionOnRightSwiped: (TaskWithSubTasks) -> Unit,

@@ -38,7 +38,5 @@
         <!--<item name="android:statusBarColor">@color/white</item>-->
         <!--<item name="statusBarBackground">@android:color/transparent</item>-->
         <item name="appBarLayoutStyle">@style/AppBarAmi.Light</item>
-
-        <item name="titleTextStyle">@style/TextAppearance.Ami.Subtitle2.Day</item>
     </style>
 </resources>

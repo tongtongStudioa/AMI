@@ -3,13 +3,20 @@ package com.tongtongstudio.ami.data
 import com.tongtongstudio.ami.data.dao.AssessmentDao
 import com.tongtongstudio.ami.data.dao.CategoryDao
 import com.tongtongstudio.ami.data.dao.ReminderDao
-import com.tongtongstudio.ami.data.dao.TtdDao
-import com.tongtongstudio.ami.data.datatables.*
+import com.tongtongstudio.ami.data.dao.TaskDao
+import com.tongtongstudio.ami.data.datatables.Assessment
+import com.tongtongstudio.ami.data.datatables.Category
+import com.tongtongstudio.ami.data.datatables.Reminder
+import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.ThingToDo
+import com.tongtongstudio.ami.data.datatables.TimeWorkedDistribution
+import com.tongtongstudio.ami.data.datatables.TtdAchieved
+import com.tongtongstudio.ami.data.datatables.TtdStreakInfo
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class Repository @Inject constructor(
-    private val ttdDao: TtdDao,
+    private val taskDao: TaskDao,
     private val categoryDao: CategoryDao,
     private val reminderDao: ReminderDao,
     private val assessmentDao: AssessmentDao
@@ -20,50 +27,50 @@ class Repository @Inject constructor(
         hideCompleted: Boolean,
         startOfToday: Long,
         endOfToday: Long,
-    ): Flow<List<TaskWithSubTasks>> {
-        return ttdDao.getTodayTasks(sortOrder, hideCompleted, startOfToday, endOfToday)
+    ): Flow<List<ThingToDo>> {
+        return taskDao.getTodayTasks(sortOrder, hideCompleted, startOfToday, endOfToday)
     }
 
     fun getLaterThingsToDo(
         endDayDate: Long,
         endDayFilter: Long?,
         sortOrder: SortOrder? = null,
-    ): Flow<List<TaskWithSubTasks>> {
+    ): Flow<List<ThingToDo>> {
         return if (endDayFilter != null) {
-            ttdDao.getLaterTasksFilter(endDayDate, endDayFilter)
-        } else ttdDao.getLaterTasks(endDayDate)
+            taskDao.getLaterTasksFilter(endDayDate, endDayFilter)
+        } else taskDao.getLaterTasks(endDayDate)
     }
 
-    fun getCompletedTasks(): Flow<List<TaskWithSubTasks>> {
-        return ttdDao.getCompletedTasks()
+    fun getCompletedTasks(): Flow<List<ThingToDo>> {
+        return taskDao.getCompletedTasks()
     }
 
-    suspend fun getTask(id: Long): Ttd {
-        return ttdDao.getTask(id)
+    suspend fun getTask(id: Long): Task {
+        return taskDao.getTask(id)
     }
 
-    suspend fun insertTask(task: Ttd): Long {
-        return ttdDao.insert(task)
+    suspend fun insertTask(task: Task): Long {
+        return taskDao.insert(task)
     }
 
-    suspend fun updateTask(task: Ttd) {
-        ttdDao.update(task)
+    suspend fun updateTask(task: Task) {
+        taskDao.update(task)
     }
 
-    suspend fun deleteTask(task: Ttd) {
-        ttdDao.delete(task)
+    suspend fun deleteTask(task: Task) {
+        taskDao.delete(task)
     }
 
-    fun getProjects(hideCompleted: Boolean): Flow<List<TaskWithSubTasks>> {
-        return ttdDao.getProjects(hideCompleted)
+    fun getProjects(hideCompleted: Boolean): Flow<List<ThingToDo>> {
+        return taskDao.getProjects(hideCompleted)
     }
 
-    fun getPotentialProjects(): Flow<List<Ttd>> {
-        return ttdDao.getPotentialProject()
+    fun getPotentialProjects(): Flow<List<Task>> {
+        return taskDao.getPotentialProject()
     }
 
-    suspend fun getMissedRecurringTasks(todayDate: Long): List<Ttd> {
-        return ttdDao.getMissedRecurringTasks(todayDate)
+    suspend fun getMissedRecurringTasks(todayDate: Long): List<Task> {
+        return taskDao.getMissedRecurringTasks(todayDate)
     }
 
     suspend fun getCategoryById(id: Long): Category {
@@ -130,28 +137,28 @@ class Repository @Inject constructor(
         reminderDao.update(reminder)
     }
 
-    fun getHabits(): Flow<List<TaskWithSubTasks>> {
-        return ttdDao.getRecurringTasks()
+    fun getHabits(): Flow<List<ThingToDo>> {
+        return taskDao.getRecurringTasks()
     }
 
     fun getUpcomingTasksCount(endDate: Long, endDateFilter: Long? = null): Flow<Int> {
         return if (endDateFilter != null)
-            ttdDao.getUpcomingTasksCountFilter(endDate, endDateFilter)
-        else ttdDao.getUpcomingTasksCount(endDate)
+            taskDao.getUpcomingTasksCountFilter(endDate, endDateFilter)
+        else taskDao.getUpcomingTasksCount(endDate)
     }
 
     fun getTasksAchievementRate(categoryId: Long? = null): Flow<Float> {
-        return if (categoryId != null) ttdDao.getCategoryTasksAchievementRate(categoryId) else ttdDao.getTotalAchievementRate()
+        return if (categoryId != null) taskDao.getCategoryTasksAchievementRate(categoryId) else taskDao.getTotalAchievementRate()
     }
 
     fun getProjectsAchievementRate(categoryId: Long? = null): Flow<Float> {
-        return if (categoryId != null) ttdDao.getCategoryProjectsAchievementRate(categoryId) else ttdDao.getAllProjectsAchievementRate()
+        return if (categoryId != null) taskDao.getCategoryProjectsAchievementRate(categoryId) else taskDao.getAllProjectsAchievementRate()
     }
 
     fun getCompletedProjectsCount(categoryId: Long? = null): Flow<Int> {
         return if (categoryId != null)
-            ttdDao.getCategoryCompletedProjectsCount(categoryId)
-        else ttdDao.getCompletedProjectsCount()
+            taskDao.getCategoryCompletedProjectsCount(categoryId)
+        else taskDao.getCompletedProjectsCount()
     }
 
     fun getCompletedProjectsCountByPeriod(
@@ -160,13 +167,13 @@ class Repository @Inject constructor(
         endDate: Long
     ): Flow<List<TtdAchieved?>?> {
         return if (categoryId != null)
-            ttdDao.getCompletedCategoryTasksByPeriod(categoryId, startDate, endDate)
-        else ttdDao.getCompletedTasksByPeriod(startDate, endDate)
+            taskDao.getCompletedCategoryTasksByPeriod(categoryId, startDate, endDate)
+        else taskDao.getCompletedTasksByPeriod(startDate, endDate)
     }
 
 
     fun getCompletedTasksCount(categoryId: Long? = null): Flow<Int> {
-        return if (categoryId != null) ttdDao.getCategoryCompletedTasksCount(categoryId) else ttdDao.getCompletedTasksCount()
+        return if (categoryId != null) taskDao.getCategoryCompletedTasksCount(categoryId) else taskDao.getCompletedTasksCount()
     }
 
     fun getCompletedTasksCountByPeriod(
@@ -174,11 +181,11 @@ class Repository @Inject constructor(
         startDate: Long,
         endDate: Long
     ): Flow<List<TtdAchieved?>?> {
-        return if (categoryId != null) ttdDao.getCompletedCategoryTasksByPeriod(
+        return if (categoryId != null) taskDao.getCompletedCategoryTasksByPeriod(
             categoryId,
             startDate,
             endDate
-        ) else ttdDao.getCompletedTasksByPeriod(startDate, endDate)
+        ) else taskDao.getCompletedTasksByPeriod(startDate, endDate)
     }
 
     fun getTimeWorkedGrouped(categoryId: Long? = null): Flow<List<TimeWorkedDistribution>> {
@@ -188,11 +195,11 @@ class Repository @Inject constructor(
     }
 
     fun getTimeWorkedByCategory(): Flow<List<TimeWorkedDistribution>> {
-        return ttdDao.getTimeWorkedPerCategory()
+        return taskDao.getTimeWorkedPerCategory()
     }
 
     fun getTimeWorkedByTask(categoryId: Long): Flow<List<TimeWorkedDistribution>> {
-        return ttdDao.getRateTimeWorkedPerTask(categoryId)
+        return taskDao.getRateTimeWorkedPerTask(categoryId)
     }
 
     fun getAccuracyRateEstimation(
@@ -200,44 +207,44 @@ class Repository @Inject constructor(
         errorPercent: Float = 0.3F
     ): Flow<Float> {
         return if (categoryId != null)
-            ttdDao.getCategoryAccuracyRateOfEstimatedWorkTime(categoryId, errorPercent)
-        else ttdDao.getAccuracyRateOfEstimatedWorkTime(errorPercent)
+            taskDao.getCategoryAccuracyRateOfEstimatedWorkTime(categoryId, errorPercent)
+        else taskDao.getAccuracyRateOfEstimatedWorkTime(errorPercent)
     }
 
     fun getOnTimeCompletionRate(
         categoryId: Long? = null,
     ): Flow<Float> {
         return if (categoryId != null)
-            ttdDao.getOnTimeCompletionCategoryTasksRate(categoryId)
-        else ttdDao.getOnTimeCompletionTasksRate()
+            taskDao.getOnTimeCompletionCategoryTasksRate(categoryId)
+        else taskDao.getOnTimeCompletionTasksRate()
     }
 
     fun getTimeWorked(categoryId: Long? = null): Flow<Long> {
         return if (categoryId != null)
-            ttdDao.getSumCategoryTimeWorked(categoryId)
-        else ttdDao.getTotalTimeWorked()
+            taskDao.getSumCategoryTimeWorked(categoryId)
+        else taskDao.getTotalTimeWorked()
     }
 
     fun getMaxStreak(categoryId: Long? = null): Flow<TtdStreakInfo> {
         return if (categoryId != null)
-            ttdDao.getMaxStreakCategoryTask(categoryId)
-        else ttdDao.getMaxStreakTask()
+            taskDao.getMaxStreakCategoryTask(categoryId)
+        else taskDao.getMaxStreakTask()
     }
 
     fun getCurrentMaxStreak(categoryId: Long? = null): Flow<TtdStreakInfo> {
         return if (categoryId != null)
-            ttdDao.getCurrentMaxStreakCategoryTask(categoryId)
-        else ttdDao.getCurrentMaxStreakTask()
+            taskDao.getCurrentMaxStreakCategoryTask(categoryId)
+        else taskDao.getCurrentMaxStreakTask()
     }
 
     fun getHabitCompletionRate(categoryId: Long? = null): Flow<Float> {
         return if (categoryId != null)
-            ttdDao.getCategoryHabitCompletionRate(categoryId)
-        else ttdDao.getHabitCompletionRate()
+            taskDao.getCategoryHabitCompletionRate(categoryId)
+        else taskDao.getHabitCompletionRate()
     }
 
-    suspend fun getComposedTask(parentTaskId: Long): TaskWithSubTasks {
-        return ttdDao.getComposedTask(parentTaskId)
+    suspend fun getComposedTask(parentTaskId: Long): ThingToDo {
+        return taskDao.getComposedTask(parentTaskId)
     }
 
     fun getGlobalGoals(): Flow<List<Assessment>> {

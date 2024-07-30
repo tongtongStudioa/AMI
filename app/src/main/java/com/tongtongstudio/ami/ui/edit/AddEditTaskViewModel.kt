@@ -1,11 +1,16 @@
 package com.tongtongstudio.ami.ui.edit
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.Reminder
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.EDIT_TASK_RESULT_OK
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,7 +18,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.*
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,7 +31,7 @@ class AddEditTaskViewModel @Inject constructor(
     private val addEditChannelEvent = Channel<AddEditTaskEvent>()
     val addEditTaskEvent = addEditChannelEvent.receiveAsFlow()
 
-    val thingToDo = state.get<Ttd>("thingToDo")
+    val thingToDo = state.get<Task>("thingToDo")
 
     private val _reminders = MutableLiveData<MutableList<Reminder>>()
     val reminders: LiveData<MutableList<Reminder>>
@@ -74,10 +79,10 @@ class AddEditTaskViewModel @Inject constructor(
         }
 
     var estimatedTime: Long? =
-        state["estimatedTime"] ?: thingToDo?.estimatedTime
+        state["estimatedWorkingTime"] ?: thingToDo?.estimatedWorkingTime
         set(value) {
             field = value
-            state["estimatedTime"] = value
+            state["estimatedWorkingTime"] = value
         }
 
     var startDate =
@@ -207,7 +212,7 @@ class AddEditTaskViewModel @Inject constructor(
     private fun saveThingToDo(modeExtent: Boolean) = viewModelScope.launch {
         val taskId: Long
         val newThingToDo =
-            Ttd(
+            Task(
                 title = title,
                 priority = priority.toInt(),
                 dueDate = dueDate!!,
@@ -220,14 +225,14 @@ class AddEditTaskViewModel @Inject constructor(
             )
 
         taskId = if (modeExtent) {
-            urgency = Ttd.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
+            urgency = Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
             val newThingToDoExtent = newThingToDo.copy(
-                priority = Ttd.calculatingPriority(priority.toInt(), importance, urgency),
+                priority = Task.calculatingPriority(priority.toInt(), importance, urgency),
                 deadline = deadline,
                 description = description,
                 importance = importance,
                 urgency = urgency,
-                estimatedTime = estimatedTime,
+                estimatedWorkingTime = estimatedTime,
                 dependency = dependency,
                 skillLevel = skillLevel,
                 type = ttdNature
@@ -245,7 +250,7 @@ class AddEditTaskViewModel @Inject constructor(
         )
     }
 
-    private fun updateThingToDo(thingToDo: Ttd, modeExtent: Boolean) =
+    private fun updateThingToDo(thingToDo: Task, modeExtent: Boolean) =
         viewModelScope.launch {
             val updatedThingToDo =
                 thingToDo.copy(
@@ -261,14 +266,14 @@ class AddEditTaskViewModel @Inject constructor(
                 )
             if (modeExtent) {
                 urgency =
-                    Ttd.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
+                    Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
                 val updatedThingToDoExtent = updatedThingToDo.copy(
-                    priority = Ttd.calculatingPriority(priority.toInt(), importance, urgency),
+                    priority = Task.calculatingPriority(priority.toInt(), importance, urgency),
                     deadline = deadline,
                     description = description,
                     importance = importance,
                     urgency = urgency,
-                    estimatedTime = estimatedTime,
+                    estimatedWorkingTime = estimatedTime,
                     dependency = dependency,
                     skillLevel = skillLevel,
                     type = ttdNature

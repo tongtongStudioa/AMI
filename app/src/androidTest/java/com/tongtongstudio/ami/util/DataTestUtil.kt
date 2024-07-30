@@ -1,105 +1,105 @@
 package com.tongtongstudio.ami.util
 
-import com.tongtongstudio.ami.data.dao.TtdDao
-import com.tongtongstudio.ami.data.datatables.Ttd
-import java.util.*
+import com.tongtongstudio.ami.data.dao.TaskDao
+import com.tongtongstudio.ami.data.datatables.Task
+import java.util.Calendar
 
-class DataTestUtil(private val ttdDao: TtdDao) {
+class DataTestUtil(private val ttdDao: TaskDao) {
 
     val util = Util()
 
     private val tasks = listOf(
-        Ttd(
+        Task(
             "Faire les courses",
             4,
             util.getRdDate(),
             importance = 4,
             urgency = 8,
-            estimatedTime = util.getTimeInMillis(1, 30),
+            estimatedWorkingTime = util.getTimeInMillis(1, 30),
             dependency = false,
             skillLevel = 10
         ),
-        Ttd(
+        Task(
             "Examen de python",
             1,
             util.getRdDate(),
             importance = 9,
             urgency = 2,
-            estimatedTime = util.getTimeInMillis(4, 0),
+            estimatedWorkingTime = util.getTimeInMillis(4, 0),
             dependency = false,
             skillLevel = 4
         ),
-        Ttd(
+        Task(
             "Rdv dentiste",
             2,
             util.getRdDate(),
             importance = 6,
             urgency = 10,
-            estimatedTime = util.getTimeInMillis(0, 30),
+            estimatedWorkingTime = util.getTimeInMillis(0, 30),
             dependency = true
         ),
-        Ttd(
+        Task(
             "Aller voir un pote",
             4,
             util.getRdDate(),
             importance = 4,
             urgency = 8,
-            estimatedTime = util.getTimeInMillis(2, 30),
+            estimatedWorkingTime = util.getTimeInMillis(2, 30),
             dependency = true,
             skillLevel = 10,
             isRecurring = true,
             totalRepetitionCount = 15,
             successCount = 10
         ),
-        Ttd(
+        Task(
             "Créer un test pour la base de donnée",
             4,
             util.getRdPastDate(),
             importance = 4,
             urgency = 8,
-            estimatedTime = util.getTimeInMillis(1, 30),
+            estimatedWorkingTime = util.getTimeInMillis(1, 30),
             dependency = false,
             skillLevel = 10,
             isCompleted = true,
-            actualWorkTime = util.getTimeInMillis(1),
+            currentWorkingTime = util.getTimeInMillis(1),
             completedOnTime = true
         ),
-        Ttd(
+        Task(
             "Examen de math",
             1,
             util.getRdPastDate(),
             importance = 9,
             urgency = 2,
-            estimatedTime = util.getTimeInMillis(4, 0),
+            estimatedWorkingTime = util.getTimeInMillis(4, 0),
             dependency = false,
             skillLevel = 4,
             isCompleted = true,
-            actualWorkTime = util.getTimeInMillis(4, 0),
+            currentWorkingTime = util.getTimeInMillis(4, 0),
             completedOnTime = false
         ),
-        Ttd(
+        Task(
             "Faire une lessive",
             2,
             util.getRdPastDate(),
             importance = 6,
             urgency = 10,
-            estimatedTime = util.getTimeInMillis(0, 30),
+            estimatedWorkingTime = util.getTimeInMillis(0, 30),
             dependency = true,
             isCompleted = true,
-            actualWorkTime = util.getTimeInMillis(2),
+            currentWorkingTime = util.getTimeInMillis(2),
             completedOnTime = false
         ),
-        Ttd(
+        Task(
             "Boire de l'eau",
             4,
             util.getRdPastDate(),
             importance = 4,
             urgency = 8,
-            estimatedTime = util.getTimeInMillis(2, 30),
+            estimatedWorkingTime = util.getTimeInMillis(2, 30),
             dependency = true,
             skillLevel = 10,
             isCompleted = true,
-            actualWorkTime = util.getTimeInMillis(3, 40),
+            currentWorkingTime = util.getTimeInMillis(3, 40),
             completedOnTime = false
         )
 
@@ -119,7 +119,7 @@ class DataTestUtil(private val ttdDao: TtdDao) {
         timeInMillis
     }
 
-    fun getTasks(): List<Ttd> = tasks
+    fun getTasks(): List<Task> = tasks
     fun getTasksListSize(): Int = tasks.size
 
     suspend fun insertTestTasks() {
@@ -127,7 +127,7 @@ class DataTestUtil(private val ttdDao: TtdDao) {
     }
 
     companion object {
-        fun getInstance(ttdDao: TtdDao): DataTestUtil {
+        fun getInstance(ttdDao: TaskDao): DataTestUtil {
             return DataTestUtil(ttdDao)
         }
     }

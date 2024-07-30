@@ -5,19 +5,19 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.databinding.ItemMissedTaskBinding
 
 class MissedTaskAdapter(private val context: Context) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    val data: MutableList<Ttd>
+    val data: MutableList<Task>
 
     init {
         data = ArrayList()
     }
 
-    fun swapData(newData: List<Ttd>) {
+    fun swapData(newData: List<Task>) {
         data.clear()
         data.addAll(newData)
     }
@@ -40,14 +40,14 @@ class MissedTaskAdapter(private val context: Context) :
 
     inner class TaskMissedViewHolder(val binding: ItemMissedTaskBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(thingToDo: Ttd) {
+        fun bind(thingToDo: Task) {
             // TODO: retrieve category with others infos
             binding.apply {
                 tvTaskName.text = thingToDo.title
                 tvNature.text = "Category"
                 tvDeadline.text = context.getString(
                     R.string.las_due_date,
-                    Ttd.getDateFormatted(thingToDo.dueDate)
+                    Task.getDateFormatted(thingToDo.dueDate)
                 )
                 tvMissedCount.text =
                     context.getString(R.string.task_times_missed, thingToDo.timesMissed)

@@ -6,10 +6,10 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ViewHolder
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.databinding.ItemTaskBinding
 
-class SubTaskAdapter(private val listener: InteractionListener, val subTasks: List<Ttd>) :
+class SubTaskAdapter(private val listener: InteractionListener, val subTasks: List<Task>) :
     RecyclerView.Adapter<SubTaskAdapter.SubTaskViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubTaskViewHolder {
         val binding = ItemTaskBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -27,7 +27,7 @@ class SubTaskAdapter(private val listener: InteractionListener, val subTasks: Li
 
     inner class SubTaskViewHolder(
         private val binding: ItemTaskBinding
-    ) : ViewHolder<Ttd>(binding.root) {
+    ) : ViewHolder<Task>(binding.root) {
 
         init {
             binding.apply {
@@ -48,7 +48,7 @@ class SubTaskAdapter(private val listener: InteractionListener, val subTasks: Li
             }
         }
 
-        override fun bind(thingToDo: Ttd) {
+        override fun bind(thingToDo: Task) {
             binding.apply {
                 tvTaskName.text = thingToDo.title
                 checkBoxCompleted.isChecked = thingToDo.isCompleted
@@ -67,9 +67,9 @@ class SubTaskAdapter(private val listener: InteractionListener, val subTasks: Li
                     )
                 }
                 tvDeadline.text =
-                    Ttd.getDateFormatted(thingToDo.dueDate)
+                    Task.getDateFormatted(thingToDo.dueDate)
                 if (thingToDo.startDate != null) {
-                    tvStartDate.text = Ttd.getDateFormatted(thingToDo.startDate)
+                    tvStartDate.text = Task.getDateFormatted(thingToDo.startDate)
                 } else tvStartDate.isVisible = false
             }
         }

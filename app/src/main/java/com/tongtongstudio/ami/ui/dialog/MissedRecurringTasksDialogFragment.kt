@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.task.MissedTaskAdapter
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.databinding.DialogInformationMissedRecurringTasksBinding
 import com.tongtongstudio.ami.ui.MainViewModel
 
@@ -20,7 +20,7 @@ class MissedRecurringTasksDialogFragment : DialogFragment() {
 
     private lateinit var binding: DialogInformationMissedRecurringTasksBinding
     private lateinit var sharedViewModel: MainViewModel
-    private var missedTasks: Array<Ttd>? = null
+    private var missedTasks: Array<Task>? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 

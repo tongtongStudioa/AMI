@@ -125,9 +125,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    // Check if app has been open with assessment notification
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        // Check if app has been open with assessment notification
         if (intent != null) {
             if (intent.hasExtra(ASSESSMENT_ID)) {
                 showCompleteAssessmentDialog(intent)

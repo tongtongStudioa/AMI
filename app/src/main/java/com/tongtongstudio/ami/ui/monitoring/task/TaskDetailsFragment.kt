@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.databinding.FragmentTaskDetailsBinding
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
@@ -47,11 +47,11 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
             taskCategory.text = viewModel.category
             taskDescription.text = viewModel.description
             taskDescription.isVisible = viewModel.description != null
-            taskStartDate.text = Ttd.getDateFormatted(viewModel.startDate)
+            taskStartDate.text = Task.getDateFormatted(viewModel.startDate)
             taskStartDate.isVisible = viewModel.startDate != null
             taskDueDate.text =
-                Ttd.getDateFormatted(viewModel.dueDate)
-            taskDeadline.text = Ttd.getDateFormatted(viewModel.deadline)
+                Task.getDateFormatted(viewModel.dueDate)
+            taskDeadline.text = Task.getDateFormatted(viewModel.deadline)
             taskDeadline.isVisible = viewModel.deadline != null
 
             // stats view

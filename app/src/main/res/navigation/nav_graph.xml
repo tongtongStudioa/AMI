@@ -17,7 +17,7 @@
 
         <argument
             android:name="thingToDo"
-            app:argType="com.tongtongstudio.ami.data.datatables.Ttd"
+            app:argType="com.tongtongstudio.ami.data.datatables.Task"
             app:nullable="true"
             android:defaultValue="@null" />
     </fragment>
@@ -117,7 +117,7 @@
         tools:layout="@layout/fragment_task_details">
         <argument
             android:name="task"
-            app:argType="com.tongtongstudio.ami.data.datatables.Ttd" />
+            app:argType="com.tongtongstudio.ami.data.datatables.Task" />
     </fragment>
     <fragment
         android:id="@+id/achievementsFragment"
@@ -131,7 +131,7 @@
         tools:layout="@layout/fragment_project_stats">
         <argument
             android:name="project"
-            app:argType="com.tongtongstudio.ami.data.datatables.TaskWithSubTasks" />
+            app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo" />
     </fragment>
     <dialog
         tools:layout="@layout/dialog_custom_time_picker"
@@ -142,10 +142,10 @@
         android:id="@+id/missedRecurringTasksDialogFragment"
         tools:layout="@layout/dialog_information_missed_recurring_tasks"
         android:name="com.tongtongstudio.ami.ui.dialog.MissedRecurringTasksDialogFragment"
-        android:label="Recurring tasks missed">
+        android:label="@string/recurring_tasks_missed">
         <argument
             android:name="missedRecurringTasks"
-            app:argType="com.tongtongstudio.ami.data.datatables.Ttd[]" />
+            app:argType="com.tongtongstudio.ami.data.datatables.Task[]" />
     </dialog>
     <fragment
         android:id="@+id/viewPagerTrackingAndStatsFragment"
@@ -155,7 +155,7 @@
 
         <argument
             android:name="task"
-            app:argType="com.tongtongstudio.ami.data.datatables.Ttd" />
+            app:argType="com.tongtongstudio.ami.data.datatables.Task" />
 
         <argument
             android:name="fragment_pos"
@@ -170,7 +170,7 @@
         android:label="@string/fragment_title_chronometer">
         <argument
             android:name="task"
-            app:argType="com.tongtongstudio.ami.data.datatables.Ttd" />
+            app:argType="com.tongtongstudio.ami.data.datatables.Task" />
     </fragment>
     <fragment
         android:id="@+id/editGoalFragment"

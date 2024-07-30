@@ -231,15 +231,16 @@
     <string name="creator_sort">Creator sort</string>
     <string name="objective_description">Objective\'s specific description</string>
     <string name="assessment_completed">Assessment completed !</string>
-    <string name="target_goal">Target goal : %1s %2s</string>
+    <string name="target_goal">Target goal : %1d %2s</string>
     <string name="estimated_time">Estimated time</string>
     <string name="project_subtasks">Project\'s subtasks</string>
     <string name="project_progress">Project Progress</string>
     <string name="edit_task_link">Edit task\'s link</string>
     <string name="add_working_time">Add working time</string>
-    <string name="buy_me_a_coffe">Buy me a coffee</string>
+    <string name="buy_me_a_coffee">Buy me a coffee</string>
     <string name="reminder_informtions_overview">%1s at %2s</string>
     <string name="assessment_informations_overview">%1s on %2s</string>
+    <string name="recurring_tasks_missed">Recurring tasks missed</string>
     <string-array name="units">
         <item>No unit</item>
         <item>Minutes</item>

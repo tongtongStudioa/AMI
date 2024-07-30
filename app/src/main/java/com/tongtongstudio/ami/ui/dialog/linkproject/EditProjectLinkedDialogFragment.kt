@@ -15,7 +15,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.simple.AttributeListener
 import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.databinding.DialogEditProjectLinkedBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -55,13 +55,13 @@ class EditProjectLinkedDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        val projectLinkAdapter = EditAttributesAdapter(object : AttributeListener<Ttd> {
-            override fun onItemClicked(attribute: Ttd) {
+        val projectLinkAdapter = EditAttributesAdapter(object : AttributeListener<Task> {
+            override fun onItemClicked(attribute: Task) {
                 viewModel.changeProjectId(attribute.id)
                 onMainTaskSelected(this@EditProjectLinkedDialogFragment)
             }
 
-            override fun onRemoveCrossClick(attribute: Ttd) {
+            override fun onRemoveCrossClick(attribute: Task) {
                 viewModel.removeProjectId()
             }
         }) { binding, composedTask ->

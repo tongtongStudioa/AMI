@@ -1,8 +1,13 @@
 package com.tongtongstudio.ami.ui.edit
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.datatables.Assessment
+import com.tongtongstudio.ami.data.datatables.AssessmentType
 import com.tongtongstudio.ami.ui.ADD_GOAL_RESULT_OK
 import com.tongtongstudio.ami.ui.EDIT_GOAL_RESULT_OK
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -71,7 +76,7 @@ class EditGoalViewModel @Inject constructor(
     private fun updateAssessmentsList(id: Long) {
         if (assessments.value != null) {
             for (assessment in assessments.value!!) {
-                if (assessment.taskId != id)
+                if (assessment.parentId != id)
                     insertNewAssessment(id, assessment)
             }
         }
@@ -79,7 +84,7 @@ class EditGoalViewModel @Inject constructor(
 
     private fun insertNewAssessment(id: Long, newAssessment: Assessment) =
         viewModelScope.launch {
-            repository.insertAssessment(newAssessment.copy(taskId = id))
+            repository.insertAssessment(newAssessment.copy(parentId = id))
         }
 
     fun addNewAssessment(result: Assessment) {
@@ -92,7 +97,7 @@ class EditGoalViewModel @Inject constructor(
 
     fun updateAssessment(oldAssessment: Assessment, updateAssessment: Assessment) =
         viewModelScope.launch {
-            if (oldAssessment.taskId == null) {
+            if (oldAssessment.parentId == null) {
                 val currentReminders = _assessments.value ?: mutableListOf()
                 val indexElement = currentReminders.indexOf(oldAssessment)
                 currentReminders.remove(oldAssessment)
@@ -117,12 +122,13 @@ class EditGoalViewModel @Inject constructor(
 
     private fun insertGlobalObjective() = viewModelScope.launch {
         val newObjective = Assessment(
-            111,
-            goalTitle,
-            description,
+            title = goalTitle,
+            description = description,
             goal = goal.toInt(),
             unit = unit,
-            dueDate = dueDate!!
+            dueDate = dueDate!!,
+            // TODO: update assessment type
+            type = AssessmentType.QUANTITY.name
         )
         val objectiveId = repository.insertAssessment(newObjective)
         updateAssessmentsList(objectiveId)

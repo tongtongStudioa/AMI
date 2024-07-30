@@ -6,7 +6,7 @@ import androidx.room.TypeConverter
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.ui.dialog.Period
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import java.util.Calendar
 import kotlin.math.pow
 
 
@@ -83,7 +83,7 @@ class RecurringTaskInterval(
      * @param checked : state
      * @return updated task
      */
-    fun updateRecurringTask(ttd: Ttd, checked: Boolean): Ttd {
+    fun updateRecurringTask(ttd: Task, checked: Boolean): Task {
         val oldStartDate = ttd.dueDate
         val updatedStartDate = if (daysOfWeek != null) {
             findNextOccurrenceDayInWeek(oldStartDate, checked)

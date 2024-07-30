@@ -1,24 +1,24 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.dagger.hilt.android' version "$hiltVersion"
     id 'kotlin-android'
     id 'kotlin-parcelize'
-    id 'dagger.hilt.android.plugin'
     id 'androidx.navigation.safeargs.kotlin'
-    id 'kotlin-kapt'
+    id 'com.google.devtools.ksp' version "$ksp_version"
 }
 
 android {
-    compileSdkVersion 34
-    buildToolsVersion "30.0.3"
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.tongtongstudio.ami"
-        minSdkVersion 19
-        targetSdkVersion 34
-        versionCode 8
-        versionName "1"
+        minSdkVersion 21
+        targetSdk 34
+        versionCode 9
+        versionName '1.0.1'
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        versionNameSuffix 'alpha'
     }
 
     buildTypes {
@@ -33,14 +33,16 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
         freeCompilerArgs += "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
     }
     namespace 'com.tongtongstudio.ami'
+    buildToolsVersion '34.0.0'
+    ndkVersion '27.0.12077973'
     /*dependenciesInfo {
         includeInApk true
         includeInBundle true
@@ -49,12 +51,17 @@ android {
 
 dependencies {
 
+    // Ksp dependency
+    ksp "com.google.devtools.ksp:symbol-processing-api:$ksp_version"
+    // Rate me dialog dependency
     implementation 'com.github.hotchemi:android-rate:1.0.1'
+
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
-    // chart
+
+    // MPAndroidChart dependency
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // notification FLAG_IMMUTABLE on Android12
-    implementation 'androidx.work:work-runtime-ktx:2.8.1'
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'
 
     // custom swipe view
     implementation 'it.xabaras.android:recyclerview-swipedecorator:1.4'
@@ -66,18 +73,18 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "com.google.android.material:material:$materialVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
-    implementation 'androidx.lifecycle:lifecycle-service:2.6.0'
+    implementation 'androidx.lifecycle:lifecycle-service:2.8.4'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation "junit:junit:$junitVersion"
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
     androidTestImplementation "androidx.test.ext:junit:$testExtJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
 
     // Fragment
     implementation "androidx.fragment:fragment-ktx:$fragmentVersion"
     // Activity
-    implementation 'androidx.activity:activity-ktx:1.7.1'
+    implementation 'androidx.activity:activity-ktx:1.9.1'
 
     // Lifecycle + ViewModel & LiveData
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
@@ -89,7 +96,7 @@ dependencies {
 
     // Room
     implementation "androidx.room:room-runtime:$roomVersion"
-    kapt "androidx.room:room-compiler:$roomVersion"
+    ksp "androidx.room:room-compiler:$roomVersion"
     implementation "androidx.room:room-ktx:$roomVersion"
 
     // Coroutines
@@ -98,13 +105,9 @@ dependencies {
 
     // Dagger Hilt
     implementation "com.google.dagger:hilt-android:$hiltVersion"
-    kapt "com.google.dagger:hilt-android-compiler:$hiltVersion"
+    ksp "com.google.dagger:hilt-android-compiler:$hiltVersion"
     //kapt "androidx.hilt:hilt-compiler:$hiltAndroidXVersion"
 
     // DataStore
     implementation "androidx.datastore:datastore-preferences:$dataStoreVersion"
-}
-
-kapt {
-    correctErrorTypes true
 }

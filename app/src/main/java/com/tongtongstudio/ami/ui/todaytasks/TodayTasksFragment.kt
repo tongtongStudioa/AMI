@@ -27,8 +27,8 @@ import com.tongtongstudio.ami.adapter.CustomItemTouchHelperCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
 import com.tongtongstudio.ami.adapter.task.TaskAdapter
 import com.tongtongstudio.ami.data.SortOrder
-import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.notification.SoundPlayer
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
@@ -250,31 +250,31 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM).format(viewModel.startOfToday)
     }
 
-    override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
         if (isChecked) {
             soundPlayer.playSuccessSound()
         }
     }
 
-    override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
+    override fun onComposedTaskClick(thingToDo: ThingToDo) {
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
-    override fun onTaskClick(thingToDo: Ttd) {
+    override fun onTaskClick(thingToDo: Task) {
         sharedViewModel.navigateToTaskInfoScreen(thingToDo)
     }
 
-    override fun onProjectAddClick(composedTask: TaskWithSubTasks) {
+    override fun onProjectAddClick(composedTask: ThingToDo) {
         setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
         sharedViewModel.addThingToDo()
     }
 
-    override fun onSubTaskRightSwipe(thingToDo: Ttd) {
-        //TODO("Not yet implemented")
+    override fun onSubTaskRightSwipe(thingToDo: Task) {
+        sharedViewModel.deleteSubTask(thingToDo)
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
-        //TODO("Not yet implemented")
+    override fun onSubTaskLeftSwipe(thingToDo: Task) {
+        sharedViewModel.updateSubTask(thingToDo)
     }
 }

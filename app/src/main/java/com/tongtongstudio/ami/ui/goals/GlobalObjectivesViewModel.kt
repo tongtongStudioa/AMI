@@ -44,7 +44,7 @@ class GlobalObjectivesViewModel @Inject constructor(
     val globalGoals: LiveData<List<Assessment>> = repository.getGlobalGoals().asLiveData()
 
     sealed class GoalsEvent {
-        object NavigateToAddGlobalGoalScreen : GoalsEvent()
+        data object NavigateToAddGlobalGoalScreen : GoalsEvent()
         data class NavigateToEditGlobalGoalScreen(val goal: Assessment) :
             GoalsEvent()
 

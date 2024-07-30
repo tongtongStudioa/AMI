@@ -6,15 +6,15 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.task.TaskAdapter
-import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.ThingToDo
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 class CustomItemTouchHelperCallback(
     private val adapter: TaskAdapter,
-    private val actionOnTaskMove: (Ttd, Long) -> Unit,
-    private val actionOnRightSwiped: (TaskWithSubTasks) -> Unit,
-    private val actionLeftSwiped: (TaskWithSubTasks) -> Unit,
+    private val actionOnTaskMove: (Task, Long) -> Unit,
+    private val actionOnRightSwiped: (ThingToDo) -> Unit,
+    private val actionLeftSwiped: (ThingToDo) -> Unit,
     private val context: Context
 ) :
     ItemTouchHelper.Callback() {

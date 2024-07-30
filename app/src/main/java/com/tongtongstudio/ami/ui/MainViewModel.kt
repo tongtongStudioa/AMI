@@ -7,15 +7,19 @@ import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.tongtongstudio.ami.data.*
-import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.LaterFilter
+import com.tongtongstudio.ami.data.LayoutMode
+import com.tongtongstudio.ami.data.PreferencesManager
+import com.tongtongstudio.ami.data.Repository
+import com.tongtongstudio.ami.data.SortOrder
+import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.receiver.ReminderBroadcastReceiver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,7 +51,7 @@ class MainViewModel @Inject constructor(
         preferencesManager.updateLayoutMode(layoutMode)
     }
 
-    fun onCheckBoxChanged(thingToDo: Ttd, checked: Boolean) = viewModelScope.launch {
+    fun onCheckBoxChanged(thingToDo: Task, checked: Boolean) = viewModelScope.launch {
         val updatedTask = thingToDo.updateCheckedState(checked)
         repository.updateTask(updatedTask)
         // update advancement project after adapt task
@@ -58,7 +62,7 @@ class MainViewModel @Inject constructor(
 
     fun updateParentTask(parentTaskId: Long?) = viewModelScope.launch {
         if (parentTaskId != null) {
-            val taskWithSubTasks: TaskWithSubTasks = repository.getComposedTask(parentTaskId)
+            val taskWithSubTasks: ThingToDo = repository.getComposedTask(parentTaskId)
             val isCompleted =
                 taskWithSubTasks.getNbSubTasks() == taskWithSubTasks.getNbSubTasksCompleted()
             val updatedParentTask = taskWithSubTasks.mainTask.updateCheckedState(isCompleted)
@@ -67,7 +71,7 @@ class MainViewModel @Inject constructor(
     }
 
     // TODO: cancel and suppress task's reminders
-    fun deleteTask(thingToDo: TaskWithSubTasks) = viewModelScope.launch {
+    fun deleteTask(thingToDo: ThingToDo) = viewModelScope.launch {
         repository.deleteTask(thingToDo.mainTask)
         if (thingToDo.mainTask.parentTaskId != null) {
             updateParentTask(thingToDo.mainTask.parentTaskId)
@@ -90,7 +94,7 @@ class MainViewModel @Inject constructor(
         alarmManager.cancel(pendingIntent)
     }
 
-    fun updateTask(thingToDo: TaskWithSubTasks) = viewModelScope.launch {
+    fun updateTask(thingToDo: ThingToDo) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToEditScreen(thingToDo.mainTask))
     }
 
@@ -98,7 +102,7 @@ class MainViewModel @Inject constructor(
         mainEventChannel.send(SharedEvent.NavigateToAddScreen)
     }
 
-    fun onUndoDeleteClick(thingToDo: Ttd) = viewModelScope.launch {
+    fun onUndoDeleteClick(thingToDo: Task) = viewModelScope.launch {
         repository.insertTask(thingToDo.copy())
     }
 
@@ -106,25 +110,25 @@ class MainViewModel @Inject constructor(
         mainEventChannel.send(SharedEvent.ShowConfirmationMessage(result))
     }
 
-    fun updateSubTask(subTask: Ttd) = viewModelScope.launch {
+    fun updateSubTask(subTask: Task) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToEditScreen(subTask))
     }
 
-    fun deleteSubTask(subTask: Ttd) = viewModelScope.launch {
+    fun deleteSubTask(subTask: Task) = viewModelScope.launch {
         repository.deleteTask(subTask)
         updateParentTask(subTask.parentTaskId!!)
         mainEventChannel.send(SharedEvent.ShowUndoDeleteTaskMessage(subTask))
     }
 
-    fun navigateToTaskInfoScreen(thingToDo: Ttd) = viewModelScope.launch {
+    fun navigateToTaskInfoScreen(thingToDo: Task) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToTaskViewPager(thingToDo))
     }
 
-    fun navigateToTaskComposedInfoScreen(composedTask: TaskWithSubTasks) = viewModelScope.launch {
+    fun navigateToTaskComposedInfoScreen(composedTask: ThingToDo) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToLocalProjectStatsScreen(composedTask))
     }
 
-    fun navigateToTaskDetailsScreen(task: Ttd) = viewModelScope.launch {
+    fun navigateToTaskDetailsScreen(task: Task) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToTaskDetailsScreen(task))
     }
 
@@ -136,13 +140,13 @@ class MainViewModel @Inject constructor(
             set(Calendar.MILLISECOND, 0)
             timeInMillis
         }
-        val missedRecurringTasks: List<Ttd> = repository.getMissedRecurringTasks(todayDate)
+        val missedRecurringTasks: List<Task> = repository.getMissedRecurringTasks(todayDate)
         if (missedRecurringTasks.isNotEmpty()) {
             mainEventChannel.send(SharedEvent.ShowMissedRecurringTaskDialog(missedRecurringTasks))
         }
     }
 
-    fun updateRecurringTasksMissed(missedTasks: List<Ttd>) = viewModelScope.launch {
+    fun updateRecurringTasksMissed(missedTasks: List<Task>) = viewModelScope.launch {
         for (task in missedTasks) {
             val updatedTask = task.updateCheckedState(false)
             repository.updateTask(updatedTask)
@@ -150,25 +154,25 @@ class MainViewModel @Inject constructor(
     }
 
     sealed class SharedEvent {
-        data class NavigateToEditScreen(val thingToDo: Ttd) : SharedEvent()
-        object NavigateToAddScreen : SharedEvent()
+        data class NavigateToEditScreen(val thingToDo: Task) : SharedEvent()
+        data object NavigateToAddScreen : SharedEvent()
 
         /**
          * Event to navigate to view pager which display stats and time tracker for a specific task
          */
-        data class NavigateToTaskViewPager(val task: Ttd) :
+        data class NavigateToTaskViewPager(val task: Task) :
             SharedEvent()
 
-        data class NavigateToTaskDetailsScreen(val task: Ttd) :
+        data class NavigateToTaskDetailsScreen(val task: Task) :
             SharedEvent()
 
-        data class NavigateToLocalProjectStatsScreen(val composedTaskData: TaskWithSubTasks) :
+        data class NavigateToLocalProjectStatsScreen(val composedTaskData: ThingToDo) :
             SharedEvent()
 
         data class ShowConfirmationMessage(val result: Int) : SharedEvent()
-        data class ShowUndoDeleteTaskMessage(val thingToDo: Ttd) :
+        data class ShowUndoDeleteTaskMessage(val thingToDo: Task) :
             SharedEvent()
 
-        data class ShowMissedRecurringTaskDialog(val missedTasks: List<Ttd>) : SharedEvent()
+        data class ShowMissedRecurringTaskDialog(val missedTasks: List<Task>) : SharedEvent()
     }
 }

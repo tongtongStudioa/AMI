@@ -18,10 +18,11 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Assessment
+import com.tongtongstudio.ami.data.datatables.AssessmentType
 import com.tongtongstudio.ami.databinding.DialogEditAssessmentBinding
 import com.tongtongstudio.ami.ui.edit.CalendarCustomFunction
 import java.text.DateFormat
-import java.util.*
+import java.util.Calendar
 
 const val NEW_USER_ASSESSMENT_REQUEST_KEY = "new_user_assessment_request_key"
 const val ASSESSMENT_RESULT_KEY = "assessment_result_key"
@@ -196,6 +197,7 @@ class EditAssessmentDialogFragment : DialogFragment() {
                 description = description,
                 goal = goal!!.toInt(),
                 unit = unit!!.toString(),
+                type = AssessmentType.QUANTITY.name,
                 dueDate = dueDate!!
             )
             val result = Bundle().apply {

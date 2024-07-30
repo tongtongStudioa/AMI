@@ -19,7 +19,7 @@
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_gravity=""
+        android:layout_gravity="start"
         app:subheaderTextAppearance="@style/TextAppearance.Ami.Subtitle2.Day"
         app:itemTextAppearance="@style/TextAppearance.Ami.Caption"
         app:menu="@menu/menu_drawer" />

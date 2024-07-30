@@ -10,8 +10,8 @@ import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ItemTouchHelperAdapter
 import com.tongtongstudio.ami.adapter.ViewHolder
 import com.tongtongstudio.ami.data.datatables.Nature
-import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.ItemProjectBinding
 import com.tongtongstudio.ami.databinding.ItemTaskBinding
 
@@ -19,20 +19,20 @@ import com.tongtongstudio.ami.databinding.ItemTaskBinding
 class TaskAdapter(private val listener: InteractionListener) :
     RecyclerView.Adapter<ViewHolder<*>>(), ItemTouchHelperAdapter {
 
-    private val taskList: MutableList<TaskWithSubTasks> = mutableListOf()
+    private val taskList: MutableList<ThingToDo> = mutableListOf()
 
     companion object {
         private const val TYPE_TASK = 0
         private const val TYPE_TASK_COMPOSED = 1
     }
 
-    fun submitList(tasks: List<TaskWithSubTasks>) {
+    fun submitList(tasks: List<ThingToDo>) {
         taskList.clear()
         taskList.addAll(tasks)
         notifyDataSetChanged()
     }
 
-    /*fun addTask(newTask: TaskWithSubTasks) {
+    /*fun addTask(newTask: ThingToDo) {
         val position: Int = findInsertionPosition(newTask)
         taskList.add(position, newTask)
         notifyItemInserted(position)
@@ -41,7 +41,7 @@ class TaskAdapter(private val listener: InteractionListener) :
     override fun onBindViewHolder(holder: ViewHolder<*>, position: Int) {
         val element = taskList[position]
         when (holder) {
-            is TaskViewHolder -> holder.bind(element.mainTask)
+            is TaskViewHolder -> holder.bind(element)
             is TaskComposedViewHolder -> holder.bind(element)
             else -> throw IllegalArgumentException()
         }
@@ -79,13 +79,13 @@ class TaskAdapter(private val listener: InteractionListener) :
         notifyItemChanged(toPosition)
     }
 
-    fun getTaskList(): List<TaskWithSubTasks> {
+    fun getTaskList(): List<ThingToDo> {
         return taskList
     }
 
     inner class TaskViewHolder(
         private val binding: ItemTaskBinding
-    ) : ViewHolder<Ttd>(binding.root) {
+    ) : ViewHolder<ThingToDo>(binding.root) {
 
         init {
             binding.apply {
@@ -106,17 +106,17 @@ class TaskAdapter(private val listener: InteractionListener) :
             }
         }
 
-        override fun bind(data: Ttd) {
+        override fun bind(data: ThingToDo) {
             binding.apply {
-                tvTaskName.text = data.title
-                //tvNature.text = thingToDo.getCategoryTitle()
-                checkBoxCompleted.isChecked = data.isCompleted
-                tvTaskName.paint.isStrikeThruText = data.isCompleted
-                // TODO: show the task's category
+                tvTaskName.text = data.mainTask.title
+                checkBoxCompleted.isChecked = data.mainTask.isCompleted
+                tvTaskName.paint.isStrikeThruText = data.mainTask.isCompleted
+                // TODO: remove category text view if category is null
+                tvCategory.text = data.category?.title ?: "null"
                 tvNumberPriority.text =
                     this@TaskViewHolder.itemView.context.getString(
                         R.string.importance_thing_to_do,
-                        data.priority
+                        data.mainTask.priority
                     )
 
                 /*if (data.dueDate < todayDate && !data.isCompleted) {
@@ -127,9 +127,9 @@ class TaskAdapter(private val listener: InteractionListener) :
                         )
                     )
                 }*/
-                tvDeadline.text = Ttd.getDateFormatted(data.dueDate)
-                if (data.startDate != null) {
-                    tvStartDate.text = Ttd.getDateFormatted(data.startDate)
+                tvDeadline.text = Task.getDateFormatted(data.mainTask.dueDate)
+                if (data.mainTask.startDate != null) {
+                    tvStartDate.text = Task.getDateFormatted(data.mainTask.startDate)
                 } else tvStartDate.isVisible = false
             }
         }
@@ -137,7 +137,7 @@ class TaskAdapter(private val listener: InteractionListener) :
 
     inner class TaskComposedViewHolder(
         private val binding: ItemProjectBinding
-    ) : ViewHolder<TaskWithSubTasks>(binding.root) {
+    ) : ViewHolder<ThingToDo>(binding.root) {
 
         private var expanded = false
 
@@ -187,17 +187,17 @@ class TaskAdapter(private val listener: InteractionListener) :
         }
 
         override fun bind(
-            data: TaskWithSubTasks
+            data: ThingToDo
         ) {
             binding.apply {
                 tvProjectName.text = data.mainTask.title
                 tvProjectName.paint.isStrikeThruText = data.mainTask.isCompleted
-                tvDeadline.text = Ttd.getDateFormatted(data.mainTask.dueDate)
+                tvDeadline.text = Task.getDateFormatted(data.mainTask.dueDate)
                 tvDeadline.isVisible =
-                    Ttd.getDateFormatted(data.mainTask.dueDate) != null
-                tvStartDate.text = Ttd.getDateFormatted(data.mainTask.startDate)
+                    Task.getDateFormatted(data.mainTask.dueDate) != null
+                tvStartDate.text = Task.getDateFormatted(data.mainTask.startDate)
                 tvStartDate.isVisible =
-                    Ttd.getDateFormatted(data.mainTask.startDate) != null
+                    Task.getDateFormatted(data.mainTask.startDate) != null
                 tvNumberPriority.text = this@TaskComposedViewHolder.itemView.context.getString(
                     R.string.importance_thing_to_do,
                     data.mainTask.priority
@@ -227,7 +227,7 @@ class TaskAdapter(private val listener: InteractionListener) :
 
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 
-                        val subTask: Ttd =
+                        val subTask: Task =
                             taskList[bindingAdapterPosition].subTasks[viewHolder.bindingAdapterPosition]
                         if (direction == ItemTouchHelper.RIGHT) {
                             listener.onSubTaskRightSwipe(subTask)

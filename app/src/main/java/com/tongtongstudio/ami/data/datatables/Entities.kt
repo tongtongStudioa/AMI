@@ -2,21 +2,42 @@ package com.tongtongstudio.ami.data.datatables
 
 import android.os.Parcelable
 import android.text.format.DateUtils.DAY_IN_MILLIS
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.ForeignKey.Companion.CASCADE
+import androidx.room.ForeignKey.Companion.SET_NULL
+import androidx.room.PrimaryKey
+import androidx.room.Relation
 import kotlinx.parcelize.Parcelize
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 import kotlin.math.abs
 
 const val PATTERN_FORMAT_DATE = "E dd/MM"
 
-enum class Nature { PROJECT, TASK, EVENT }
+enum class Nature { PROJECT, TASK }
 
-// TODO: rename table to task
 @Parcelize
-@Entity(tableName = "thing_to_do_table")
-data class Ttd(
+@Entity(
+    tableName = "task_table", foreignKeys = [
+        ForeignKey(
+            entity = Category::class,
+            parentColumns = ["category_id"],
+            childColumns = ["categoryId"],
+            onDelete = SET_NULL
+        ), ForeignKey(
+            entity = Task::class,
+            parentColumns = ["task_id"],
+            childColumns = ["parent_task_id"],
+            onDelete = CASCADE
+        )]
+)
+data class Task(
     val title: String,
     val priority: Int,
     @ColumnInfo(name = "task_due_date")
@@ -31,10 +52,8 @@ data class Ttd(
     val isCompleted: Boolean = false,
     val completionDate: Long? = null,
     val completedOnTime: Boolean? = null,
-    // TODO: replace with estimated working time
-    val estimatedTime: Long? = null,
-    // TODO: replace with currentWorkingTime
-    val actualWorkTime: Long? = null,
+    val estimatedWorkingTime: Long? = null,
+    val currentWorkingTime: Long? = null,
     val isRecurring: Boolean = false,
     val currentStreak: Int = 0,
     val maxStreak: Int = 0,
@@ -42,11 +61,11 @@ data class Ttd(
     val totalRepetitionCount: Int = 0,
     val timesMissed: Int = 0,
     val successCount: Int = 0, // achievements number for recurrent tasks
+    val comment: String? = null,
     val dependency: Boolean? = null, // dependency on other people
     val skillLevel: Int? = null, // task mastery level posses
     val creationDate: Long = System.currentTimeMillis(),
-    // TODO: add subjective score ? and commentary ?
-    @ColumnInfo(name = "id_ttd")
+    @ColumnInfo(name = "task_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val categoryId: Long? = null,
     @ColumnInfo(name = "parent_task_id")
@@ -58,11 +77,11 @@ data class Ttd(
      * @param state state
      * @return updated task
      */
-    fun updateCheckedState(state: Boolean): Ttd {
+    fun updateCheckedState(state: Boolean): Task {
         val updatedTask = when {
             // it is a recurring task
             isRecurring && repetitionFrequency != null -> repetitionFrequency.updateRecurringTask(
-                this@Ttd,
+                this@Task,
                 state
             )
             // it is checked
@@ -168,15 +187,22 @@ data class Ttd(
 
 }
 
-// TODO: add category and reminders in data class
-// TODO: rename data class to thing to do
 @Parcelize
-data class TaskWithSubTasks(
+data class ThingToDo(
     @Embedded
-    val mainTask: Ttd,
-    @Relation(parentColumn = "id_ttd", entityColumn = "parent_task_id", entity = Ttd::class)
-    val subTasks: List<Ttd>
+    val mainTask: Task,
+    @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = Task::class)
+    val subTasks: List<Task>,
+    @Relation(parentColumn = "categoryId", entityColumn = "category_id", entity = Category::class)
+    val category: Category?,
+    @Relation(parentColumn = "task_id", entityColumn = "parent_id", entity = Reminder::class)
+    val reminders: List<Reminder>
+
 ) : Parcelable {
+    fun isProject(): Boolean {
+        return mainTask.type == Nature.PROJECT.name || subTasks.isNotEmpty()
+    }
+
     fun getNbSubTasksCompleted(): Int = subTasks.count { it.isCompleted }
     fun getNbSubTasks(): Int = subTasks.size
 }
@@ -198,24 +224,40 @@ data class TtdStreakInfo(
 )
 
 /**
+ * Describe type of objective goal to help tracking progress.
+ */
+enum class AssessmentType { QUANTITY, DURATION, BOOLEAN }
+
+/**
  * Evaluation class and entity of Room database.
- * Help to track and analyse details on objective advancement.
+ * Help to track and analyse details global objectives and their advancement.
  */
 @Parcelize
-@Entity
+@Entity(
+    foreignKeys = [
+        ForeignKey(
+            entity = Task::class,
+            parentColumns = ["task_id"],
+            childColumns = ["parent_id"],
+            onDelete = CASCADE
+        ), ForeignKey(
+            entity = Assessment::class,
+            parentColumns = ["assessment_id"],
+            childColumns = ["parent_id"],
+            onDelete = CASCADE
+        )]
+)
 data class Assessment(
-    // TODO: change name parent id : assessment ref to an assessment = global objective
     // parent id nullable
-    @ColumnInfo(name = "task_id")
-    val taskId: Long,
+    @ColumnInfo(name = "parent_id")
+    val parentId: Long? = null,
     @ColumnInfo(name = "assessment_title")
     val title: String,
     val description: String? = null,
-    // TODO: add comment on recurring task too
     val comment: String? = null,
     val goal: Int,
-    // TODO: add type attribute : quantity, time or boolean
     val unit: String,
+    val type: String,
     @ColumnInfo(name = "assessment_due_date")
     val dueDate: Long,
     val isRecurrent: Boolean = false,
@@ -238,29 +280,37 @@ data class Assessment(
     }
 }
 
-// TODO: add color
+@Parcelize
 @Entity
 data class Category(
     @ColumnInfo(name = "category_title")
     val title: String,
     val description: String?,
+    val color: Int? = null,
     @ColumnInfo(name = "parent_category_id")
     val parentCategoryId: Long? = null,
     @ColumnInfo(name = "category_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
-)
+) : Parcelable
 
 data class TimeWorkedDistribution(val title: String?, val totalTimeWorked: Long?)
 
 data class CategoryTasks(
     @Embedded
     val category: Category,
-    @Relation(entity = Ttd::class, parentColumn = "category_id", entityColumn = "categoryId")
-    val tasks: List<Ttd>
+    @Relation(entity = Task::class, parentColumn = "category_id", entityColumn = "categoryId")
+    val tasks: List<Task>
 )
 
-// TODO: mark as passed if it is
-@Entity
+@Parcelize
+@Entity(
+    foreignKeys = [ForeignKey(
+        entity = Task::class,
+        parentColumns = ["task_id"],
+        childColumns = ["parent_id"],
+        onDelete = CASCADE
+    )]
+)
 data class Reminder(
     @ColumnInfo(name = "parent_id")
     val parentId: Long? = null, // attach to a task but also just parent reminder of the app
@@ -270,7 +320,12 @@ data class Reminder(
     val repetitionFrequency: RecurringTaskInterval? = null,
     @ColumnInfo(name = "reminder_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
-) {
+) : Parcelable {
+
+    fun isPassed(): Boolean {
+        return dueDate > Calendar.getInstance().timeInMillis
+    }
+
     fun getDueDateFormatted(): String {
         return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
     }
@@ -280,6 +335,30 @@ data class Reminder(
     }
 }
 
-// TODO: Create TimeWorked sessions entry
-// TODO: Create Unit entry
-// TODO: Create Pomodoro sessions for later upgrade
+@Entity
+data class WorkSession(
+    val parentTaskId: Long,
+    val duration: Long,
+    val comment: String?,
+    val date: Long = System.currentTimeMillis(),
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "work_session_id") val id: Long = 0
+)
+
+@Entity
+data class Unit(
+    val name: String,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "unit_id") val id: Long = 0
+)
+
+@Entity
+data class PomodoroSession(
+    val name: String,
+    val workingDuration: Long = 30 * 60 * 1000,
+    val restDuration: Long = 15 * 60 * 1000,
+    val workSessionsCount: Int = 4,
+    val specialMsg: String?,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "work_session_id") val id: Long = 0
+)

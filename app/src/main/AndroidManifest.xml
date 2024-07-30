@@ -7,6 +7,7 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
@@ -25,14 +26,23 @@
                 <action
                     android:name="android.intent.action.MAIN"
                     android:windowSoftInputMode="adjustResize" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".services.TrackingService" />
+        <service
+            android:name=".services.TrackingService"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Chronometer and timer uses" />
+        </service>
 
-        <receiver android:name=".receiver.ReminderBroadcastReceiver" />
-        <receiver android:name=".receiver.AssessmentBroadcastReceiver" />
+        <receiver
+            android:name=".receiver.ReminderBroadcastReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".receiver.AssessmentBroadcastReceiver"
+            android:exported="false" />
 
         <meta-data
             android:name="preloaded_fonts"

@@ -19,7 +19,7 @@ class TimerStopWatch(
     /**
      * This variable is essential to count down timer (for pomodoro sessions)
      * and it's used for track duration even for StopWatch mode.
-     * Equal workTime if type is CountDown and actualWorkTime else.
+     * Equal workTime if type is CountDown and currentWorkingTime else.
      */
     private var remainingTimeMillis: Long = 0L
     private var timeWorked: Long = 0L
@@ -123,7 +123,7 @@ class TimerStopWatch(
         handler.removeCallbacks(timerRunnable)
 
         // reset
-        timeWorked = 0L //actualWorkTime --> choice of total reset or not
+        timeWorked = 0L //currentWorkingTime --> choice of total reset or not
         //sessionCount = 0
 
         remainingTimeMillis = if (timerType == TimerType.COUNTDOWN) WORK_TIME_DURATION else 0L

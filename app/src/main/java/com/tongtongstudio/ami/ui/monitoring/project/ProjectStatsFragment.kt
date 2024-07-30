@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.task.InteractionListener
 import com.tongtongstudio.ami.adapter.task.SubTaskAdapter
-import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentProjectStatsBinding
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
@@ -65,7 +65,7 @@ class ProjectStatsFragment : Fragment(R.layout.fragment_project_stats), Interact
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val subTask: Ttd =
+                val subTask: Task =
                     subTasksAdapter.subTasks[viewHolder.bindingAdapterPosition]
                 if (direction == ItemTouchHelper.RIGHT) {
                     onSubTaskRightSwipe(subTask)
@@ -117,27 +117,27 @@ class ProjectStatsFragment : Fragment(R.layout.fragment_project_stats), Interact
         //make a sound
     }
 
-    override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
         //TODO("Not yet implemented")
     }
 
-    override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
+    override fun onComposedTaskClick(thingToDo: ThingToDo) {
         //TODO("Not yet implemented")
     }
 
-    override fun onTaskClick(thingToDo: Ttd) {
+    override fun onTaskClick(thingToDo: Task) {
         //TODO("Not yet implemented")
     }
 
-    override fun onProjectAddClick(composedTask: TaskWithSubTasks) {
+    override fun onProjectAddClick(composedTask: ThingToDo) {
         //TODO("Not yet implemented")
     }
 
-    override fun onSubTaskRightSwipe(thingToDo: Ttd) {
+    override fun onSubTaskRightSwipe(thingToDo: Task) {
         //TODO("Not yet implemented")
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
+    override fun onSubTaskLeftSwipe(thingToDo: Task) {
         //TODO("Not yet implemented")
     }
 

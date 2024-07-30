@@ -3,29 +3,30 @@ buildscript {
     // Define versions in a single place
     ext {
         // Sdk and tools
-        minSdkVersion = 21
-        targetSdkVersion = 30
-        compileSdkVersion = 30
+        minSdkVersion = 19
+        targetSdkVersion = 34
+        compileSdkVersion = 34
 
         // App dependencies
-        appCompatVersion = '1.6.1'
+        appCompatVersion = '1.7.0'
         constraintLayoutVersion = '2.1.4'
         coroutinesVersion = '1.7.0'
-        dataStoreVersion = '1.1.0-alpha04'
-        espressoVersion = '3.5.1'
-        fragmentVersion = '1.6.0-alpha09'
-        gradleVersion = '7.4.2'
+        dataStoreVersion = '1.1.1'
+        espressoVersion = '3.6.1'
+        fragmentVersion = '1.8.2'
+        gradleVersion = '8.5.1'
         hiltAndroidXVersion = '1.0.0'
         hiltVersion = '2.51.1'
         junitVersion = '4.13.2'
-        kotlinVersion = '1.8.21'
-        ktxVersion = '1.10.0'
-        lifecycleVersion = '2.6.1'
+        kotlinVersion = '2.0.0'
+        ktxVersion = '1.13.1'
+        lifecycleVersion = '2.8.4'
         materialVersion = '1.9.0'
-        navigationVersion = '2.5.3'
-        roomVersion = '2.5.1'
-        testExtJunitVersion = '1.1.5'
+        navigationVersion = '2.7.7'
+        roomVersion = '2.6.1'
+        testExtJunitVersion = '1.2.1'
         multidex_version = '2.0.1'
+        ksp_version = '2.0.0-1.0.23'
     }
 
     repositories {
@@ -34,11 +35,12 @@ buildscript {
         maven { url 'https://jitpack.io' }
 
     }
+
     dependencies {
-        classpath "com.android.tools.build:gradle:$gradleVersion"
+        classpath 'com.android.tools.build:gradle:8.5.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigationVersion"
-        classpath "com.google.dagger:hilt-android-gradle-plugin:$hiltVersion"
+        //classpath "com.google.dagger:hilt-android-gradle-plugin:$hiltVersion"
     }
 }
 
@@ -50,6 +52,6 @@ allprojects {
     }
 }
 
-task clean(type: Delete) {
+tasks.register('clean') {
     delete rootProject.buildDir
 }

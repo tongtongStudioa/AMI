@@ -11,7 +11,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProjectViewModel @Inject constructor(
     private val repository: Repository,
-    private val preferencesManager: PreferencesManager
+    preferencesManager: PreferencesManager
 ) : ViewModel() {
 
     val preferencesFlow = preferencesManager.filterPreferencesFlow

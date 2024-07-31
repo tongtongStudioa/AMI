@@ -5,26 +5,23 @@ import android.graphics.Canvas
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.task.TaskAdapter
-import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
-class CustomItemTouchHelperCallback(
-    private val adapter: TaskAdapter,
-    private val actionOnTaskMove: (Task, Long) -> Unit,
-    private val actionOnRightSwiped: (ThingToDo) -> Unit,
-    private val actionLeftSwiped: (ThingToDo) -> Unit,
+abstract class ThingToDoItemCallback(
+    private val adapter: ThingToDoAdapter,
+    private val swipeFlags: Int = ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
     private val context: Context
 ) :
     ItemTouchHelper.Callback() {
+
 
     override fun getMovementFlags(
         recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder
     ): Int {
         val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
-        val swipeFlags = ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT
         return makeMovementFlags(0, swipeFlags)
     }
 
@@ -77,7 +74,7 @@ class CustomItemTouchHelperCallback(
         )
             .addSwipeLeftActionIcon(R.drawable.ic_baseline_edit_24)
             .addSwipeRightActionIcon(R.drawable.ic_baseline_delete_24)
-            .setSwipeLeftActionIconTint(context.resources.getColor(R.color.md_theme_light_tertiary))
+            .setSwipeLeftActionIconTint(context.resources.getColor(R.color.beautiful_green))
             .setSwipeRightActionIconTint(context.resources.getColor(R.color.design_default_color_error))
             .create()
             .decorate()
@@ -99,4 +96,8 @@ class CustomItemTouchHelperCallback(
     override fun isItemViewSwipeEnabled(): Boolean {
         return true
     }
+
+    open fun actionOnTaskMove(thingToDo: ThingToDo, parentId: Long) {}
+    open fun actionOnRightSwiped(thingToDo: ThingToDo) {}
+    open fun actionLeftSwiped(thingToDo: ThingToDo) {}
 }

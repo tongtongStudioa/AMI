@@ -164,7 +164,7 @@
     <string name="error_no_unit">L\'unité doit être renseignée !</string>
     <string name="assessment_channel_description">Chaîne de notification pour les évalutations</string>
     <string name="share_with">Partager avec</string>
-    <string name="edit_category_dialog_title">Editer une categorie</string>
+    <string name="edit_category_dialog_title">Modifiez les categories</string>
     <string name="save">Sauvegarder</string>
     <string name="update">Mettre à jour</string>
     <string name="edit_assessment_dialog_title">Editer une évaluation</string>
@@ -196,7 +196,7 @@
     <string name="recurring_end">Fin de la récurrence :</string>
     <string name="las_due_date">Dernière échéance : %s</string>
     <string name="task_times_missed">Manquées %d fois</string>
-    <string name="new_category">Nouvelle catégorie</string>
+    <string name="edit_categories">Modifier les catégories</string>
     <string name="edit_simplified">Mode simplifié</string>
     <string name="others">Autre</string>
     <string name="about_project">À propos du projet</string>
@@ -212,9 +212,13 @@
     <string name="estimated_time">Temps estimé</string>
     <string name="project_subtasks">Sous tâches du projet</string>
     <string name="project_progress">Progrés du projet</string>
-    <string name="edit_task_link">Editez le lien de la tâche</string>
+    <string name="edit_task_link">Modifiez le lien de la tâche</string>
     <string name="add_working_time">Ajouter une durée de travail</string>
     <string name="buy_me_a_coffee">Supportez mon travail</string>
     <string name="reminder_informtions_overview">%1s à %2s</string>
     <string name="assessment_informations_overview">%1s le %2s</string>
+    <string name="recurring_tasks_missed">Tâches récurrentes manquées</string>
+    <string name="permission_needed">Permission demandée</string>
+    <string name="this_app_requires_notification_permission_to_send_you_reminders">Cette application nécessite une autorisation de notification pour vous envoyer des rappels.  Cliquez sur Ok pour accéder aux paramètres de l\'application.</string>
+    <string name="completion_date">Complétée le %s</string>
 </resources>

@@ -16,7 +16,7 @@ import com.tongtongstudio.ami.databinding.ItemProjectBinding
 import com.tongtongstudio.ami.databinding.ItemTaskBinding
 
 
-class TaskAdapter(private val listener: InteractionListener) :
+class ThingToDoAdapter(private val listener: InteractionListener) :
     RecyclerView.Adapter<ViewHolder<*>>(), ItemTouchHelperAdapter {
 
     private val taskList: MutableList<ThingToDo> = mutableListOf()
@@ -99,8 +99,16 @@ class TaskAdapter(private val listener: InteractionListener) :
                 root.setOnClickListener {
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        val task = taskList[position].mainTask
-                        listener.onTaskClick(task)
+                        // Scale animation on click
+                        root.animate()
+                            .scaleX(1.1f)
+                            .scaleY(1.1f)
+                            .setDuration(100)
+                            .withEndAction {
+                                val task = taskList[position].mainTask
+                                listener.onTaskClick(task)
+                            }
+                            .start()
                     }
                 }
             }

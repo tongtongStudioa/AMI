@@ -67,6 +67,13 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
         }
     }
 
+    fun updateTaskCompletionDate(newCompletionDate: Long) = viewModelScope.launch {
+        if (task != null) {
+            repository.updateTask(task!!.copy(completionDate = newCompletionDate))
+            task = task!!.copy(completionDate = newCompletionDate)
+        }
+    }
+
     val category: String = runBlocking {
         return@runBlocking task?.categoryId?.let {
             repository.getCategoryById(

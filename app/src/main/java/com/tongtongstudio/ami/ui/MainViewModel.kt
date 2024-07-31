@@ -70,8 +70,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // TODO: cancel and suppress task's reminders
-    fun deleteTask(thingToDo: ThingToDo) = viewModelScope.launch {
+    fun deleteTask(thingToDo: ThingToDo, context: Context) = viewModelScope.launch {
+        thingToDo.reminders.forEach { reminder ->
+            cancelReminder(context, reminder.id)
+        }
         repository.deleteTask(thingToDo.mainTask)
         if (thingToDo.mainTask.parentTaskId != null) {
             updateParentTask(thingToDo.mainTask.parentTaskId)

@@ -1,18 +1,22 @@
 package com.tongtongstudio.ami.ui.edit
 
+import android.Manifest
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.PopupMenu
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.os.bundleOf
-import androidx.core.util.Pair
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
@@ -29,12 +33,8 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.timepicker.MaterialTimePicker
-import com.google.android.material.timepicker.MaterialTimePicker.INPUT_MODE_CLOCK
-import com.google.android.material.timepicker.TimeFormat
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.AutoCompleteAdapter
 import com.tongtongstudio.ami.adapter.simple.AttributeListener
@@ -45,24 +45,47 @@ import com.tongtongstudio.ami.data.datatables.PATTERN_FORMAT_DATE
 import com.tongtongstudio.ami.data.datatables.RecurringTaskInterval
 import com.tongtongstudio.ami.data.datatables.Reminder
 import com.tongtongstudio.ami.databinding.FragmentAddEditTaskBinding
-import com.tongtongstudio.ami.receiver.*
+import com.tongtongstudio.ami.receiver.REMINDER_CUSTOM_INTERVAL
+import com.tongtongstudio.ami.receiver.REMINDER_DUE_DATE
+import com.tongtongstudio.ami.receiver.REMINDER_ID
+import com.tongtongstudio.ami.receiver.ReminderBroadcastReceiver
+import com.tongtongstudio.ami.receiver.TASK_NAME_KEY
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
-import com.tongtongstudio.ami.ui.dialog.*
+import com.tongtongstudio.ami.ui.PERMISSION_REQUEST_CODE
+import com.tongtongstudio.ami.ui.dialog.CURRENT_RECURRING_INFO_REQUEST_KEY
+import com.tongtongstudio.ami.ui.dialog.CustomTimePickerDialogFragment
+import com.tongtongstudio.ami.ui.dialog.DAYS_OF_THE_WEEKS_KEY
+import com.tongtongstudio.ami.ui.dialog.DEADLINE
+import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_DIALOG_TAG
+import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_LISTENER_REQUEST_KEY
+import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_RESULT_KEY
+import com.tongtongstudio.ami.ui.dialog.NO_VALUE
+import com.tongtongstudio.ami.ui.dialog.PERIOD_KEY
+import com.tongtongstudio.ami.ui.dialog.Period
+import com.tongtongstudio.ami.ui.dialog.RECURRING_REQUEST_KEY
+import com.tongtongstudio.ami.ui.dialog.RECURRING_RESULT_KEY
+import com.tongtongstudio.ami.ui.dialog.RECURRING_SELECTION_DIALOG_TAG
+import com.tongtongstudio.ami.ui.dialog.RecurringChoiceDialogFragment
+import com.tongtongstudio.ami.ui.dialog.START_DATE
+import com.tongtongstudio.ami.ui.dialog.TIMES_KEY
 import com.tongtongstudio.ami.ui.dialog.category.CATEGORY_EDIT_TAG
 import com.tongtongstudio.ami.ui.dialog.category.EditCategoryDialogFragment
 import com.tongtongstudio.ami.ui.dialog.linkproject.EditProjectLinkedDialogFragment
 import com.tongtongstudio.ami.ui.dialog.linkproject.PROJECT_ID
 import com.tongtongstudio.ami.ui.dialog.linkproject.PROJECT_LINKED_LISTENER_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.linkproject.PROJECT_LINKED_RESULT_KEY
+import com.tongtongstudio.ami.util.CalendarCustomFunction
+import com.tongtongstudio.ami.util.DateTimePicker
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 
 @AndroidEntryPoint
@@ -72,6 +95,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     private val viewModel: AddEditTaskViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var binding: FragmentAddEditTaskBinding
+    private lateinit var dateTimePicker: DateTimePicker
 
     @InternalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -93,7 +117,8 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 safeSave(layoutPreference.layoutMode == LayoutMode.EXTENT)
             }
         }
-
+        // set dateTimePicker object
+        dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())
         binding.apply {
             radioGroupChoiceNature.check(if (viewModel.ttdNature == Nature.TASK.name) rbTask.id else rbProject.id)
             radioGroupChoiceNature.setOnCheckedChangeListener { group, checkedId ->
@@ -128,6 +153,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             }
 
             // edit priority
+            inputLayoutPriority.editText?.setText(viewModel.priority)
             editTextPriority.addTextChangedListener {
                 inputLayoutPriority.error = null
                 viewModel.priority = if (it.toString() == "null") "" else it.toString()
@@ -137,16 +163,21 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             }
 
             // edit category
-            if (viewModel.category != null)
-                autocompleteTextCategory.setText(viewModel.category!!.title)
-
+            viewModel.category.observe(viewLifecycleOwner) {
+                if (it != null)
+                    autocompleteTextCategory.setText(it.title)
+                else autocompleteTextCategory.setText("")
+            }
             val adapterCategory = AutoCompleteAdapter(requireContext())
             viewModel.getCategories().observe(viewLifecycleOwner) {
+                if (!it.contains(viewModel.category.value)) {
+                    viewModel.updateCategory(null)
+                }
                 adapterCategory.submitList(it)
             }
             autocompleteTextCategory.setAdapter(adapterCategory)
             autocompleteTextCategory.setOnItemClickListener { parent, view, position, id ->
-                viewModel.updateCategoryId(adapterCategory.getItem(position))
+                viewModel.updateCategory(adapterCategory.getCategorySelected(position))
             }
 
             // set start date
@@ -159,7 +190,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         CalendarCustomFunction.buildConstraintsForStartDate(
                             viewModel.dueDate ?: viewModel.deadline
                         )
-                    showDatePickerMaterial(endDateConstraints, viewModel.dueDate)
+                    dateTimePicker.showDatePickerMaterial(endDateConstraints, viewModel.dueDate)
                 },
                 { newStartDate -> viewModel.startDate = newStartDate }
             )
@@ -188,7 +219,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         viewModel.startDate ?: 0L,
                         viewModel.deadline
                     )
-                    showDatePickerMaterial(endDateConstraints, viewModel.dueDate)
+                    dateTimePicker.showDatePickerMaterial(endDateConstraints, viewModel.dueDate)
                 },
                 { newDueDate -> viewModel.dueDate = newDueDate }
             )
@@ -210,7 +241,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                     val endDateConstraints = CalendarCustomFunction.buildConstraintsForDeadline(
                         viewModel.dueDate ?: viewModel.startDate ?: 0L
                     )
-                    showDatePickerMaterial(
+                    dateTimePicker.showDatePickerMaterial(
                         endDateConstraints,
                         viewModel.deadline ?: viewModel.dueDate
                     )
@@ -229,14 +260,18 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             // set reminder
             btnAddReminder.setOnClickListener {
                 // TODO: add logic to make repeatable reminder until thing to do due date
-                showDialogNewReminder {
+                dateTimePicker.showDialogNewReminder {
+                    if (isNotificationPermissionNotGranted())
+                        return@showDialogNewReminder
                     viewModel.addNewReminder(it)
                 }
             }
             val reminderAdapter =
                 EditAttributesAdapter(object : AttributeListener<Reminder> {
                     override fun onItemClicked(attribute: Reminder) {
-                        showDialogNewReminder(attribute.dueDate) {
+                        dateTimePicker.showDialogNewReminder(attribute.dueDate) {
+                            if (isNotificationPermissionNotGranted())
+                                return@showDialogNewReminder
                             val updatedReminder = attribute.copy(dueDate = it)
                             viewModel.updateReminder(attribute, updatedReminder)
                         }
@@ -288,6 +323,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         )
                         true
                     }
+
                     R.id.action_every_week -> {
                         viewModel.isRecurring = true
                         viewModel.recurringTaskInterval =
@@ -300,10 +336,12 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         )
                         true
                     }
+
                     R.id.action_personalized -> {
                         showRepeatableCyclePicker()
                         true
                     }
+
                     else -> true
                 }
             }
@@ -443,6 +481,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                     is AddEditTaskViewModel.AddEditTaskEvent.ShowInvalidInputMessage -> {
                         Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_LONG).show()
                     }
+
                     is AddEditTaskViewModel.AddEditTaskEvent.NavigateBackWithResult -> {
                         // update project if task is linked
                         sharedViewModel.updateParentTask(viewModel.projectId)
@@ -469,6 +508,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         showUpdateCategoryDialog()
                         true
                     }
+
                     R.id.action_update_edit_layout -> {
                         menuItem.isChecked = !menuItem.isChecked
                         val layoutMode = if (menuItem.isChecked) {
@@ -477,6 +517,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         sharedViewModel.onLayoutModeSelected(layoutMode)
                         true
                     }
+
                     else -> false
                 }
             }
@@ -677,6 +718,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                     }
                     true
                 }
+
                 R.id.action_tomorrow -> {
                     val tomorrowDate =
                         Calendar.getInstance().apply {
@@ -692,6 +734,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                     }
                     true
                 }
+
                 R.id.action_personalized -> {
                     val datePicker = actionPersonalizedDate()
                     datePicker.addOnPositiveButtonClickListener { selectedDate ->
@@ -700,6 +743,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                     }
                     true
                 }
+
                 else -> false
             }
         }
@@ -751,8 +795,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     }
 
     private fun scheduleReminder(context: Context, reminder: Reminder, taskName: String) {
-        // TODO: record if reminder was already active
-        if (reminder.dueDate < Calendar.getInstance().timeInMillis)
+        if (reminder.isPassed())
             return
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, ReminderBroadcastReceiver::class.java).apply {
@@ -778,39 +821,29 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         )*/
     }
 
-
-    private fun setReminderTriggerTime(date: Long, pickedHour: Int, pickedMinutes: Int): Long {
-        return Calendar.getInstance().run {
-            timeInMillis = date
-            set(Calendar.HOUR_OF_DAY, pickedHour)
-            set(Calendar.MINUTE, pickedMinutes)
-            timeInMillis
+    fun isNotificationPermissionNotGranted(): Boolean {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Permission is not granted, request it
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    PERMISSION_REQUEST_CODE
+                )
+            }
         }
-    }
-
-    private fun showDialogNewReminder(
-        dueDateTime: Long? = null,
-        actionSaveReminder: (Long) -> Unit
-    ) {
-        var reminderTriggerTime: Long
-        // create the calendar constraint builder
-        val endDateConstraints = CalendarCustomFunction.buildConstraintsForDeadline(
-            Calendar.getInstance().run {
-                add(Calendar.DAY_OF_MONTH, -1)
-                timeInMillis
-            }
-        )
-        val reminderDatePicker = showDatePickerMaterial(endDateConstraints, dueDateTime)
-
-        reminderDatePicker.addOnPositiveButtonClickListener { dateInMillisSelection ->
-            val timePicker = showTimePickerMaterial(dueDateTime)
-            timePicker.addOnPositiveButtonClickListener {
-                val pickedHour = timePicker.hour
-                val pickedMinutes = timePicker.minute
-                reminderTriggerTime =
-                    setReminderTriggerTime(dateInMillisSelection, pickedHour, pickedMinutes)
-                actionSaveReminder(reminderTriggerTime)
-            }
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED)
+        } else {
+            false
         }
     }
 
@@ -865,50 +898,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         }
         setFragmentResult(CURRENT_RECURRING_INFO_REQUEST_KEY, result)
         newFragment.show(parentFragmentManager, RECURRING_SELECTION_DIALOG_TAG)
-    }
-
-    private fun showDatePickerMaterial(
-        constraints: CalendarConstraints,
-        selection: Long? = null
-    ): MaterialDatePicker<Long> {
-        // clear focus of input to dismiss keyboard
-        clearFocus()
-
-        val datePicker =
-            MaterialDatePicker.Builder.datePicker()
-                .setTitleText(getString(R.string.select_date))
-                .setCalendarConstraints(constraints)
-                .setSelection(selection ?: MaterialDatePicker.todayInUtcMilliseconds())
-                .build()
-        datePicker.show(parentFragmentManager, "datePicker")
-
-        return datePicker
-    }
-
-    private fun showTimePickerMaterial(dueDateTime: Long? = null): MaterialTimePicker {
-        val hour: Int? = (dueDateTime?.div((3600 * 1000)))?.toInt()
-        val minute: Int? = (dueDateTime?.rem((3600 * 1000)))?.toInt()?.div(60 * 1000)
-        val timePicker =
-            MaterialTimePicker.Builder()
-                .setTitleText(getString(R.string.select_reminder_time_title))
-                .setTimeFormat(TimeFormat.CLOCK_24H)
-                .setHour(hour ?: (Calendar.getInstance().get(Calendar.HOUR) + 1))
-                .setMinute(minute ?: 30)
-                .setInputMode(INPUT_MODE_CLOCK)
-                .build()
-        timePicker.show(parentFragmentManager, "timePicker")
-
-        return timePicker
-    }
-
-    private fun showDateRangePickerMaterial(): MaterialDatePicker<Pair<Long, Long>> {
-        val dateRangePicker =
-            MaterialDatePicker.Builder.dateRangePicker()
-                .setTitleText(getString(R.string.Select_two_date_to_spread_event))
-                .build()
-        dateRangePicker.show(parentFragmentManager, "dateRangePicker")
-
-        return dateRangePicker
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout

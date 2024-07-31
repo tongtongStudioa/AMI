@@ -182,7 +182,7 @@
     <string name="error_no_unit">Unit can\'t be blank !</string>
     <string name="assessment_channel_description">Assessment notification channel</string>
     <string name="share_with">Share with</string>
-    <string name="edit_category_dialog_title">Edit an category</string>
+    <string name="edit_category_dialog_title">Edit category</string>
     <string name="save">Save</string>
     <string name="update">Update</string>
     <string name="edit_assessment_dialog_title">Edit assessment</string>
@@ -219,7 +219,7 @@
     <string name="recurring_end">Recurring end :</string>
     <string name="las_due_date">Last due date : %s</string>
     <string name="task_times_missed">%d times missed</string>
-    <string name="new_category">New category</string>
+    <string name="edit_categories">Edit categories</string>
     <string name="edit_simplified">Edit simplified</string>
     <string name="others">Others</string>
     <string name="about_project">About project</string>
@@ -241,10 +241,13 @@
     <string name="reminder_informtions_overview">%1s at %2s</string>
     <string name="assessment_informations_overview">%1s on %2s</string>
     <string name="recurring_tasks_missed">Recurring tasks missed</string>
+    <string name="permission_needed">Permission Needed</string>
+    <string name="completion_date">"Completed on %s"</string>
     <string-array name="units">
         <item>No unit</item>
         <item>Minutes</item>
         <item>Hours</item>
         <item>Kg</item>
     </string-array>
+    <string name="this_app_requires_notification_permission_to_send_you_reminders">This app requires notification permission to send you reminders.  Click Ok to go to the app settings.</string>
 </resources>

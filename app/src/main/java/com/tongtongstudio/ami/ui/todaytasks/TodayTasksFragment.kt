@@ -23,9 +23,9 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.CustomItemTouchHelperCallback
+import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
-import com.tongtongstudio.ami.adapter.task.TaskAdapter
+import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
 import com.tongtongstudio.ami.data.SortOrder
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
@@ -48,7 +48,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
 
     private val viewModel: TasksViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
-    private lateinit var newTaskAdapter: TaskAdapter
+    private lateinit var mainTaskAdapter: ThingToDoAdapter
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var soundPlayer: SoundPlayer
 
@@ -62,7 +62,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
 
         //view model, sound player and adapter
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-        newTaskAdapter = TaskAdapter(this)
+        mainTaskAdapter = ThingToDoAdapter(this)
         soundPlayer = SoundPlayer(requireContext())
 
         // implement UI
@@ -72,27 +72,25 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             }
 
             mainRecyclerView.apply {
-                adapter = newTaskAdapter
+                adapter = mainTaskAdapter
                 layoutManager = LinearLayoutManager(requireContext())
                 setHasFixedSize(false)
             }
-            val callback = CustomItemTouchHelperCallback(
-                newTaskAdapter,
-                { newSubTask, parentId ->
-                    // TODO: use drag and drop to add subTTask
-                    //sharedViewModel.addSubTask(newSubTask,parentId)
-                },
-                { taskWithSubTasks ->
-                    //delete task
-                    //newTaskAdapter.notifyItemRemoved(viewHolder.absoluteAdapterPosition)
-                    sharedViewModel.deleteTask(taskWithSubTasks)
-                },
-                { taskWithSubTasks ->
+            val callback = object : ThingToDoItemCallback(
+                mainTaskAdapter,
+                ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
+                requireContext()
+            ) {
+                override fun actionOnRightSwiped(thingToDo: ThingToDo) {
+                    // delete task
+                    sharedViewModel.deleteTask(thingToDo, requireContext())
+                }
+
+                override fun actionLeftSwiped(thingToDo: ThingToDo) {
                     //update task
-                    //newTaskAdapter.notifyItemChanged(viewHolder.absoluteAdapterPosition)
-                    sharedViewModel.updateTask(taskWithSubTasks)
-                }, requireContext()
-            )
+                    sharedViewModel.updateTask(thingToDo)
+                }
+            }
             ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
         }
         // adapt data in recycler view
@@ -104,7 +102,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                     getText(R.string.text_explication_no_tasks_today)
                 binding.toolbar.collapseActionView()
             } else {
-                newTaskAdapter.submitList(it)
+                mainTaskAdapter.submitList(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
             }

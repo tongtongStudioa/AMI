@@ -20,7 +20,7 @@ import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.AssessmentType
 import com.tongtongstudio.ami.databinding.DialogEditAssessmentBinding
-import com.tongtongstudio.ami.ui.edit.CalendarCustomFunction
+import com.tongtongstudio.ami.util.CalendarCustomFunction
 import java.text.DateFormat
 import java.util.Calendar
 

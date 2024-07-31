@@ -135,6 +135,12 @@ data class Task(
         return dueDate < todayDate && isCompleted
     }
 
+    fun getCompletionDateFormatted(): String {
+        return if (isCompleted && completionDate != null)
+            DateFormat.getDateInstance().format(completionDate)
+        else "null"
+    }
+
     companion object {
         /**
          * Function that calculate urgency.
@@ -264,6 +270,7 @@ data class Assessment(
     val interval: RecurringTaskInterval? = null,
     val rehearsalEndDate: Long? = null,
     val score: Int? = null, // result that the user enter at the due date // maybe change name to "rating"
+    val categoryId: Long? = null,
     @ColumnInfo(name = "assessment_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 ) : Parcelable {
@@ -323,7 +330,7 @@ data class Reminder(
 ) : Parcelable {
 
     fun isPassed(): Boolean {
-        return dueDate > Calendar.getInstance().timeInMillis
+        return dueDate < Calendar.getInstance().timeInMillis
     }
 
     fun getDueDateFormatted(): String {

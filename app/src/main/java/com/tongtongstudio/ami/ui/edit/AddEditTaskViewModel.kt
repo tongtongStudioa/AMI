@@ -32,7 +32,9 @@ class AddEditTaskViewModel @Inject constructor(
     val addEditTaskEvent = addEditChannelEvent.receiveAsFlow()
 
     val thingToDo = state.get<Task>("thingToDo")
-
+    private val _category = MutableLiveData<Category?>(null)
+    val category: LiveData<Category?> // TODO: retrieve task's category with sage args
+        get() = _category
     private val _reminders = MutableLiveData<MutableList<Reminder>>()
     val reminders: LiveData<MutableList<Reminder>>
         get() = _reminders
@@ -43,6 +45,8 @@ class AddEditTaskViewModel @Inject constructor(
             repository.getTaskReminders(thingToDo?.id)?.collect { reminders ->
                 _reminders.value = reminders
             }
+            if (thingToDo?.categoryId != null)
+                _category.value = repository.getCategoryById(thingToDo.categoryId)
         }
     }
 
@@ -62,14 +66,12 @@ class AddEditTaskViewModel @Inject constructor(
             state["thingToDoPriority"] = value
         }
 
-    private var categoryId: Long? =
+    var categoryId: Long? =
         state["ThingToDoCategory"] ?: thingToDo?.categoryId
         set(value) {
             field = value
             state["ThingToDoCategory"] = value
         }
-
-    var category: Category? = getTaskCategory()
 
     var description: String? =
         state["ThingToDoDescription"] ?: thingToDo?.description
@@ -193,18 +195,9 @@ class AddEditTaskViewModel @Inject constructor(
         repository.insertReminder(reminder)
     }
 
-    fun updateCategoryId(title: String) {
-        val updatedCategory = getTaskCategory(title)
-        category = updatedCategory
+    fun updateCategory(updatedCategory: Category?) {
+        _category.value = updatedCategory
         categoryId = updatedCategory?.id
-    }
-
-    private fun getTaskCategory(title: String? = null): Category? = runBlocking {
-        return@runBlocking if (title != null)
-            repository.getCategoryByTitle(title)
-        else if (categoryId != null)
-            repository.getCategoryById(categoryId!!)
-        else null
     }
 
     fun getCategories() = repository.getCategories().asLiveData()

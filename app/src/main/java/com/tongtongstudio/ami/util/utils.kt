@@ -1,6 +1,6 @@
 package com.tongtongstudio.ami.util
 
-import java.util.*
+import java.util.Calendar
 import kotlin.random.Random
 
 class Util {

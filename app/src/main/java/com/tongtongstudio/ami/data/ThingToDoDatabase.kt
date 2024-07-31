@@ -13,8 +13,11 @@ import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.Converters
 import com.tongtongstudio.ami.data.datatables.Nature
+import com.tongtongstudio.ami.data.datatables.PomodoroSession
 import com.tongtongstudio.ami.data.datatables.Reminder
 import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.Unit
+import com.tongtongstudio.ami.data.datatables.WorkSession
 import com.tongtongstudio.ami.dependenciesInjection.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -26,8 +29,9 @@ import javax.inject.Provider
         Task::class,
         Assessment::class,
         Reminder::class,
-        Category::class],
-    version = 11, exportSchema = false
+        Category::class, Unit::class,
+        WorkSession::class, PomodoroSession::class],
+    version = 1, exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class ThingToDoDatabase : RoomDatabase() {

@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
@@ -36,11 +37,12 @@ import com.tongtongstudio.ami.ui.dialog.assessment.ASSESSMENT_RESULT_KEY
 import com.tongtongstudio.ami.ui.dialog.assessment.EditAssessmentDialogFragment
 import com.tongtongstudio.ami.ui.dialog.assessment.NEW_USER_ASSESSMENT_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.assessment.USER_ASSESSMENT_TAG
+import com.tongtongstudio.ami.util.CalendarCustomFunction
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.text.DateFormat
-import java.util.*
+import java.util.Calendar
 
 @AndroidEntryPoint
 class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
@@ -104,6 +106,12 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             if (viewModel.goal != "null")
                 inputLayoutGoal.editText?.setText(viewModel.goal)
             inputLayoutGoal.editText?.addTextChangedListener {
+                val incompleteDecimalRegex = Regex("^\\d+\\.$")
+                Toast.makeText(
+                    context,
+                    "${it.toString().matches(incompleteDecimalRegex)}",
+                    Toast.LENGTH_SHORT
+                ).show()
                 if (isValidInput(it)) {
                     inputLayoutGoal.error = null
                     viewModel.goal = it.toString()
@@ -227,7 +235,9 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
     }
 
     private fun isValidInput(input: Editable?): Boolean {
-        return input.toString() != "" && input.toString() != "null"
+        val incompleteDecimalRegex = Regex("^\\d+\\.$")
+        return input.toString() != "" && input.toString() != "null" && input.toString() != "." && !input.toString()
+            .matches(incompleteDecimalRegex)
     }
 
     private fun validateDueDate(): Boolean {

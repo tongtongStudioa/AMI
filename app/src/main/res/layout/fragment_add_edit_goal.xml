@@ -128,7 +128,7 @@
                 android:id="@+id/edit_text_goal"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:inputType="numberDecimal"
+                android:inputType="numberDecimal|number"
                 android:maxHeight="300dp"
                 android:maxLength="6" />
         </com.google.android.material.textfield.TextInputLayout>

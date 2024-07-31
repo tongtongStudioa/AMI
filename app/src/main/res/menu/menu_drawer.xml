@@ -64,7 +64,7 @@
                 <item
                     android:id="@+id/support"
                     android:icon="@drawable/ic_coffee_cup"
-                    android:title="@string/buy_me_a_coffe" />
+                    android:title="@string/buy_me_a_coffee" />
             </group>
         </menu>
     </item>

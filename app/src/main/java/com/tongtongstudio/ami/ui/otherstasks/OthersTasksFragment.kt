@@ -1,6 +1,5 @@
 package com.tongtongstudio.ami.ui.otherstasks
 
-import android.graphics.Canvas
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
@@ -21,11 +20,11 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
-import com.tongtongstudio.ami.adapter.task.TaskAdapter
+import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
 import com.tongtongstudio.ami.data.LaterFilter
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
@@ -35,7 +34,6 @@ import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
-import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 @AndroidEntryPoint
 class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListener {
@@ -43,7 +41,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
     private val viewModel: OthersTasksViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var sharedViewModel: MainViewModel
-    private lateinit var mainAdapter: TaskAdapter
+    private lateinit var mainAdapter: ThingToDoAdapter
     private lateinit var textExplication: String
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -58,7 +56,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
 
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
-        mainAdapter = TaskAdapter(this)
+        mainAdapter = ThingToDoAdapter(this)
 
         binding.apply {
             mainRecyclerView.apply {
@@ -76,62 +74,22 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                 setHasFixedSize(true)
             }
 
-            ItemTouchHelper(object :
-                ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT) {
-                override fun onMove(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    target: RecyclerView.ViewHolder
-                ): Boolean {
-                    return false
+            val callback = object : ThingToDoItemCallback(
+                mainAdapter,
+                ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
+                requireContext()
+            ) {
+                override fun actionOnRightSwiped(thingToDo: ThingToDo) {
+                    // delete task
+                    sharedViewModel.deleteTask(thingToDo, requireContext())
                 }
 
-                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    val thingToDo = mainAdapter.getTaskList()[viewHolder.absoluteAdapterPosition]
-                    if (direction == ItemTouchHelper.RIGHT) {
-                        sharedViewModel.deleteTask(thingToDo)
-                    } else if (direction == ItemTouchHelper.LEFT) {
-                        sharedViewModel.updateTask(thingToDo)
-                    }
+                override fun actionLeftSwiped(thingToDo: ThingToDo) {
+                    //update task
+                    sharedViewModel.updateTask(thingToDo)
                 }
-
-                override fun onChildDraw(
-                    c: Canvas,
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    dX: Float,
-                    dY: Float,
-                    actionState: Int,
-                    isCurrentlyActive: Boolean
-                ) {
-                    RecyclerViewSwipeDecorator.Builder(
-                        context,
-                        c,
-                        recyclerView,
-                        viewHolder,
-                        dX,
-                        dY,
-                        actionState,
-                        isCurrentlyActive
-                    )
-                        .addSwipeLeftActionIcon(R.drawable.ic_baseline_edit_24)
-                        .addSwipeRightActionIcon(R.drawable.ic_baseline_delete_24)
-                        .setSwipeLeftActionIconTint(resources.getColor(R.color.md_theme_light_tertiary))
-                        .setSwipeRightActionIconTint(resources.getColor(R.color.md_theme_light_error))
-                        .create()
-                        .decorate()
-                    super.onChildDraw(
-                        c,
-                        recyclerView,
-                        viewHolder,
-                        dX,
-                        dY,
-                        actionState,
-                        isCurrentlyActive
-                    )
-                }
-
-            }).attachToRecyclerView(mainRecyclerView)
+            }
+            ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
         }
 
         viewModel.preferencesLiveData.observe(viewLifecycleOwner) {

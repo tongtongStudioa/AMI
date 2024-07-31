@@ -3,8 +3,10 @@ package com.tongtongstudio.ami.ui
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -18,6 +20,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.tongtongstudio.ami.NavigationGraphDirections
 import com.tongtongstudio.ami.R
@@ -71,21 +74,6 @@ class MainActivity : AppCompatActivity() {
             ), drawerLayout
         )
         navView.setupWithNavController(navController)
-
-        // change status color bar
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val window: Window = this.window
-
-            // clear FLAG_TRANSLUCENT_STATUS flag:
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-
-            // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-
-            // finally change the color's status bar
-            window.statusBarColor = ContextCompat.getColor(this, R.color.md_theme_light_surface)
-        }*/
-
 
         // implementation for specific actions
         navView.setNavigationItemSelectedListener { menuItem ->
@@ -174,7 +162,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun rateMe() {
-        // TODO: create rate dialog fragment
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
         } catch (e: ActivityNotFoundException) {
@@ -194,6 +181,37 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            PERMISSION_REQUEST_CODE -> {
+                if ((grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED)) {
+                    showPermissionRationale()
+                }
+                return
+            }
+        }
+    }
+
+    private fun showPermissionRationale() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.permission_needed))
+            .setMessage(getString(R.string.this_app_requires_notification_permission_to_send_you_reminders))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                // Open app settings
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val uri = Uri.fromParts("package", packageName, null)
+                intent.data = uri
+                startActivity(intent)
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .show()
+    }
+
     /*fun onAddEditResult(result: Int, stringsAdded: Array<String>, stringsUpdated: Array<String>) {
         when (result) {
             ADD_TASK_RESULT_OK ->
@@ -201,6 +219,7 @@ class MainActivity : AppCompatActivity() {
     }*/
 }
 
+const val PERMISSION_REQUEST_CODE = 101
 const val ADD_TASK_RESULT_OK = Activity.RESULT_FIRST_USER
 const val EDIT_TASK_RESULT_OK = Activity.RESULT_FIRST_USER + 1
 const val EDIT_GOAL_RESULT_OK = Activity.RESULT_FIRST_USER + 2

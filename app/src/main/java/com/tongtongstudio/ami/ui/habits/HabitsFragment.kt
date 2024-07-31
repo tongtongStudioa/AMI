@@ -12,11 +12,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
-import com.tongtongstudio.ami.adapter.task.TaskAdapter
+import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
@@ -31,7 +33,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
     private val viewModel: HabitsViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var sharedViewModel: MainViewModel
-    private lateinit var taskAdapter: TaskAdapter
+    private lateinit var taskAdapter: ThingToDoAdapter
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -40,7 +42,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         setUpToolbar()
 
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-        taskAdapter = TaskAdapter(this)
+        taskAdapter = ThingToDoAdapter(this)
         binding.apply {
             fabAddTask.setOnClickListener {
                 sharedViewModel.addThingToDo()
@@ -51,6 +53,22 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                 layoutManager = LinearLayoutManager(requireContext())
                 setHasFixedSize(true)
             }
+            val callback = object : ThingToDoItemCallback(
+                taskAdapter,
+                ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
+                requireContext()
+            ) {
+                override fun actionOnRightSwiped(thingToDo: ThingToDo) {
+                    // delete task
+                    sharedViewModel.deleteTask(thingToDo, requireContext())
+                }
+
+                override fun actionLeftSwiped(thingToDo: ThingToDo) {
+                    //update task
+                    sharedViewModel.updateTask(thingToDo)
+                }
+            }
+            ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
         }
 
         loadEvents()

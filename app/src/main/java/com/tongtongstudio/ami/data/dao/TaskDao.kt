@@ -230,10 +230,10 @@ interface TaskDao {
     )
     fun getCompletedTasksByPeriod(startDate: Long, endDate: Long): Flow<List<TtdAchieved?>?>
 
-    @Query("SELECT SUM(currentWorkingTime) FROM task_table WHERE isCompleted AND type != 'PROJECT'")
+    @Query("SELECT SUM(currentWorkingTime) FROM task_table WHERE type != 'PROJECT'")
     fun getTotalTimeWorked(): Flow<Long>
 
-    @Query("SELECT SUM(currentWorkingTime) FROM task_table WHERE categoryId = :categoryId AND isCompleted AND type != 'PROJECT'")
+    @Query("SELECT SUM(currentWorkingTime) FROM task_table WHERE categoryId = :categoryId AND type != 'PROJECT'")
     fun getSumCategoryTimeWorked(categoryId: Long): Flow<Long>
 
     @Query(

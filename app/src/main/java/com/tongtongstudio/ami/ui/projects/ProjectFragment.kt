@@ -17,11 +17,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
-import com.tongtongstudio.ami.adapter.task.TaskAdapter
+import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
 import com.tongtongstudio.ami.data.SortOrder
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
@@ -40,7 +42,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
     private val viewModel: ProjectViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var binding: FragmentMainBinding
-    private lateinit var newTaskAdapter: TaskAdapter
+    private lateinit var mainTaskAdapter: ThingToDoAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -48,7 +50,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
         setUpToolbar()
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-        newTaskAdapter = TaskAdapter(this)
+        mainTaskAdapter = ThingToDoAdapter(this)
 
         binding.apply {
             fabAddTask.setOnClickListener {
@@ -57,9 +59,25 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
             mainRecyclerView.apply {
                 layoutManager = LinearLayoutManager(requireContext())
-                adapter = newTaskAdapter
+                adapter = mainTaskAdapter
                 setHasFixedSize(true)
             }
+            val callback = object : ThingToDoItemCallback(
+                mainTaskAdapter,
+                ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
+                requireContext()
+            ) {
+                override fun actionOnRightSwiped(thingToDo: ThingToDo) {
+                    // delete task
+                    sharedViewModel.deleteTask(thingToDo, requireContext())
+                }
+
+                override fun actionLeftSwiped(thingToDo: ThingToDo) {
+                    //update task
+                    sharedViewModel.updateTask(thingToDo)
+                }
+            }
+            ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
         }
 
         viewModel.projects.observe(viewLifecycleOwner) {
@@ -72,7 +90,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                     getString(R.string.text_action_no_projects)
             } else {
                 binding.apply {
-                    newTaskAdapter.submitList(it)
+                    mainTaskAdapter.submitList(it)
                     emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                     mainRecyclerView.isVisible = true
                     //textSup.text = getString(R.string.nb_projects_info, it.size)

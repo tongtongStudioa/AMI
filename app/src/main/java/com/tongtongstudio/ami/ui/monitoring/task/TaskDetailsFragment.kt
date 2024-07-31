@@ -1,7 +1,11 @@
 package com.tongtongstudio.ami.ui.monitoring.task
 
+import android.icu.text.DateFormat
+import android.icu.util.Calendar
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -12,6 +16,8 @@ import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.databinding.FragmentTaskDetailsBinding
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
+import com.tongtongstudio.ami.util.CalendarCustomFunction
+import com.tongtongstudio.ami.util.DateTimePicker
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -27,6 +33,8 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
         }
     }
 
+    // for calendar getInstance function
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -78,6 +86,31 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
                 tvTotalDuration.text =
                     TrackingTimeUtility.getFormattedTimeWorked(it)
                         ?: getString(R.string.no_information)
+            }
+
+            // completion date
+            val dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())
+            val completionDateFormatted = viewModel.task?.getCompletionDateFormatted()
+            completionDate.text = getString(R.string.completion_date, completionDateFormatted)
+            completionDate.isVisible = viewModel.task?.isCompleted == true
+            //completionDate.isVisible = viewModel.task?.isCompleted == true
+            completionDate.setOnClickListener {
+                val constraints =
+                    CalendarCustomFunction.buildConstraintsForStartDate(Calendar.getInstance().run {
+                        set(Calendar.HOUR_OF_DAY, 23)
+                        timeInMillis
+                    })
+                val datePicker = dateTimePicker.showDatePickerMaterial(
+                    constraints,
+                    viewModel.task?.completionDate
+                )
+                datePicker.addOnPositiveButtonClickListener { newCompletionDate ->
+                    viewModel.updateTaskCompletionDate(newCompletionDate)
+                    completionDate.text = getString(
+                        R.string.completion_date,
+                        DateFormat.getDateInstance().format(newCompletionDate)
+                    )
+                }
             }
         }
     }

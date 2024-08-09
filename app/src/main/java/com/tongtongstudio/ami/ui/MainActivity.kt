@@ -3,10 +3,8 @@ package com.tongtongstudio.ami.ui
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -20,7 +18,6 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.tongtongstudio.ami.NavigationGraphDirections
 import com.tongtongstudio.ami.R
@@ -181,7 +178,7 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    override fun onRequestPermissionsResult(
+    /*override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray
@@ -195,22 +192,7 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
-    }
-
-    private fun showPermissionRationale() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.permission_needed))
-            .setMessage(getString(R.string.this_app_requires_notification_permission_to_send_you_reminders))
-            .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                // Open app settings
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                val uri = Uri.fromParts("package", packageName, null)
-                intent.data = uri
-                startActivity(intent)
-            }
-            .setNegativeButton(getString(R.string.cancel), null)
-            .show()
-    }
+    }*/
 
     /*fun onAddEditResult(result: Int, stringsAdded: Array<String>, stringsUpdated: Array<String>) {
         when (result) {

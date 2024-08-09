@@ -25,7 +25,7 @@ class EditGoalViewModel @Inject constructor(
 
     private val editGoalEventChannel = Channel<EditGoalEvent>()
     val editGoalEvents = editGoalEventChannel.receiveAsFlow()
-    private val objective = state.get<Assessment>("global_goal")
+    val objective = state.get<Assessment>("global_goal")
 
     var goalTitle =
         state.get<String>("goalTitle") ?: objective?.title ?: ""
@@ -40,10 +40,10 @@ class EditGoalViewModel @Inject constructor(
             state["description"] = value
         }
     var goal =
-        state.get<String>("goal") ?: objective?.goal.toString()
+        state.get<String>("targetGoal") ?: objective?.targetGoal.toString()
         set(value) {
             field = value
-            state["goal"] = value
+            state["targetGoal"] = value
         }
 
     // TODO: change
@@ -76,7 +76,7 @@ class EditGoalViewModel @Inject constructor(
     private fun updateAssessmentsList(id: Long) {
         if (assessments.value != null) {
             for (assessment in assessments.value!!) {
-                if (assessment.parentId != id)
+                if (assessment.parentAssessmentId != id)
                     insertNewAssessment(id, assessment)
             }
         }
@@ -84,11 +84,11 @@ class EditGoalViewModel @Inject constructor(
 
     private fun insertNewAssessment(id: Long, newAssessment: Assessment) =
         viewModelScope.launch {
-            repository.insertAssessment(newAssessment.copy(parentId = id))
+            repository.insertAssessment(newAssessment.copy(parentAssessmentId = id))
         }
 
     fun addNewAssessment(result: Assessment) {
-        if (objective?.id == null) { // is a new global goal ?
+        if (objective?.id == null) { // is a new global targetGoal ?
             val currentAssessments = assessments.value ?: mutableListOf()
             currentAssessments.add(result)
             _assessments.value = currentAssessments
@@ -97,7 +97,7 @@ class EditGoalViewModel @Inject constructor(
 
     fun updateAssessment(oldAssessment: Assessment, updateAssessment: Assessment) =
         viewModelScope.launch {
-            if (oldAssessment.parentId == null) {
+            if (oldAssessment.parentAssessmentId == null) {
                 val currentReminders = _assessments.value ?: mutableListOf()
                 val indexElement = currentReminders.indexOf(oldAssessment)
                 currentReminders.remove(oldAssessment)
@@ -124,7 +124,7 @@ class EditGoalViewModel @Inject constructor(
         val newObjective = Assessment(
             title = goalTitle,
             description = description,
-            goal = goal.toInt(),
+            targetGoal = goal.toFloat(),
             unit = unit,
             dueDate = dueDate!!,
             // TODO: update assessment type
@@ -139,7 +139,7 @@ class EditGoalViewModel @Inject constructor(
         val updatedObjective = objective!!.copy(
             title = goalTitle,
             description = description,
-            goal = goal.toInt(),
+            targetGoal = goal.toFloat(),
             unit = unit,
             dueDate = dueDate!!
         )

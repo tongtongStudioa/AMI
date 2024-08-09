@@ -1,6 +1,10 @@
 package com.tongtongstudio.ami.ui.dialog.assessment
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.datatables.Assessment
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,8 +19,8 @@ class CompleteAssessmentViewModel @Inject constructor(
 
     var assessment: Assessment? = null //stateHandle.get<Assessment>("assessment")
 
-    private val _result = MutableLiveData(0)
-    val result: LiveData<Int>
+    private val _result = MutableLiveData(0F)
+    val result: LiveData<Float>
         get() = _result
 
     fun saveCompletedAssessment() = viewModelScope.launch {
@@ -29,7 +33,7 @@ class CompleteAssessmentViewModel @Inject constructor(
         }
     }
 
-    fun updateResult(result: Int) {
+    fun updateResult(result: Float) {
         _result.value = result
     }
 

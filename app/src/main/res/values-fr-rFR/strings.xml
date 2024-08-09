@@ -208,7 +208,7 @@
     <string name="objective_description">Description spécifique de l\'objectif</string>
     <string name="share_message">Hey, jetez un coup d\'œil à cette application géniale que j\'ai développée ! C\'est une application de liste de tâches amusante et intelligente qui t\'aidera à rester organisé et motivé. Essaie-la ! %s</string>
     <string name="assessment_completed">Evaluation complétée !</string>
-    <string name="target_goal">Objectif cible : %1d %2s</string>
+    <string name="target_goal">Objectif cible : %1.2f %2s</string>
     <string name="estimated_time">Temps estimé</string>
     <string name="project_subtasks">Sous tâches du projet</string>
     <string name="project_progress">Progrés du projet</string>

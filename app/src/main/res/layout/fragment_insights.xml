@@ -12,6 +12,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.appbar.MaterialToolbar
+            style="@style/CollapsingToolbarAmi.Night"
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -264,8 +265,45 @@
                     app:layout_constraintTop_toTopOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/on_time_completion_rate_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tasks_achievement_by_period">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/materialTextView3"
+                        style="@style/TextAppearance.Ami.InsightsSubtitleStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                        android:text="@string/on_time_completion_rate_information"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_on_time_completion_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.Ami.Headline5"
+                        android:textColor="@color/md_theme_light_primary"
+                        app:layout_constraintEnd_toEndOf="@+id/materialTextView3"
+                        app:layout_constraintStart_toStartOf="@+id/materialTextView3"
+                        app:layout_constraintTop_toBottomOf="@id/materialTextView3"
+                        tools:text="52,0%" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
             <!-- late completion stats -->
-            <HorizontalScrollView
+            <!--<HorizontalScrollView
                 android:id="@+id/late_completion_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -305,7 +343,7 @@
                                 app:layout_constraintTop_toTopOf="parent" />
 
                             <com.google.android.material.textview.MaterialTextView
-                                android:id="@+id/tv_on_rate_completion_time"
+                                android:id="@+id/tv_on_time_completion_time"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textAppearance="@style/TextAppearance.Ami.Headline5"
@@ -327,7 +365,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
-            </HorizontalScrollView>
+            </HorizontalScrollView>-->
 
             <!-- time worked -->
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -336,7 +374,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="28dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/late_completion_view">
+                app:layout_constraintTop_toBottomOf="@id/on_time_completion_rate_view">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/time_worked_title"
@@ -379,7 +417,47 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <HorizontalScrollView
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/time_estimation_accuracy_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="25dp"
+                android:layout_marginEnd="25dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/work_time_committement_section">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/materialTextView4"
+                        style="@style/TextAppearance.Ami.InsightsSubtitleStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/estimation_time_accuracy_information"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_estimation_time_accuracy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.Ami.Headline5"
+                        android:textColor="@color/md_theme_light_primary"
+                        app:layout_constraintEnd_toEndOf="@+id/materialTextView4"
+                        app:layout_constraintStart_toStartOf="@+id/materialTextView4"
+                        app:layout_constraintTop_toBottomOf="@+id/materialTextView4"
+                        tools:text="78%" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+            <!--<HorizontalScrollView
                 android:id="@+id/estimation_accuracy_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -441,7 +519,7 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-            </HorizontalScrollView>
+            </HorizontalScrollView>-->
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/section3"
@@ -450,7 +528,7 @@
                 android:layout_marginTop="28dp"
                 android:padding="5dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/estimation_accuracy_view">
+                app:layout_constraintTop_toBottomOf="@id/time_estimation_accuracy_view">
 
                 <TextView
                     android:id="@+id/tv_title_section3"

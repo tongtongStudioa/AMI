@@ -3,7 +3,6 @@ package com.tongtongstudio.ami.ui.dialog.assessment
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
-import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,23 +20,26 @@ import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.AssessmentType
 import com.tongtongstudio.ami.databinding.DialogEditAssessmentBinding
 import com.tongtongstudio.ami.util.CalendarCustomFunction
+import com.tongtongstudio.ami.util.InputValidation
 import java.text.DateFormat
 import java.util.Calendar
 
 const val NEW_USER_ASSESSMENT_REQUEST_KEY = "new_user_assessment_request_key"
 const val ASSESSMENT_RESULT_KEY = "assessment_result_key"
 const val USER_ASSESSMENT_TAG = "user_assessment_tag"
+const val OBJECTIVE_ID = "objective_id"
 
-// TODO: receive updated assessment and max due date of global goal
+// TODO: receive updated assessment and max due date of global targetGoal
 class EditAssessmentDialogFragment : DialogFragment() {
 
     private lateinit var binding: DialogEditAssessmentBinding
     private lateinit var positiveButton: Button
     private var title: String? = null
     private var description: String? = null
-    private var goal: Double? = null
+    private var goal: Float? = null
     private var unit: String? = null
     private var dueDate: Long? = null
+    private var parentObjectiveId: Long? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let { fragmentActivity ->
@@ -70,12 +72,18 @@ class EditAssessmentDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
+        /*setFragmentResultListener(NEW_USER_ASSESSMENT_REQUEST_KEY) { _, bundle ->
+            val result = bundle.getLong(OBJECTIVE_ID)
+            parentObjectiveId = result
+        }*/
+
         binding.apply {
             // assessment's goalTitle
             if (title != null)
                 inputLayoutTitle.editText?.setText(title)
             inputLayoutTitle.editText?.addTextChangedListener {
-                if (isValidInput(it)) {
+                if (InputValidation.isValidText(it)) {
                     title = it.toString()
                     inputLayoutTitle.error = null
                 } else {
@@ -95,9 +103,9 @@ class EditAssessmentDialogFragment : DialogFragment() {
             if (goal != null)
                 inputLayoutGoal.editText?.setText(goal.toString())
             inputLayoutGoal.editText?.addTextChangedListener {
-                if (isValidInput(it)) {
+                if (InputValidation.isValidDecimalNum(it)) {
                     inputLayoutGoal.error = null
-                    goal = it.toString().toDouble()
+                    goal = it.toString().toFloat()
                 } else {
                     binding.inputLayoutGoal.error = getString(R.string.error_goal_empty)
                     goal = null
@@ -134,7 +142,10 @@ class EditAssessmentDialogFragment : DialogFragment() {
                     showDatePickerMaterial(
                         dueDate,
                         CalendarCustomFunction.buildConstraintsForDueDate(
-                            Calendar.getInstance().timeInMillis - 24 * 3600 * 1000,
+                            Calendar.getInstance().run {
+                                set(Calendar.HOUR_OF_DAY, 0)
+                                timeInMillis
+                            },
                             null
                         )
                     )
@@ -147,10 +158,6 @@ class EditAssessmentDialogFragment : DialogFragment() {
         }
 
         return binding.root
-    }
-
-    private fun isValidInput(editable: Editable?): Boolean {
-        return editable.toString().isNotBlank() && editable.toString() != "null"
     }
 
     private fun showDatePickerMaterial(
@@ -169,44 +176,28 @@ class EditAssessmentDialogFragment : DialogFragment() {
     }
 
     private fun safeSave(): Boolean {
-        return isTitleNotNull() && isGoalNotNull() && isUnitNotNull() && isDueDateNotNull()
-    }
-
-    private fun isDueDateNotNull(): Boolean {
-        return dueDate != null
-
-    }
-
-    private fun isUnitNotNull(): Boolean {
-        return unit != null
-    }
-
-    private fun isGoalNotNull(): Boolean {
-        return goal != null
-    }
-
-    private fun isTitleNotNull(): Boolean {
-        return title != null
+        return (InputValidation.isNotNull(dueDate) && InputValidation.isNotNull(title) &&
+                InputValidation.isNotNull(unit) && InputValidation.isNotNull(goal))
     }
 
     private fun onDialogPositiveClick(dialog: EditAssessmentDialogFragment) {
-        if (safeSave()) {
-            val assessment = Assessment(
-                0,
-                title = title!!,
-                description = description,
-                goal = goal!!.toInt(),
-                unit = unit!!.toString(),
-                type = AssessmentType.QUANTITY.name,
-                dueDate = dueDate!!
-            )
-            val result = Bundle().apply {
-                putParcelable(ASSESSMENT_RESULT_KEY, assessment)
-            }
-            dialog.setFragmentResult(
-                NEW_USER_ASSESSMENT_REQUEST_KEY,
-                result
-            )
+        if (!safeSave())
+            return
+        val assessment = Assessment(
+            parentAssessmentId = parentObjectiveId,
+            title = title!!,
+            description = description,
+            targetGoal = goal!!.toFloat(),
+            unit = unit!!.toString(),
+            type = AssessmentType.QUANTITY.name,
+            dueDate = dueDate!!
+        )
+        val result = Bundle().apply {
+            putParcelable(ASSESSMENT_RESULT_KEY, assessment)
         }
+        dialog.setFragmentResult(
+            NEW_USER_ASSESSMENT_REQUEST_KEY,
+            result
+        )
     }
 }

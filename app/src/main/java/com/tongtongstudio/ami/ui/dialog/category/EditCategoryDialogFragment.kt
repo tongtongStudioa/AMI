@@ -15,6 +15,7 @@ import com.tongtongstudio.ami.adapter.simple.AttributeListener
 import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
 import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.databinding.DialogEditCategoryBinding
+import com.tongtongstudio.ami.util.InputValidation
 import dagger.hilt.android.AndroidEntryPoint
 
 const val CATEGORY_EDIT_TAG = "category_edit_tag"
@@ -105,7 +106,10 @@ class EditCategoryDialogFragment : DialogFragment() {
             }
 
             btnSaveEdit.setOnClickListener {
-                if (validateCategoryTitle())
+                if (InputValidation.isNotNull(viewModel.title) && InputValidation.isValidText(
+                        binding.categoryTitle.editText?.text
+                    )
+                )
                     viewModel.safeSave(isNewCategory)
             }
 
@@ -122,12 +126,5 @@ class EditCategoryDialogFragment : DialogFragment() {
             categoryTitle.editText?.setText(category.title)
             categoryDescription.editText?.setText(category.description)
         }
-    }
-
-    private fun validateCategoryTitle(): Boolean {
-        return if (viewModel.title == null || binding.categoryTitle.editText?.text?.isBlank() == true) {
-            binding.categoryTitle.error = getString(R.string.error_no_title)
-            false
-        } else true
     }
 }

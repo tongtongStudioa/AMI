@@ -35,7 +35,8 @@ class GoalsAdapter(private val context: Context, private val listener: GoalsList
         override fun bind(data: Assessment) {
             binding.apply {
                 tvGoalName.text = data.title
-                tvTargetScore.text = context.getString(R.string.target_goal, data.goal, data.unit)
+                tvTargetScore.text =
+                    context.getString(R.string.target_goal, data.targetGoal, data.unit)
                 tvDeadline.text = data.getFormattedDueDate()
                 // TODO: adapt in function of type assessment view (checkbox, counter, timer)
             }

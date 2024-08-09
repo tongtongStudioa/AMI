@@ -43,7 +43,7 @@ data class Task(
     @ColumnInfo(name = "task_due_date")
     val dueDate: Long, // when the task must be complete (to get ahead of the deadline)
     val startDate: Long? = null, // when the task or the project start
-    val deadline: Long? = null, // to have a vision of the main goal (exam's date, project's end, etc.)
+    val deadline: Long? = null, // to have a vision of the main targetGoal (exam's date, project's end, etc.)
     val description: String? = null,
     val type: String? = null,
     val importance: Int? = null, // task's impact on the smooth running of daily life
@@ -77,7 +77,7 @@ data class Task(
      * @param state state
      * @return updated task
      */
-    fun updateCheckedState(state: Boolean): Task {
+    fun updateCheckedState(state: Boolean = true, newCompletionDate: Long? = null): Task {
         val updatedTask = when {
             // it is a recurring task
             isRecurring && repetitionFrequency != null -> repetitionFrequency.updateRecurringTask(
@@ -89,7 +89,7 @@ data class Task(
                 val completedDateInMillis = Calendar.getInstance().timeInMillis
                 val updatedState = this.copy(
                     isCompleted = true,
-                    completionDate = completedDateInMillis
+                    completionDate = newCompletionDate ?: completedDateInMillis
                 )
                 updatedState.copy(
                     completedOnTime = updatedState.hasBeenCompletedOnTime()
@@ -230,7 +230,7 @@ data class TtdStreakInfo(
 )
 
 /**
- * Describe type of objective goal to help tracking progress.
+ * Describe type of objective targetGoal to help tracking progress.
  */
 enum class AssessmentType { QUANTITY, DURATION, BOOLEAN }
 
@@ -244,24 +244,26 @@ enum class AssessmentType { QUANTITY, DURATION, BOOLEAN }
         ForeignKey(
             entity = Task::class,
             parentColumns = ["task_id"],
-            childColumns = ["parent_id"],
+            childColumns = ["parent_task_id"],
             onDelete = CASCADE
         ), ForeignKey(
             entity = Assessment::class,
             parentColumns = ["assessment_id"],
-            childColumns = ["parent_id"],
+            childColumns = ["parent_assessment_id"],
             onDelete = CASCADE
         )]
 )
 data class Assessment(
     // parent id nullable
-    @ColumnInfo(name = "parent_id")
-    val parentId: Long? = null,
+    @ColumnInfo(name = "parent_task_id")
+    val parentTaskId: Long? = null,
+    @ColumnInfo(name = "parent_assessment_id")
+    val parentAssessmentId: Long? = null,
     @ColumnInfo(name = "assessment_title")
     val title: String,
     val description: String? = null,
     val comment: String? = null,
-    val goal: Int,
+    val targetGoal: Float,
     val unit: String,
     val type: String,
     @ColumnInfo(name = "assessment_due_date")
@@ -269,15 +271,15 @@ data class Assessment(
     val isRecurrent: Boolean = false,
     val interval: RecurringTaskInterval? = null,
     val rehearsalEndDate: Long? = null,
-    val score: Int? = null, // result that the user enter at the due date // maybe change name to "rating"
+    val score: Float? = null, // result that the user enter at the due date // maybe change name to "rating"
     val categoryId: Long? = null,
     @ColumnInfo(name = "assessment_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 ) : Parcelable {
 
-    fun getRating(): Float? {
-        return if (goal != 0)
-            (score ?: 0) / goal.toFloat()
+    fun getPercentageRating(): Float? {
+        return if (targetGoal != 0F)
+            (score ?: 0F) / targetGoal * 100
         else
             null
     }

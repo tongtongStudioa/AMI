@@ -231,7 +231,7 @@
     <string name="creator_sort">Creator sort</string>
     <string name="objective_description">Objective\'s specific description</string>
     <string name="assessment_completed">Assessment completed !</string>
-    <string name="target_goal">Target goal : %1d %2s</string>
+    <string name="target_goal">Target goal : %1.2f %2s</string>
     <string name="estimated_time">Estimated time</string>
     <string name="project_subtasks">Project\'s subtasks</string>
     <string name="project_progress">Project Progress</string>
@@ -250,4 +250,5 @@
         <item>Kg</item>
     </string-array>
     <string name="this_app_requires_notification_permission_to_send_you_reminders">This app requires notification permission to send you reminders.  Click Ok to go to the app settings.</string>
+    <string name="all">All</string>
 </resources>

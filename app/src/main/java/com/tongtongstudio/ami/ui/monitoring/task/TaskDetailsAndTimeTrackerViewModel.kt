@@ -69,8 +69,9 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
 
     fun updateTaskCompletionDate(newCompletionDate: Long) = viewModelScope.launch {
         if (task != null) {
-            repository.updateTask(task!!.copy(completionDate = newCompletionDate))
-            task = task!!.copy(completionDate = newCompletionDate)
+            val changeState = task!!.updateCheckedState(newCompletionDate = newCompletionDate)
+            repository.updateTask(changeState)
+            task = changeState
         }
     }
 

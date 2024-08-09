@@ -1,14 +1,20 @@
 package com.tongtongstudio.ami.ui.edit
 
+import android.Manifest
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.text.Editable
+import android.provider.Settings
 import android.view.View
 import android.widget.ArrayAdapter
-import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
@@ -24,6 +30,7 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.simple.AttributeListener
@@ -38,6 +45,7 @@ import com.tongtongstudio.ami.ui.dialog.assessment.EditAssessmentDialogFragment
 import com.tongtongstudio.ami.ui.dialog.assessment.NEW_USER_ASSESSMENT_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.assessment.USER_ASSESSMENT_TAG
 import com.tongtongstudio.ami.util.CalendarCustomFunction
+import com.tongtongstudio.ami.util.InputValidation
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -50,7 +58,21 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
     private var assessments: MutableList<Assessment> = mutableListOf()
     private val viewModel: EditGoalViewModel by viewModels()
     private lateinit var binding: FragmentAddEditGoalBinding
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Initialize the permission launcher
+        requestPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission granted
+
+            } else showPermissionRationale()
+        }
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -66,7 +88,7 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             // assessment's goalTitle
             inputLayoutGoalTitle.editText?.setText(viewModel.goalTitle)
             inputLayoutGoalTitle.editText?.addTextChangedListener {
-                if (isValidInput(it)) {
+                if (InputValidation.isValidText(it)) {
                     val name = it.toString()
                     viewModel.goalTitle = if (name != "") name.replaceFirst(
                         name.first(),
@@ -89,15 +111,17 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             // evaluation type 
             radioGroupUnitType.setOnCheckedChangeListener { radioGroup, i ->
                 when (radioGroup.checkedRadioButtonId) {
-                    // TODO: adapt goal type 
+                    // TODO: adapt targetGoal type
                     rbQuantity.id -> {
                         // TODO: remove unit and show "without unit" 
                     }
+
                     rbDuration.id -> {
-                        // TODO: adapt goal type
+                        // TODO: adapt targetGoal type
                     }
+
                     rbBoolean.id -> {
-                        // TODO: adapt goal type
+                        // TODO: adapt targetGoal type
                     }
                 }
             }
@@ -106,13 +130,7 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             if (viewModel.goal != "null")
                 inputLayoutGoal.editText?.setText(viewModel.goal)
             inputLayoutGoal.editText?.addTextChangedListener {
-                val incompleteDecimalRegex = Regex("^\\d+\\.$")
-                Toast.makeText(
-                    context,
-                    "${it.toString().matches(incompleteDecimalRegex)}",
-                    Toast.LENGTH_SHORT
-                ).show()
-                if (isValidInput(it)) {
+                if (InputValidation.isValidDecimalNum(it)) {
                     inputLayoutGoal.error = null
                     viewModel.goal = it.toString()
                 } else {
@@ -159,8 +177,9 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
 
             // assessment edit's section
             btnAddAssessment.setOnClickListener {
-                val newFragment = EditAssessmentDialogFragment()
-                newFragment.show(parentFragmentManager, USER_ASSESSMENT_TAG)
+                if (isNotificationPermissionGranted())
+                    showIntermediateAssessment()
+                else requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
             val assessmentsAdapter =
                 EditAttributesAdapter(object : AttributeListener<Assessment> {
@@ -206,19 +225,46 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
                         is EditGoalViewModel.EditGoalEvent.ShowInvalidInputMessage -> {
                             Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_LONG).show()
                         }
+
                         is EditGoalViewModel.EditGoalEvent.NavigateBackWithResult -> {
                             setFragmentResult(
                                 "add_edit_request",
                                 bundleOf("add_edit_result" to event.result)
                             )
-                        findNavController().popBackStack()
-                    }
-                }.exhaustive
+                            findNavController().popBackStack()
+                        }
+                    }.exhaustive
+                }
             }
-        }
         }
     }
 
+    fun isNotificationPermissionGranted(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    // Permission already granted
+                    true
+                }
+
+                else -> {
+                    // Request permission
+                    false
+                }
+            }
+        } else {
+            // For devices running on versions below Android 13
+            true
+        }
+    }
+
+    private fun showIntermediateAssessment() {
+        val newFragment = EditAssessmentDialogFragment()
+        newFragment.show(parentFragmentManager, USER_ASSESSMENT_TAG)
+    }
     private fun showDatePickerMaterial(
         constraints: CalendarConstraints,
         selection: Long? = null
@@ -234,46 +280,35 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
         return datePicker
     }
 
-    private fun isValidInput(input: Editable?): Boolean {
-        val incompleteDecimalRegex = Regex("^\\d+\\.$")
-        return input.toString() != "" && input.toString() != "null" && input.toString() != "." && !input.toString()
-            .matches(incompleteDecimalRegex)
-    }
-
-    private fun validateDueDate(): Boolean {
-        return if (viewModel.dueDate == null) {
-            viewModel.showInvalidInputMessage(getString(R.string.error_no_date))
-            false
-        } else true
-    }
-
-    private fun validateGoal(): Boolean {
-        return if (viewModel.goal.isBlank()) {
-            binding.inputLayoutGoal.error = getString(R.string.error_no_goal)
-            false
-        } else true
-    }
-
-    private fun validateTitle(): Boolean {
-        return if (viewModel.goalTitle.isBlank()) {
-            binding.inputLayoutGoalTitle.error = getString(R.string.error_no_title)
-            false
-        } else true
-    }
-
-    private fun validateUnit(): Boolean {
-        return if (viewModel.unit.isBlank() || viewModel.unit == "null") {
-            binding.inputLayoutUnit.error = getString(R.string.error_no_unit)
-            false
-        } else true
+    private fun showPermissionRationale() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.permission_needed))
+            .setMessage(getString(R.string.this_app_requires_notification_permission_to_send_you_reminders))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                // Open app settings
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val uri = Uri.fromParts("package", activity?.packageName, null)
+                intent.data = uri
+                startActivity(intent)
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .show()
     }
 
     private fun saveGlobalGoal() {
-        if (validateGoal() && validateTitle() && validateUnit() && validateDueDate()) {
-            viewModel.saveGlobalGoal()
-            for (assessment in assessments) {
-                scheduleIntermediateAssessments(assessment, requireContext())
-            }
+        if (!InputValidation.isNotNull(viewModel.dueDate)) {
+            viewModel.showInvalidInputMessage(getString(R.string.error_no_date))
+            return
+        }
+        if (!(InputValidation.isValidText(viewModel.goal) &&
+                    InputValidation.isValidText(viewModel.goalTitle) &&
+                    InputValidation.isValidText(viewModel.unit))
+        )
+            return
+
+        viewModel.saveGlobalGoal()
+        for (assessment in assessments) {
+            scheduleIntermediateAssessments(assessment, requireContext())
         }
     }
 

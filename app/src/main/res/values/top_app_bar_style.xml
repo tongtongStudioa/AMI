@@ -9,12 +9,16 @@
         <item name="titleCollapseMode">scale</item>
         <item name="collapsedTitleTextAppearance">@style/TextAppearance.Ami.TitleLarge</item>
         <item name="expandedTitleTextAppearance">@style/TextAppearance.Ami.TitleLarge</item>
+        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
     </style>
 
     <style name="ToolbarAmi.Light" parent="Widget.Material3.Toolbar">
         <!--<item name="materialThemeOverlay">@style/ThemeOverlay.App.Toolbar.Light</item>-->
         <item name="subtitleTextAppearance">@style/TextAppearance.Ami.TitleMedium</item>
         <item name="titleTextAppearance">@style/TextAppearance.Ami.TitleLarge</item>
+        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
     </style>
 
     <style name="ThemeOverlay.App.Toolbar.Light" parent="Widget.Material3.Toolbar">
@@ -28,22 +32,23 @@
         <item name="toolbarStyle">@style/ToolbarAmi.Night</item>
     </style>
 
-    <style name="CollapsingToolbarAmi.Night" parent="Widget.Material3.CollapsingToolbar">
+    <style name="CollapsingToolbarAmi.Night" parent="Widget.Material3.CollapsingToolbar.Large">
         <item name="titleCollapseMode">scale</item>
         <item name="collapsedTitleTextAppearance">@style/TextAppearance.Ami.TitleLarge</item>
         <item name="expandedTitleTextAppearance">@style/TextAppearance.Ami.TitleLarge</item>
+        <item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_dark_onSurfaceVariant</item>
     </style>
 
     <style name="ToolbarAmi.Night" parent="Widget.Material3.Toolbar">
         <!--<item name="materialThemeOverlay">@style/ThemeOverlay.App.Toolbar.Night</item>-->
         <item name="subtitleTextAppearance">@style/TextAppearance.Ami.TitleMedium</item>
         <item name="titleTextAppearance">@style/TextAppearance.Ami.TitleLarge</item>
+        <item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_dark_onSurfaceVariant</item>
     </style>
 
-    <style name="ThemeOverlay.App.Toolbar.Night" parent="Widget.Material3.Toolbar">
-        <item name="colorPrimary">@color/black</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <item name="android:textColorSecondary">@color/white</item>
-        <item name="colorOnSurfaceVariant">@color/white</item>
+    <style name="ThemeOverlay.App.Toolbar.Night" parent="ThemeOverlay.Material3.Toolbar.Surface">
+
     </style>
 </resources>

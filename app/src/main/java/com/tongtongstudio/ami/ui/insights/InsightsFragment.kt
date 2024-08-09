@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
 import android.widget.PopupMenu
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -12,7 +13,16 @@ import androidx.navigation.ui.setupWithNavController
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
-import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.CombinedData
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.tongtongstudio.ami.R
@@ -24,7 +34,7 @@ import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
 
 @AndroidEntryPoint
@@ -68,13 +78,14 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
         }
         viewModel.timeWorked.observe(viewLifecycleOwner) {
             binding.tvTimeWorked.text = TrackingTimeUtility.getFormattedTimeWorked(it)
+            binding.workTimeCommittementSection.isVisible = it != 0L
         }
         viewModel.accuracyRateEstimation.observe(viewLifecycleOwner) {
             binding.tvEstimationTimeAccuracy.text =
                 getString(R.string.completion_rate_value, it)
         }
         viewModel.onTimeCompletionRate.observe(viewLifecycleOwner) {
-            binding.tvOnRateCompletionTime.text =
+            binding.tvOnTimeCompletionTime.text =
                 getString(R.string.completion_rate_value, it)
         }
         viewModel.ttdCurrentMaxStreak.observe(viewLifecycleOwner) {
@@ -93,8 +104,9 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
                 ) else getString(R.string.no_information)
         }
         viewModel.achievementsByPeriod.observe(viewLifecycleOwner) {
-            if (it != null)
+            if (!it.isNullOrEmpty())
                 showCombinedChart(it)
+            else binding.achievementCombinedChart.isVisible = false
         }
         viewModel.timeWorkedDistribution.observe(viewLifecycleOwner) {
             showPieChart(it)
@@ -104,7 +116,8 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
     private fun initPopUpMenuCategory(button: ImageButton) {
         val dropDownMenu = PopupMenu(context, button)
         viewModel.categories.observe(viewLifecycleOwner) {
-            dropDownMenu.menu.add("All")
+            dropDownMenu.menu.clear()
+            dropDownMenu.menu.add(getString(R.string.all))
             for (category in it) {
                 dropDownMenu.menu.add(category.title)
             }
@@ -169,8 +182,22 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
         binding.achievementCombinedChart.invalidate()
     }
 
+    private fun getTimeWorkedDistributionEntries(listTimeWorkedDistribution: List<TimeWorkedDistribution>): List<PieEntry> {
+        val arrayListEntries = ArrayList<PieEntry>()
+        for (detail in listTimeWorkedDistribution) {
+            if (detail.totalTimeWorked != null)
+                arrayListEntries.add(
+                    PieEntry(
+                        detail.totalTimeWorked.toFloat(),
+                        detail.title ?: getString(R.string.others)
+                    )
+                )
+        }
+        return arrayListEntries
+    }
+
     private fun showPieChart(listTimeWorkedDistribution: List<TimeWorkedDistribution>) {
-        val pieEntries = viewModel.getTimeWorkedDistributionEntries(listTimeWorkedDistribution)
+        val pieEntries = getTimeWorkedDistributionEntries(listTimeWorkedDistribution)
 
         //initializing colors for the entries
         val colors: ArrayList<Int> = ArrayList()

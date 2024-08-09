@@ -6,14 +6,17 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.PopupMenu
-import androidx.core.app.ActivityCompat
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.os.bundleOf
@@ -34,6 +37,7 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.AutoCompleteAdapter
@@ -53,7 +57,6 @@ import com.tongtongstudio.ami.receiver.TASK_NAME_KEY
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
-import com.tongtongstudio.ami.ui.PERMISSION_REQUEST_CODE
 import com.tongtongstudio.ami.ui.dialog.CURRENT_RECURRING_INFO_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.CustomTimePickerDialogFragment
 import com.tongtongstudio.ami.ui.dialog.DAYS_OF_THE_WEEKS_KEY
@@ -78,6 +81,7 @@ import com.tongtongstudio.ami.ui.dialog.linkproject.PROJECT_LINKED_LISTENER_REQU
 import com.tongtongstudio.ami.ui.dialog.linkproject.PROJECT_LINKED_RESULT_KEY
 import com.tongtongstudio.ami.util.CalendarCustomFunction
 import com.tongtongstudio.ami.util.DateTimePicker
+import com.tongtongstudio.ami.util.InputValidation
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -95,14 +99,32 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     private val viewModel: AddEditTaskViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var binding: FragmentAddEditTaskBinding
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var dateTimePicker: DateTimePicker
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        //main view model
+        sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
+
+        // set dateTimePicker object
+        dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())
+
+        // Initialize the permission launcher
+        requestPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission granted
+                dateTimePicker.showDialogNewReminder {
+                    viewModel.addNewReminder(it)
+                }
+            } else showPermissionRationale()
+        }
+    }
     @InternalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        //main view model
-        sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
         binding = FragmentAddEditTaskBinding.bind(view)
 
@@ -117,8 +139,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 safeSave(layoutPreference.layoutMode == LayoutMode.EXTENT)
             }
         }
-        // set dateTimePicker object
-        dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())
+
         binding.apply {
             radioGroupChoiceNature.check(if (viewModel.ttdNature == Nature.TASK.name) rbTask.id else rbProject.id)
             radioGroupChoiceNature.setOnCheckedChangeListener { group, checkedId ->
@@ -137,12 +158,17 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             // edit title
             editTextName.setText(viewModel.title)
             editTextName.addTextChangedListener {
-                inputLayoutName.error = null
-                val name = it.toString()
-                viewModel.title = if (name != "") name.replaceFirst(
-                    name.first(),
-                    name.first().uppercaseChar()
-                ) else ""
+                if (InputValidation.isValidText(it)) {
+                    inputLayoutName.error = null
+                    val name = it.toString()
+                    viewModel.title = name.replaceFirst(
+                        name.first(),
+                        name.first().uppercaseChar()
+                    )
+                } else {
+                    viewModel.title = ""
+                    inputLayoutName.error = getString(R.string.error_no_title)
+                }
             }
 
             // edit description
@@ -153,20 +179,25 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             }
 
             // edit priority
-            inputLayoutPriority.editText?.setText(viewModel.priority)
+            if (InputValidation.isValidPriority(viewModel.priority))
+                editTextPriority.setText(viewModel.priority)
             editTextPriority.addTextChangedListener {
-                inputLayoutPriority.error = null
-                viewModel.priority = if (it.toString() == "null") "" else it.toString()
-                viewModel.importance =
-                    if (it.toString() == "null" || it.toString() == "") null else it.toString()
-                        .toInt()
+                if (InputValidation.isValidPriority(it)) {
+                    inputLayoutPriority.error = null
+                    viewModel.priority = it.toString()
+                    viewModel.importance = it.toString().toInt()
+                } else {
+                    inputLayoutPriority.error = getString(R.string.error_no_priority)
+                    viewModel.priority = ""
+                    viewModel.importance = null
+                }
             }
 
             // edit category
             viewModel.category.observe(viewLifecycleOwner) {
-                if (it != null)
+                if (it != null) {
                     autocompleteTextCategory.setText(it.title)
-                else autocompleteTextCategory.setText("")
+                } else autocompleteTextCategory.setText("")
             }
             val adapterCategory = AutoCompleteAdapter(requireContext())
             viewModel.getCategories().observe(viewLifecycleOwner) {
@@ -260,18 +291,18 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             // set reminder
             btnAddReminder.setOnClickListener {
                 // TODO: add logic to make repeatable reminder until thing to do due date
-                dateTimePicker.showDialogNewReminder {
-                    if (isNotificationPermissionNotGranted())
-                        return@showDialogNewReminder
-                    viewModel.addNewReminder(it)
-                }
+                if (isNotificationPermissionGranted())
+                    dateTimePicker.showDialogNewReminder {
+                        viewModel.addNewReminder(it)
+                    }
+                else requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
             val reminderAdapter =
                 EditAttributesAdapter(object : AttributeListener<Reminder> {
                     override fun onItemClicked(attribute: Reminder) {
+                        if (isNotificationPermissionGranted())
+                            return
                         dateTimePicker.showDialogNewReminder(attribute.dueDate) {
-                            if (isNotificationPermissionNotGranted())
-                                return@showDialogNewReminder
                             val updatedReminder = attribute.copy(dueDate = it)
                             viewModel.updateReminder(attribute, updatedReminder)
                         }
@@ -658,11 +689,11 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             inputLayoutDescription.isVisible = modeExtent
             inputLayoutUserLevel.isVisible = modeExtent
             switchDependency.isVisible = modeExtent
-            if (modeExtent) {
+            /*if (modeExtent) {
                 editTextPriority.setText(viewModel.importance.toString().replace("null", ""))
             } else {
                 editTextPriority.setText(viewModel.priority.replace("null", ""))
-            }
+            }*/
         }
     }
 
@@ -707,10 +738,9 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             when (menuItem.itemId) {
                 R.id.action_today -> {
                     val todayDate = Calendar.getInstance().apply {
-                        set(Calendar.MILLISECOND, 0)
-                        set(Calendar.HOUR_OF_DAY, 0)
-                        set(Calendar.MINUTE, 0)
-                        set(Calendar.SECOND, 0)
+                        set(Calendar.HOUR_OF_DAY, 23)
+                        set(Calendar.MINUTE, 59)
+                        set(Calendar.SECOND, 59)
                     }.timeInMillis
                     if (actionValidationDate.invoke(todayDate)) {
                         updateButtonSelection(button, getStringFromLong(todayDate), removeButton)
@@ -722,10 +752,9 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 R.id.action_tomorrow -> {
                     val tomorrowDate =
                         Calendar.getInstance().apply {
-                            set(Calendar.MILLISECOND, 0)
-                            set(Calendar.HOUR_OF_DAY, 0)
-                            set(Calendar.MINUTE, 0)
-                            set(Calendar.SECOND, 0)
+                            set(Calendar.HOUR_OF_DAY, 23)
+                            set(Calendar.MINUTE, 59)
+                            set(Calendar.SECOND, 59)
                             add(Calendar.DAY_OF_MONTH, 1)
                         }.timeInMillis
                     if (actionValidationDate.invoke(tomorrowDate)) {
@@ -737,7 +766,13 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
                 R.id.action_personalized -> {
                     val datePicker = actionPersonalizedDate()
-                    datePicker.addOnPositiveButtonClickListener { selectedDate ->
+                    datePicker.addOnPositiveButtonClickListener { date ->
+                        val selectedDate = Calendar.getInstance().apply {
+                            timeInMillis = date
+                            set(Calendar.HOUR_OF_DAY, 23)
+                            set(Calendar.MINUTE, 59)
+                            set(Calendar.SECOND, 59)
+                        }.timeInMillis
                         updateDataAction(selectedDate)
                         updateButtonSelection(button, getStringFromLong(selectedDate), removeButton)
                     }
@@ -770,7 +805,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         removeButton: View
     ) {
         // TODO: how to show good color on dark theme ?
-        button.setIconTintResource(R.color.french_blue)
+        button.setIconTintResource(R.color.seed)
         button.setTextColor(getColor(requireContext(), R.color.french_blue))
         removeButton.isVisible = true
         button.text = valueText
@@ -786,7 +821,14 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     }
 
     private fun safeSave(modeExtent: Boolean) {
-        if (validateTitle() && validatePriority() && validateDueDate()) {
+        if (!InputValidation.isNotNull(viewModel.dueDate)) {
+            viewModel.showInvalidInputMessage(getString(R.string.error_no_date))
+            return
+        }
+        if (InputValidation.isValidText(viewModel.title) && InputValidation.isValidText(viewModel.priority) && InputValidation.isNotNull(
+                viewModel.dueDate
+            )
+        ) {
             viewModel.onSaveClick(modeExtent)
             for (reminder in reminders) {
                 scheduleReminder(requireContext(), reminder, viewModel.title)
@@ -821,51 +863,41 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         )*/
     }
 
-    fun isNotificationPermissionNotGranted(): Boolean {
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.POST_NOTIFICATIONS
-            )
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            // Permission is not granted, request it
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ActivityCompat.requestPermissions(
-                    requireActivity(),
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    PERMISSION_REQUEST_CODE
-                )
-            }
-        }
+    fun isNotificationPermissionGranted(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED)
+            when {
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    // Permission already granted
+                    true
+                }
+
+                else -> {
+                    // Request permission
+                    false
+                }
+            }
         } else {
-            false
+            // For devices running on versions below Android 13
+            true
         }
     }
 
-    private fun validateDueDate(): Boolean {
-        return if (viewModel.dueDate == null) {
-            viewModel.showInvalidInputMessage(getString(R.string.error_no_date))
-            false
-        } else true
-    }
-
-    private fun validatePriority(): Boolean {
-        return if (viewModel.priority.isBlank() || viewModel.priority == "null") {
-            binding.inputLayoutPriority.error = getString(R.string.error_no_priority)
-            false
-        } else true
-    }
-
-    private fun validateTitle(): Boolean {
-        return if (viewModel.title.isBlank()) {
-            binding.inputLayoutName.error = getString(R.string.error_no_title)
-            false
-        } else true
+    private fun showPermissionRationale() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.permission_needed))
+            .setMessage(getString(R.string.this_app_requires_notification_permission_to_send_you_reminders))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                // Open app settings
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val uri = Uri.fromParts("package", activity?.packageName, null)
+                intent.data = uri
+                startActivity(intent)
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .show()
     }
 
     private fun showDialogAttachProject() {

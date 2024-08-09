@@ -45,9 +45,13 @@ class AddEditTaskViewModel @Inject constructor(
             repository.getTaskReminders(thingToDo?.id)?.collect { reminders ->
                 _reminders.value = reminders
             }
-            if (thingToDo?.categoryId != null)
-                _category.value = repository.getCategoryById(thingToDo.categoryId)
         }
+        getCategory()
+    }
+
+    private fun getCategory() = viewModelScope.launch {
+        if (thingToDo?.categoryId != null)
+            _category.value = repository.getCategoryById(thingToDo.categoryId)
     }
 
     val createdDateFormatted = thingToDo?.getCreationDateFormatted()
@@ -60,7 +64,7 @@ class AddEditTaskViewModel @Inject constructor(
         }
 
     var priority =
-        state.get<String>("ThingToDoPriority") ?: thingToDo?.priority.toString()
+        state.get<String>("thingToDoPriority") ?: thingToDo?.priority.toString()
         set(value) {
             field = value
             state["thingToDoPriority"] = value
@@ -74,10 +78,10 @@ class AddEditTaskViewModel @Inject constructor(
         }
 
     var description: String? =
-        state["ThingToDoDescription"] ?: thingToDo?.description
+        state["thingToDoDescription"] ?: thingToDo?.description
         set(value) {
             field = value
-            state["ThingToDoDescription"] = value
+            state["thingToDoDescription"] = value
         }
 
     var estimatedTime: Long? =

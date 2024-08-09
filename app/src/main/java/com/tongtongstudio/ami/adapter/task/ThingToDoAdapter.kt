@@ -99,16 +99,18 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                 root.setOnClickListener {
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
+                        val task = taskList[position].mainTask
+                        listener.onTaskClick(task)
                         // Scale animation on click
-                        root.animate()
+                        /*root.animate()
                             .scaleX(1.1f)
-                            .scaleY(1.1f)
-                            .setDuration(100)
+                            .scaleY(1.2f)
+                            .setDuration(150)
                             .withEndAction {
                                 val task = taskList[position].mainTask
                                 listener.onTaskClick(task)
                             }
-                            .start()
+                            .start()*/
                     }
                 }
             }
@@ -119,8 +121,8 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                 tvTaskName.text = data.mainTask.title
                 checkBoxCompleted.isChecked = data.mainTask.isCompleted
                 tvTaskName.paint.isStrikeThruText = data.mainTask.isCompleted
-                // TODO: remove category text view if category is null
                 tvCategory.text = data.category?.title ?: "null"
+                tvCategory.isVisible = data.category != null
                 tvNumberPriority.text =
                     this@TaskViewHolder.itemView.context.getString(
                         R.string.importance_thing_to_do,

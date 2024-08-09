@@ -110,6 +110,7 @@
                 android:drawablePadding="7dp"
                 android:gravity="center"
                 android:padding="3dp"
+                android:layout_marginStart="3dp"
                 android:textAlignment="center"
                 android:textAppearance="@style/TextAppearance.Ami.Caption"
                 app:drawableTint="?attr/colorOnPrimaryContainer"

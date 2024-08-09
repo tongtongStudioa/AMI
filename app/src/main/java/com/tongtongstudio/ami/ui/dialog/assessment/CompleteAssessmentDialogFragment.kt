@@ -114,9 +114,9 @@ class CompleteAssessmentDialogFragment : DialogFragment() {
             tvAssessmentDescription.text = assessment.description
             tvAssessmentDescription.isVisible = assessment.description != null
 
-            // evaluation target goal
+            // evaluation target targetGoal
             tvTargetGoal.text =
-                getString(R.string.target_goal, assessment.goal.toString(), assessment.unit)
+                getString(R.string.target_goal, assessment.targetGoal, assessment.unit)
         }
     }
 }

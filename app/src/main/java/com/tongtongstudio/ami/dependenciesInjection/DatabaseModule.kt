@@ -26,16 +26,7 @@ object DatabaseModule {
         .build()
 
     @Provides
-    fun provideTaskDao(db: ThingToDoDatabase) = db.taskDao()
-
-    @Provides
-    fun provideEventDao(db: ThingToDoDatabase) = db.eventDao()
-
-    @Provides
-    fun provideProjectDao(db: ThingToDoDatabase) = db.projectDao()
-
-    @Provides
-    fun provideTtdDao(db: ThingToDoDatabase) = db.ttdDao()
+    fun provideTtdDao(db: ThingToDoDatabase) = db.taskDao()
 
     @Provides
     fun provideReminderDao(db: ThingToDoDatabase) = db.reminderDao()

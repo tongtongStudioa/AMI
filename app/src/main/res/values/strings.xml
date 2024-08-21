@@ -50,16 +50,10 @@
         <item>Event deleted</item>
         <item>Project deleted</item>
     </string-array>
-    <string-array name="thing_to_do_added">
-        <item>Task added</item>
-        <item>Event added</item>
-        <item>Project added</item>
-    </string-array>
-    <string-array name="thing_to_do_updated">
-        <item>Task updated</item>
-        <item>Event updated</item>
-        <item>Project updated</item>
-    </string-array>
+    <string name="task_added">Task added</string>
+    <string name="task_updated">Task updated</string>
+    <string name="goal_added">Goal added</string>
+    <string name="goal_updated">Goal updated</string>
     <string name="text_validate_link_subtask">Sub task linked to selected project</string>
     <string name="invalidate_text_link_subtask">Project not selected</string>
     <string name="estimated_time_info">%s estimated</string>
@@ -89,7 +83,7 @@
     <string name="title_notification_channel">Task notifications channel</string>
     <string name="set_reminder">Set reminder</string>
     <string name="nb_sub_tasks_project">%1$d/%2$d sub tasks completed</string>
-    <string name="fragment_title_achievements">My Insights</string>
+    <string name="fragment_achievements_title">My Insights</string>
     <string name="no_information" translatable="false">_</string>
     <string name="no_estimated_work_time">No estimated work time</string>
     <string name="times_completed">Times completed</string>
@@ -120,13 +114,11 @@
     <string name="text_explication_no_tasks_completed">No completed\'s things to do</string>
     <string name="text_action_no_tasks_completed">Add somethings to do or go working !</string>
     <string name="text_explication_no_tasks_today">No things to do today !</string>
-    <string name="text_action_no_tasks">Add somethings to do or go to nap :)</string>
-    <string name="text_action_no_tasks_today">%d tasks upcoming \n Add somethings to do or go to nap :)</string>
+    <string name="text_action_no_tasks_later">Add somethings to do later or go to nap !</string>
+    <string name="text_action_no_tasks_today">%d tasks upcoming \n Add somethings to do today or go to nap !</string>
     <string name="set_estimated_time">Set estimated work time</string>
     <string name="text_explication_no_projects">No projects</string>
     <string name="text_action_no_projects">Add projects</string>
-    <string name="text_explication_no_events">No events</string>
-    <string name="text_action_no_events">Add events</string>
     <string name="text_explication_no_tasks_tomorrow">Nothing to do tomorrow</string>
     <string name="text_explication_no_tasks_next_week">Nothing to do next week</string>
     <string name="text_explication_no_tasks_later">Nothing upcoming</string>
@@ -136,7 +128,7 @@
     <string name="set_recurring_end">Set recurring end</string>
     <string name="text_nb_missed_recurring_tasks">You have missed %d tasks!</string>
     <string name="task_description_view">Task\'s description</string>
-    <string name="task_s_evaluation">Task\'s evaluation</string>
+    <string name="assessment_description">Task\'s evaluation</string>
     <string name="current_streak">Current Streak</string>
     <string name="productivity_sum_up">Productivity sum up</string>
     <string name="tasks_completed">Tasks completed</string>
@@ -146,24 +138,24 @@
     <string name="set_due_date">Set due date</string>
     <string name="project_linked_text">Project : %s</string>
     <string name="project_linked_default">Attach to a project</string>
-    <string name="error_unit">Assessment\'s unit can\'t be empty</string>
-    <string name="error_goal_empty">Assessment\'s goal can\'t be empty</string>
+    <string name="error_unit">Unit can\'t be empty</string>
+    <string name="error_goal_empty">Target\'s goal can\'t be empty</string>
     <string name="timer">Timer</string>
     <string name="stopwatch">StopWatch</string>
     <string name="launch_chronometer_content_description">Launch chronometer or set pause</string>
     <string name="missed_tasks_dialog_title">Recurring tasks missed</string>
     <string name="completed_tasks_subtitle">Things already completed !</string>
-    <string name="task_details_screen_title">Task information</string>
+    <string name="fragment_task_details_title">Task information</string>
     <string name="view_pager_screen_title">Stats and time tracker</string>
     <string name="completion_rate_title">Completion rate</string>
     <string name="max_streak_title">Max streak</string>
     <string name="completion_rate_value" translatable="false">%.1f%%</string>
     <string name="time_worked">Time Worked</string>
-    <string name="tracking_notification_text">Work on %1s : \n%2s</string>
+    <string name="tracking_notification_text">Work on task \"%1s\" : \n%2s</string>
     <string name="tracking_notification_title">Tracking working time</string>
     <string name="action_pause_title" translatable="false">Pause</string>
-    <string name="action_cancel_title" translatable="false">Cancel</string>
-    <string name="action_resume_title" translatable="false">Resume</string>
+    <string name="action_cancel_title">Cancel</string>
+    <string name="action_resume_title">Resume</string>
     <string name="fragment_title_habits">Habits</string>
     <string name="category_others">Others</string>
     <string name="msg_work_session_saved">Work session saved</string>
@@ -174,4 +166,89 @@
     <string name="achievements_sum_up">Achievements sum up</string>
     <string name="global_completion_rate_title">Global completion rate</string>
     <string name="total_time_worked_title">Total time worked</string>
+    <string name="reminder_channel_notifications_title">Reminder Notifications</string>
+    <string name="reminder_title">Task reminder</string>
+    <string name="reminder_content_text">Hey ! It\'s your friendly reminder : %s</string>
+    <string name="select_reminder_time_title">Select reminder time</string>
+    <string name="fragment_global_goals_title">My goals</string>
+    <string name="share_message">Hey, check out this awesome app I developed! It\'s a fun and intelligent to-do list app that\'ll help you stay organized and motivated. Give it a try! %s</string>
+    <string name="no_goal_yet">No global objectives yet…</string>
+    <string name="fragment_title_edit_global_goal">Edit global goal</string>
+    <string name="fragment_title_add_global_goal">Add global goal</string>
+    <string name="msg_global_goal_deleted">Global goal deleted</string>
+    <string name="error_no_goal">Goal can\'t be empty !</string>
+    <string name="error_no_unit">Unit can\'t be blank !</string>
+    <string name="assessment_channel_description">Assessment notification channel</string>
+    <string name="share_with">Share with</string>
+    <string name="edit_category_dialog_title">Edit category</string>
+    <string name="save">Save</string>
+    <string name="update">Update</string>
+    <string name="edit_assessment_dialog_title">Edit assessment</string>
+    <string name="complete_assessment_dialog_title">Complete assessment</string>
+    <string name="remind_me_later">Remind me later</string>
+    <string name="assessment_notification_title">Assessment time !</string>
+    <string name="complete_assessment_notification_content">Fill out your assessment : %s</string>
+    <string name="msg_invalid_deadline">Deadline can\'t be set before start date or due date</string>
+    <string name="msg_invalid_due_date">Due date can\'t be set after deadline or before start date</string>
+    <string name="msg_invalid_start_date">Start date can\'t be set after due date or deadline</string>
+    <string name="description">Description</string>
+    <string name="priority">Priority</string>
+    <string name="category">Category</string>
+    <string name="remove_start_date_description" translatable="false">Button to remove start date</string>
+    <string name="remove_due_date_description" translatable="false">Button to remove due date</string>
+    <string name="remove_deadline_description" translatable="false">Button to remove deadline</string>
+    <string name="dependency">Dependency ?</string>
+    <string name="mastery_level">Mastery level</string>
+    <string name="goal_title">Goal\'s title</string>
+    <string name="selector_quantity">Quantity</string>
+    <string name="selector_duration">Duration</string>
+    <string name="selector_boolean">Boolean</string>
+    <string name="unit">Unit</string>
+    <string name="goal">Target goal</string>
+    <string name="create_intermediate_assessments">Create intermediate assessments</string>
+    <string name="results">Results :</string>
+    <string name="assessment_title">Assessment\'s title</string>
+    <string name="category_title">Category\'s title</string>
+    <string name="category_description">Category\'s description</string>
+    <string name="clear">Clear</string>
+    <string name="hours">Hours</string>
+    <string name="minutes" translatable="false">Minutes</string>
+    <string name="period">Period</string>
+    <string name="recurring_end">Recurring end :</string>
+    <string name="las_due_date">Last due date : %s</string>
+    <string name="task_times_missed">%d times missed</string>
+    <string name="edit_categories">Edit categories</string>
+    <string name="edit_simplified">Edit simplified</string>
+    <string name="others">Others</string>
+    <string name="about_project">About project</string>
+    <string name="rate">Rate</string>
+    <string name="share">Share</string>
+    <string name="by_eisenhower_matrix">Eisenhower matrix</string>
+    <string name="by_2_minutes_rules">2 minutes rules</string>
+    <string name="by_eat_the_frog" translatable="false">Eat The Frog</string>
+    <string name="creator_sort">Creator sort :)</string>
+    <string name="objective_description">Objective\'s specific description</string>
+    <string name="assessment_completed">Assessment completed !</string>
+    <string name="target_goal">Target goal : %1.2f %2s</string>
+    <string name="estimated_time">Estimated time</string>
+    <string name="project_subtasks">Project\'s subtasks</string>
+    <string name="project_progress">Project Progress</string>
+    <string name="edit_task_link">Edit task\'s link</string>
+    <string name="add_working_time">Add working time</string>
+    <string name="buy_me_a_coffee">Buy me a coffee</string>
+    <string name="reminder_informtions_overview">%1s at %2s</string>
+    <string name="assessment_informations_overview">%1s on %2s</string>
+    <string name="recurring_tasks_missed">Recurring tasks missed</string>
+    <string name="permission_needed">Permission Needed</string>
+    <string name="completion_date">"Completed on %s"</string>
+    <string-array name="units">
+        <item>No unit</item>
+        <item>Minutes</item>
+        <item>Hours</item>
+        <item>Kg</item>
+    </string-array>
+    <string name="this_app_requires_notification_permission_to_send_you_reminders">This app requires notification permission to send you reminders.  Click Ok to go to the app settings.</string>
+    <string name="all">All</string>
+    <string name="text_explication_no_habits">No habits</string>
+    <string name="text_action_no_habits">Add new repeating tasks or go rest !</string>
 </resources>

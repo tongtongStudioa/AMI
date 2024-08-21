@@ -35,7 +35,7 @@ class ViewPagerTrackingAndStatsFragment : Fragment(R.layout.fragment_view_pager)
             binding.tabLayout, binding.viewPager2
         ) { tab: TabLayout.Tab, position: Int ->
             tab.text = when (position) {
-                0 -> getString(R.string.task_details_screen_title)
+                0 -> getString(R.string.fragment_task_details_title)
                 1 -> getString(R.string.fragment_title_chronometer)
                 else -> "no name lol"
             }

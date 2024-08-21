@@ -1,13 +1,16 @@
 package com.tongtongstudio.ami.ui.insights
 
-import androidx.lifecycle.*
-import com.github.mikephil.charting.data.PieEntry
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
-import com.tongtongstudio.ami.data.datatables.TimeWorkedDistribution
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -56,20 +59,6 @@ class InsightsViewModel @Inject constructor(
         categoryId.asFlow()
             .flatMapLatest { repository.getCompletedTasksCountByPeriod(it, startDate, endDate) }
             .asLiveData()
-
-    fun getTimeWorkedDistributionEntries(listTimeWorkedDistribution: List<TimeWorkedDistribution>): List<PieEntry> {
-        val arrayListEntries = ArrayList<PieEntry>()
-        for (detail in listTimeWorkedDistribution) {
-            if (detail.totalTimeWorked != null)
-                arrayListEntries.add(
-                    PieEntry(
-                        detail.totalTimeWorked.toFloat(),
-                        detail.title ?: "Others" // TODO: extract string resource
-                    )
-                )
-        }
-        return arrayListEntries
-    }
 
     fun updateCategoryId(title: String) = viewModelScope.launch {
         val category = repository.getCategoryByTitle(title)

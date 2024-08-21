@@ -11,10 +11,11 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.AttributeListener
-import com.tongtongstudio.ami.adapter.EditAttributesAdapter
+import com.tongtongstudio.ami.adapter.simple.AttributeListener
+import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
 import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.databinding.DialogEditCategoryBinding
+import com.tongtongstudio.ami.util.InputValidation
 import dagger.hilt.android.AndroidEntryPoint
 
 const val CATEGORY_EDIT_TAG = "category_edit_tag"
@@ -35,7 +36,7 @@ class EditCategoryDialogFragment : DialogFragment() {
             // Inflate and set the layout for the dialog
             // Pass null as the parent view because its going in the dialog layout
             builder.setView(binding.root)
-                .setTitle("Edit an category")
+                .setTitle(getString(R.string.edit_category_dialog_title))
                 // Add action buttons
                 .setNegativeButton(
                     R.string.cancel
@@ -80,17 +81,17 @@ class EditCategoryDialogFragment : DialogFragment() {
             viewModel.category.observe(viewLifecycleOwner) {
                 isNewCategory = it == null
                 if (isNewCategory) {
-                    binding.btnSaveEdit.text = "Save"
+                    binding.btnSaveEdit.text = getString(R.string.save)
                     binding.apply {
                         categoryTitle.editText?.setText("")
                         categoryDescription.editText?.setText("")
                     }
                 } else {
-                    binding.btnSaveEdit.text = "Update"
+                    binding.btnSaveEdit.text = getString(R.string.update)
                 }
             }
 
-            // category's title
+            // category's goalTitle
             categoryTitle.editText?.doOnTextChanged { text, _, _, _ ->
                 categoryTitle.error = null
                 val title = text.toString()
@@ -105,7 +106,10 @@ class EditCategoryDialogFragment : DialogFragment() {
             }
 
             btnSaveEdit.setOnClickListener {
-                if (validateCategoryTitle())
+                if (InputValidation.isNotNull(viewModel.title) && InputValidation.isValidText(
+                        binding.categoryTitle.editText?.text
+                    )
+                )
                     viewModel.safeSave(isNewCategory)
             }
 
@@ -122,12 +126,5 @@ class EditCategoryDialogFragment : DialogFragment() {
             categoryTitle.editText?.setText(category.title)
             categoryDescription.editText?.setText(category.description)
         }
-    }
-
-    private fun validateCategoryTitle(): Boolean {
-        return if (viewModel.title == null || binding.categoryTitle.editText?.text?.isBlank() == true) {
-            binding.categoryTitle.error = getString(R.string.error_no_title)
-            false
-        } else true
     }
 }

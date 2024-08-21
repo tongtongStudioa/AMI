@@ -94,6 +94,9 @@
                   <entry key="Duration" value="90" />
                   <entry key="Fairphone" value="120" />
                   <entry key="Fairphone&#10; FP4" value="120" />
+                  <entry key="Fairphone FP4" value="120" />
+                  <entry key="Pixel_3a_XL_API_30" value="120" />
+                  <entry key="Pixel_6_Pro_API_33" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>

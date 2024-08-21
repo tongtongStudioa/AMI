@@ -12,7 +12,7 @@ object TrackingConstants {
      */
     const val TIMER_UPDATE_INTERVAL = 1000L
 
-    // TODO: make this updatable by user in preferences
+    // TODO: make this updatable by user in preferences or save configuration in database
     /**
      * Duration of work time sessions for pomodoro.
      * 25 min in millis

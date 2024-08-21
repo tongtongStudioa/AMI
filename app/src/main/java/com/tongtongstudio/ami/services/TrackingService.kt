@@ -3,7 +3,7 @@ package com.tongtongstudio.ami.services
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.NotificationManager.IMPORTANCE_DEFAULT
+import android.app.NotificationManager.IMPORTANCE_LOW
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
@@ -36,7 +36,6 @@ import javax.inject.Inject
 class TrackingService : LifecycleService() {
 
     // wake lock
-
     private lateinit var wakeLock: WakeLock
 
     // Sonification
@@ -255,7 +254,7 @@ class TrackingService : LifecycleService() {
             val channel = NotificationChannel(
                 CHANNEL_ID_TIMER,
                 CHANNEL_NAME_TIMER,
-                IMPORTANCE_DEFAULT
+                IMPORTANCE_LOW
             )
             notificationManager.createNotificationChannel(channel)
         }

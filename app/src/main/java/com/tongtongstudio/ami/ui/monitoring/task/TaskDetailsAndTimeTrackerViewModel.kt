@@ -1,12 +1,17 @@
 package com.tongtongstudio.ami.ui.monitoring.task
 
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.timer.TimerType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -14,14 +19,10 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
     private val repository: Repository,
     private val state: SavedStateHandle
 ) : ViewModel() {
-    var fragmentPos: Int = state.get<Int>("fragment_pos") ?: 0
-        set(value) {
-            field = value
-            state["fragment_pos"] = value
-        }
+
     var isServiceAlive: Boolean = false
     var timerType: TimerType = TimerType.STOPWATCH
-    var task = state.get<Ttd>("task")
+    var task = state.get<Task>("task")
         set(value) {
             field = value
             state["task"] = value
@@ -34,9 +35,9 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
     val deadline = task?.deadline
     val streak: Int = task?.currentStreak ?: 0
 
-    val estimatedWorkingTime = task?.estimatedTime
+    val estimatedWorkingTime = task?.estimatedWorkingTime
 
-    val primaryWorkTime = task?.actualWorkTime
+    val primaryWorkTime = task?.currentWorkingTime
     private val _actualWorkTime = MutableLiveData<Long?>(primaryWorkTime)
     val actualWorkTime: LiveData<Long?>
         get() = _actualWorkTime
@@ -51,18 +52,40 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
             if (task!!.parentTaskId != null) {
                 val parentTask = repository.getTask(task!!.parentTaskId!!)
                 val updatedProjectWorkTime =
-                    if (parentTask.actualWorkTime != null) parentTask.actualWorkTime + newWorkTimeSession else newWorkTimeSession
+                    if (parentTask.currentWorkingTime != null) parentTask.currentWorkingTime + newWorkTimeSession else newWorkTimeSession
                 repository.updateTask(
                     parentTask.copy(
-                        actualWorkTime = updatedProjectWorkTime
+                        currentWorkingTime = updatedProjectWorkTime
                     )
                 )
             }
             val updatedTaskTimeWorked =
                 actualWorkTime.value?.plus(newWorkTimeSession) ?: newWorkTimeSession
-            val updatedThingToDo = task!!.copy(actualWorkTime = updatedTaskTimeWorked)
+            val updatedThingToDo = task!!.copy(currentWorkingTime = updatedTaskTimeWorked)
             repository.updateTask(updatedThingToDo)
             _actualWorkTime.value = updatedTaskTimeWorked
         }
     }
+
+    fun updateTaskCompletionDate(newCompletionDate: Long) = viewModelScope.launch {
+        if (task != null) {
+            val changeState = task!!.updateCheckedState(newCompletionDate = newCompletionDate)
+            repository.updateTask(changeState)
+            task = changeState
+        }
+    }
+
+    val category: String = runBlocking {
+        return@runBlocking task?.categoryId?.let {
+            repository.getCategoryById(
+                it
+            ).title
+        } ?: ""
+    }
+    var fragmentPos: Int = state.get<Int>("fragment_pos") ?: 0
+        set(value) {
+            field = value
+            state["fragment_pos"] = value
+        }
+
 }

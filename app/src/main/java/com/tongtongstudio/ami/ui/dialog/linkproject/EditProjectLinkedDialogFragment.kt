@@ -13,9 +13,9 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.AttributeListener
-import com.tongtongstudio.ami.adapter.EditAttributesAdapter
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.adapter.simple.AttributeListener
+import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
+import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.databinding.DialogEditProjectLinkedBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -38,7 +38,7 @@ class EditProjectLinkedDialogFragment : DialogFragment() {
             // Inflate and set the layout for the dialog
             // Pass null as the parent view because its going in the dialog layout
             dialog.setView(binding.root)
-                .setTitle("Edit link's project")
+                .setTitle(getString(R.string.edit_task_link))
                 // Add action buttons
                 .setNegativeButton(
                     R.string.cancel
@@ -55,13 +55,13 @@ class EditProjectLinkedDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        val projectLinkAdapter = EditAttributesAdapter(object : AttributeListener<Ttd> {
-            override fun onItemClicked(attribute: Ttd) {
+        val projectLinkAdapter = EditAttributesAdapter(object : AttributeListener<Task> {
+            override fun onItemClicked(attribute: Task) {
                 viewModel.changeProjectId(attribute.id)
                 onMainTaskSelected(this@EditProjectLinkedDialogFragment)
             }
 
-            override fun onRemoveCrossClick(attribute: Ttd) {
+            override fun onRemoveCrossClick(attribute: Task) {
                 viewModel.removeProjectId()
             }
         }) { binding, composedTask ->
@@ -84,7 +84,7 @@ class EditProjectLinkedDialogFragment : DialogFragment() {
         }
         /*viewModel.projectId.observe(viewLifecycleOwner) {
             projectLinkAdapter.actionBindView = { binding, composedTask ->
-                binding.titleOverview.text = composedTask.title
+                binding.titleOverview.text = composedTask.goalTitle
             }
         }*/
         viewModel.projects.observe(viewLifecycleOwner) {

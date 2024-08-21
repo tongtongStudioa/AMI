@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditProjectLinkedViewModel @Inject constructor(
-    private val repository: Repository
+    repository: Repository
 ) : ViewModel() {
     fun changeProjectId(id: Long) {
         _projectId.value = id

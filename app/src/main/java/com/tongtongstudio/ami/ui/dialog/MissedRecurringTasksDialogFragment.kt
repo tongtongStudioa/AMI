@@ -11,8 +11,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.MissedTaskAdapter
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.adapter.task.MissedTaskAdapter
+import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.databinding.DialogInformationMissedRecurringTasksBinding
 import com.tongtongstudio.ami.ui.MainViewModel
 
@@ -20,7 +20,7 @@ class MissedRecurringTasksDialogFragment : DialogFragment() {
 
     private lateinit var binding: DialogInformationMissedRecurringTasksBinding
     private lateinit var sharedViewModel: MainViewModel
-    private var missedTasks: Array<Ttd>? = null
+    private var missedTasks: Array<Task>? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
@@ -33,7 +33,6 @@ class MissedRecurringTasksDialogFragment : DialogFragment() {
             // Inflate and set the layout for the dialog
             // Pass null as the parent view because its going in the dialog layout
             builder.setView(binding.root)
-                .setTitle(getString(R.string.missed_tasks_dialog_title))
                 // Add action buttons
                 .setPositiveButton(R.string.ok) { _, _ ->
                     onDialogPositiveClick(this)
@@ -50,7 +49,7 @@ class MissedRecurringTasksDialogFragment : DialogFragment() {
         missedTasks = arguments?.let {
             MissedRecurringTasksDialogFragmentArgs.fromBundle(it).missedRecurringTasks
         }
-        val dialogAdapter = MissedTaskAdapter()
+        val dialogAdapter = MissedTaskAdapter(requireContext())
         binding.rvMissedTasks.apply {
             adapter = dialogAdapter
             layoutManager = LinearLayoutManager(context)

@@ -1,24 +1,30 @@
 package com.tongtongstudio.ami.ui.monitoring.task
 
+import android.icu.text.DateFormat
+import android.icu.util.Calendar
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.setupWithNavController
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.datatables.Ttd
-import com.tongtongstudio.ami.databinding.FragmentTaskInformationBinding
+import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.databinding.FragmentTaskDetailsBinding
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
+import com.tongtongstudio.ami.ui.MainActivity
+import com.tongtongstudio.ami.util.CalendarCustomFunction
+import com.tongtongstudio.ami.util.DateTimePicker
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
-class TaskDetailsFragment : Fragment(R.layout.fragment_task_information) {
+class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
 
-    lateinit var binding: FragmentTaskInformationBinding
+    lateinit var binding: FragmentTaskDetailsBinding
     private val viewModel: TaskDetailsAndTimeTrackerViewModel by lazy {
         if (parentFragment is ViewPagerTrackingAndStatsFragment) { // when inside view pager
             ViewModelProvider(requireParentFragment())[TaskDetailsAndTimeTrackerViewModel::class.java]
@@ -27,9 +33,18 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_information) {
         }
     }
 
+    // for calendar getInstance function
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = FragmentTaskInformationBinding.bind(view)
+
+        binding = FragmentTaskDetailsBinding.bind(view)
+
+        // show or hide app bar if fragment is in unique mode
+        if (parentFragment !is ViewPagerTrackingAndStatsFragment) {
+            binding.appBar.isVisible = true
+            setUpToolbar()
+        } else binding.appBar.isVisible = false
 
         // binding elements layout
         binding.apply {
@@ -37,13 +52,14 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_information) {
             if (viewModel.name != null) {
                 taskName.text = viewModel.task!!.title
             }
+            taskCategory.text = viewModel.category
             taskDescription.text = viewModel.description
             taskDescription.isVisible = viewModel.description != null
-            taskStartDate.text = Ttd.getDateFormatted(viewModel.startDate)
+            taskStartDate.text = Task.getDateFormatted(viewModel.startDate)
             taskStartDate.isVisible = viewModel.startDate != null
             taskDueDate.text =
-                Ttd.getDateFormatted(viewModel.dueDate)
-            taskDeadline.text = Ttd.getDateFormatted(viewModel.deadline)
+                Task.getDateFormatted(viewModel.dueDate)
+            taskDeadline.text = Task.getDateFormatted(viewModel.deadline)
             taskDeadline.isVisible = viewModel.deadline != null
 
             // stats view
@@ -72,18 +88,52 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_information) {
                         ?: getString(R.string.no_information)
             }
 
-            // TODO: show graph and assessments comments
-            chartView.isVisible = true
-            // in this example, a LineChart is initialized from xml
-            val entries = ArrayList<Entry>()
-            entries.add(Entry(1.0F, 8.0F))
-            entries.add(Entry(2.0F, 12.0F))
-            entries.add(Entry(3.0F, 4.0F))
-            entries.add(Entry(4.0F, 25.0F))
-            val dataSet = LineDataSet(entries, "1 serie")
-            val lineData = LineData(dataSet)
-            chartView.data = lineData
-            chartView.invalidate() // refresh
+            // estimated work time view when task is completed
+            tvEstimatedWorkTime.text =
+                TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedWorkingTime)
+                    ?: getString(R.string.no_information)
+            estimatedWorkTimeView.isVisible =
+                viewModel.estimatedWorkingTime != null && viewModel.task?.isCompleted == true
+
+            // completion date
+            val dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())
+            val completionDateFormatted = viewModel.task?.getCompletionDateFormatted()
+            completionDate.text = getString(R.string.completion_date, completionDateFormatted)
+            completionDate.isVisible = viewModel.task?.isCompleted == true
+            //completionDate.isVisible = viewModel.task?.isCompleted == true
+            completionDate.setOnClickListener {
+                val constraints =
+                    CalendarCustomFunction.buildConstraintsForStartDate(Calendar.getInstance().run {
+                        set(Calendar.HOUR_OF_DAY, 23)
+                        timeInMillis
+                    })
+                val datePicker = dateTimePicker.showDatePickerMaterial(
+                    constraints,
+                    viewModel.task?.completionDate
+                )
+                datePicker.addOnPositiveButtonClickListener { newCompletionDate ->
+                    viewModel.updateTaskCompletionDate(newCompletionDate)
+                    completionDate.text = getString(
+                        R.string.completion_date,
+                        DateFormat.getDateInstance().format(newCompletionDate)
+                    )
+                }
+            }
         }
     }
+
+    // function to set up toolbar with collapse toolbar and link to drawer layout
+    private fun setUpToolbar() {
+        val mainActivity = activity as MainActivity
+        // imperative to see option menu and navigation icon (hamburger)
+        mainActivity.setSupportActionBar(binding.toolbar)
+
+        val navController = findNavController()
+        // retrieve app bar configuration : see MainActivity.class
+        val appBarConfiguration = mainActivity.appBarConfiguration
+
+        // to set hamburger menu work and open drawer layout
+        binding.toolbar.setupWithNavController(navController, appBarConfiguration)
+    }
+
 }

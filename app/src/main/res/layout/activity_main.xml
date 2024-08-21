@@ -5,14 +5,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.MainActivity"
-    android:fitsSystemWindows="true">
-
-
-    <!--<include layout="@layout/app_bar_main"
-        android:id="@+id/app_bar"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"/>-->
+    tools:context=".ui.MainActivity">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
@@ -22,12 +15,13 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph" />
 
-
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        app:subheaderTextAppearance="@style/TextAppearance.Ami.Subtitle2.Day"
+        app:itemTextAppearance="@style/TextAppearance.Ami.Caption"
         app:menu="@menu/menu_drawer" />
     <!--app:headerLayout="@layout/nav_header_main"-->
 

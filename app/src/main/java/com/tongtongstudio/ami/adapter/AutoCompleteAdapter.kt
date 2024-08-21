@@ -32,6 +32,10 @@ class AutoCompleteAdapter(
         return data[position].title
     }
 
+    fun getCategorySelected(position: Int): Category {
+        return data[position]
+    }
+
     override fun getItemId(position: Int): Long {
         return position.toLong()
     }

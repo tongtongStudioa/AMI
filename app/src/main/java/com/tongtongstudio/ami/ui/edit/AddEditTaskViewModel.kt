@@ -1,8 +1,16 @@
 package com.tongtongstudio.ami.ui.edit
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
-import com.tongtongstudio.ami.data.datatables.*
+import com.tongtongstudio.ami.data.datatables.Category
+import com.tongtongstudio.ami.data.datatables.Nature
+import com.tongtongstudio.ami.data.datatables.Reminder
+import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.EDIT_TASK_RESULT_OK
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,7 +18,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.*
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,14 +31,14 @@ class AddEditTaskViewModel @Inject constructor(
     private val addEditChannelEvent = Channel<AddEditTaskEvent>()
     val addEditTaskEvent = addEditChannelEvent.receiveAsFlow()
 
-    val thingToDo = state.get<Ttd>("thingToDo")
-
+    val thingToDo = state.get<Task>("thingToDo")
+    private val _category = MutableLiveData<Category?>(null)
+    val category: LiveData<Category?> // TODO: retrieve task's category with sage args
+        get() = _category
     private val _reminders = MutableLiveData<MutableList<Reminder>>()
     val reminders: LiveData<MutableList<Reminder>>
         get() = _reminders
-    private val _assessments = MutableLiveData<MutableList<Assessment>>()
-    val assessments: LiveData<MutableList<Assessment>>
-        get() = _assessments
+
 
     init {
         viewModelScope.launch {
@@ -38,11 +46,12 @@ class AddEditTaskViewModel @Inject constructor(
                 _reminders.value = reminders
             }
         }
-        viewModelScope.launch {
-            repository.getTasksAssessments(thingToDo?.id)?.collect { assessments ->
-                _assessments.value = assessments
-            }
-        }
+        getCategory()
+    }
+
+    private fun getCategory() = viewModelScope.launch {
+        if (thingToDo?.categoryId != null)
+            _category.value = repository.getCategoryById(thingToDo.categoryId)
     }
 
     val createdDateFormatted = thingToDo?.getCreationDateFormatted()
@@ -55,33 +64,31 @@ class AddEditTaskViewModel @Inject constructor(
         }
 
     var priority =
-        state.get<String>("ThingToDoPriority") ?: thingToDo?.priority.toString()
+        state.get<String>("thingToDoPriority") ?: thingToDo?.priority.toString()
         set(value) {
             field = value
             state["thingToDoPriority"] = value
         }
 
-    private var categoryId: Long? =
+    var categoryId: Long? =
         state["ThingToDoCategory"] ?: thingToDo?.categoryId
         set(value) {
             field = value
             state["ThingToDoCategory"] = value
         }
 
-    var category: Category? = getTaskCategory()
-
     var description: String? =
-        state["ThingToDoDescription"] ?: thingToDo?.description
+        state["thingToDoDescription"] ?: thingToDo?.description
         set(value) {
             field = value
-            state["ThingToDoDescription"] = value
+            state["thingToDoDescription"] = value
         }
 
     var estimatedTime: Long? =
-        state["estimatedTime"] ?: thingToDo?.estimatedTime
+        state["estimatedWorkingTime"] ?: thingToDo?.estimatedWorkingTime
         set(value) {
             field = value
-            state["estimatedTime"] = value
+            state["estimatedWorkingTime"] = value
         }
 
     var startDate =
@@ -177,15 +184,6 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 
-    private fun updateAssessmentsList(idTtd: Long) {
-        if (assessments.value != null) {
-            for (assessment in assessments.value!!) {
-                if (assessment.taskId != idTtd)
-                    insertNewAssessment(idTtd, assessment)
-            }
-        }
-    }
-
     fun updateReminder(oldReminder: Reminder, updatedReminder: Reminder) = viewModelScope.launch {
         if (oldReminder.parentId == null) {
             val currentReminders = _reminders.value ?: mutableListOf()
@@ -201,31 +199,17 @@ class AddEditTaskViewModel @Inject constructor(
         repository.insertReminder(reminder)
     }
 
-    fun updateCategoryId(title: String) {
-        val updatedCategory = getTaskCategory(title)
-        category = updatedCategory
+    fun updateCategory(updatedCategory: Category?) {
+        _category.value = updatedCategory
         categoryId = updatedCategory?.id
-    }
-
-    private fun getTaskCategory(title: String? = null): Category? = runBlocking {
-        return@runBlocking if (title != null)
-            repository.getCategoryByTitle(title)
-        else if (categoryId != null)
-            repository.getCategoryById(categoryId!!)
-        else null
     }
 
     fun getCategories() = repository.getCategories().asLiveData()
 
-    private fun insertNewAssessment(taskId: Long, newAssessment: Assessment) =
-        viewModelScope.launch {
-            repository.insertAssessment(newAssessment.copy(taskId = taskId))
-        }
-
     private fun saveThingToDo(modeExtent: Boolean) = viewModelScope.launch {
         val taskId: Long
         val newThingToDo =
-            Ttd(
+            Task(
                 title = title,
                 priority = priority.toInt(),
                 dueDate = dueDate!!,
@@ -238,14 +222,14 @@ class AddEditTaskViewModel @Inject constructor(
             )
 
         taskId = if (modeExtent) {
-            urgency = Ttd.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
+            urgency = Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
             val newThingToDoExtent = newThingToDo.copy(
-                priority = Ttd.calculatingPriority(priority.toInt(), importance, urgency),
+                priority = Task.calculatingPriority(priority.toInt(), importance, urgency),
                 deadline = deadline,
                 description = description,
                 importance = importance,
                 urgency = urgency,
-                estimatedTime = estimatedTime,
+                estimatedWorkingTime = estimatedTime,
                 dependency = dependency,
                 skillLevel = skillLevel,
                 type = ttdNature
@@ -254,8 +238,8 @@ class AddEditTaskViewModel @Inject constructor(
         } else repository.insertTask(newThingToDo)
 
         updateRemindersList(taskId)
-        updateAssessmentsList(taskId)
 
+        // navigate back with result "OK"
         addEditChannelEvent.send(
             AddEditTaskEvent.NavigateBackWithResult(
                 ADD_TASK_RESULT_OK
@@ -263,7 +247,7 @@ class AddEditTaskViewModel @Inject constructor(
         )
     }
 
-    private fun updateThingToDo(thingToDo: Ttd, modeExtent: Boolean) =
+    private fun updateThingToDo(thingToDo: Task, modeExtent: Boolean) =
         viewModelScope.launch {
             val updatedThingToDo =
                 thingToDo.copy(
@@ -279,14 +263,14 @@ class AddEditTaskViewModel @Inject constructor(
                 )
             if (modeExtent) {
                 urgency =
-                    Ttd.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
+                    Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
                 val updatedThingToDoExtent = updatedThingToDo.copy(
-                    priority = Ttd.calculatingPriority(priority.toInt(), importance, urgency),
+                    priority = Task.calculatingPriority(priority.toInt(), importance, urgency),
                     deadline = deadline,
                     description = description,
                     importance = importance,
                     urgency = urgency,
-                    estimatedTime = estimatedTime,
+                    estimatedWorkingTime = estimatedTime,
                     dependency = dependency,
                     skillLevel = skillLevel,
                     type = ttdNature
@@ -294,7 +278,6 @@ class AddEditTaskViewModel @Inject constructor(
                 repository.updateTask(updatedThingToDoExtent)
             } else repository.updateTask(updatedThingToDo)
 
-            // TODO: move out this method (to insure that update method assessment, categories and reminder is well saved
             addEditChannelEvent.send(
                 AddEditTaskEvent.NavigateBackWithResult(
                     EDIT_TASK_RESULT_OK
@@ -315,28 +298,14 @@ class AddEditTaskViewModel @Inject constructor(
     fun addNewReminder(reminderTriggerTime: Long) {
         val newReminder = Reminder(
             dueDate = reminderTriggerTime,
-            isRecurrent = false
+            isRecurrent = isRecurring,
+            repetitionFrequency = recurringTaskInterval
         )
         if (thingToDo?.id == null) { // is a new task ?
             val currentReminders = reminders.value ?: mutableListOf()
             currentReminders.add(newReminder)
             _reminders.value = currentReminders
         } else insertNewReminder(newReminder.copy(parentId = thingToDo.id))
-    }
-
-    fun addNewAssessment(result: Assessment) {
-        if (thingToDo?.id == null) { // is a new task ?
-            val currentAssessments = assessments.value ?: mutableListOf()
-            currentAssessments.add(result)
-            _assessments.value = currentAssessments
-        } else insertNewAssessment(thingToDo.id, result)
-    }
-
-    fun removeAssessment(assessment: Assessment) = viewModelScope.launch {
-        val updatedList: MutableList<Assessment> = _assessments.value ?: mutableListOf()
-        updatedList.remove(assessment)
-        _assessments.value = updatedList
-        repository.deleteAssessment(assessment)
     }
 
     fun removeReminder(attribute: Reminder) = viewModelScope.launch {

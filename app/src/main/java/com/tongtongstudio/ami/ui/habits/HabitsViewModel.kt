@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HabitsViewModel @Inject constructor(
-    private val repository: Repository,
+    repository: Repository,
     preferencesManager: PreferencesManager
 ) : ViewModel() {
 

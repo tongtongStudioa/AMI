@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".ui.monitoring.projectStats.ProjectStatsFragment">
+    tools:context=".ui.monitoring.project.ProjectStatsFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
@@ -15,22 +15,22 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/thing_to_do_title" />
+            tools:title="@string/thing_to_do_title" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:padding="10dp"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
         <TextView
             android:id="@+id/titleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Project Progress"
-            android:textSize="18sp"
-            android:textAppearance="@style/TextAppearance.Ami.Body2"
+            android:text="@string/project_progress"
+            android:textAppearance="@style/TextAppearance.Ami.Subtitle1.Day"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -39,9 +39,8 @@
             android:id="@+id/project_progress"
             style="@style/Widget.Material3.LinearProgressIndicator"
             android:layout_width="match_parent"
-            android:layout_height="7dp"
+            android:layout_height="20dp"
             android:layout_margin="10dp"
-            android:layout_marginStart="8dp"
             android:layout_marginTop="20dp"
             android:max="100"
             android:progress="74"
@@ -52,7 +51,8 @@
             android:id="@+id/progressText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Progress: 0%"
+            tools:text="Progress: 0%"
+            android:textAppearance="@style/TextAppearance.Ami.Caption"
             app:layout_constraintTop_toBottomOf="@+id/project_progress"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -60,10 +60,12 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/total_work_time_view"
+            style="@style/Widget.Material3.CardView.Filled"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="15dp"
+            android:layout_margin="10dp"
             app:layout_constraintEnd_toEndOf="parent"
+
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/progressText">
 
@@ -76,7 +78,9 @@
                     android:id="@+id/tv_title2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Total work time"
+                    android:layout_marginEnd="50dp"
+                    android:layout_marginStart="50dp"
+                    android:text="@string/project_total_work_time"
                     android:textAppearance="@style/TextAppearance.Ami.Body2"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -97,7 +101,7 @@
                     android:id="@+id/tv_title3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Estimated time"
+                    android:text="@string/estimated_time"
                     android:textAppearance="@style/TextAppearance.Ami.Body2"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -131,8 +135,9 @@
             android:id="@+id/tv_project_subtasks"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Project's subtasks"
+            android:text="@string/project_subtasks"
             android:layout_marginTop="25dp"
+            android:textAppearance="@style/TextAppearance.Ami.Headline6"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/divider" />
@@ -146,7 +151,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_project_subtasks"
             tools:itemCount="5"
-            tools:listitem="@layout/item_overview_data_edit" />
+            tools:listitem="@layout/item_task" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

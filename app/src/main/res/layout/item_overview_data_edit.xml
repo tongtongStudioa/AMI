@@ -26,7 +26,8 @@
         app:layout_constraintEnd_toStartOf="@id/remove_item_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="sub task title example" />
+        android:textAppearance="@style/TextAppearance.Ami.Caption"
+        tools:text="random title example" />
 
     <ImageButton
         android:id="@+id/remove_item_button"
@@ -35,6 +36,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/baseline_clear_24"
         app:layout_constraintEnd_toEndOf="parent"
+        android:contentDescription="remove this item"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

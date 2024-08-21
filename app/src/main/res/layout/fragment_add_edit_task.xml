@@ -11,11 +11,33 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapse_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            tools:title="Edit Task" />
+            android:layout_height="150dp"
+            app:layout_scrollFlags="snap|scroll|exitUntilCollapsed"
+            app:toolbarId="@id/toolbar">
+
+            <!--<com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/toolbar_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="15dp"
+                app:layout_collapseMode="parallax"
+                app:icon="@drawable/ic_save_task_24"
+                android:text="@string/save"
+                android:textColor="?attr/colorOnSurface" />-->
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:title="@string/fragment_title_edit_thing_to_do" />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -42,6 +64,7 @@
                 tools:text="Created date" />
 
             <RadioGroup
+                android:layout_marginTop="15dp"
                 android:id="@+id/radio_group_choice_nature"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -53,42 +76,24 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/text_view_created_date">
 
-                <!--<com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/rb_event"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:background="@drawable/radio_button_selector"
-                    android:button="@android:color/transparent"
-                    android:gravity="center"
-                    android:padding="16dp"
-                    android:text="@string/event"
-                    android:textColor="@color/text_radio_button_selector" />-->
-
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/rb_task"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:background="@drawable/radio_button_selector"
-                    android:button="@android:color/transparent"
                     android:checked="true"
-                    android:gravity="center"
-                    android:padding="16dp"
-                    android:text="@string/task"
-                    android:textColor="@color/text_radio_button_selector" />
+                    style="@style/RadioButton.AMI.Style"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="5dp"
+                    android:text="@string/task" />
 
                 <com.google.android.material.radiobutton.MaterialRadioButton
                     android:id="@+id/rb_project"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    style="@style/RadioButton.AMI.Style"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:background="@drawable/radio_button_selector"
-                    android:button="@android:color/transparent"
-                    android:gravity="center"
-                    android:padding="16dp"
-                    android:text="@string/project"
-                    android:textColor="@color/text_radio_button_selector" />
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginStart="5dp"
+                    android:text="@string/project" />
 
             </RadioGroup>
 
@@ -122,7 +127,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="15dp"
-                android:hint="Description"
+                android:hint="@string/description"
                 app:counterEnabled="true"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -148,7 +153,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="15dp"
                 android:layout_marginBottom="10dp"
-                android:hint="Priority"
+                android:hint="@string/priority"
                 app:endIconMode="clear_text"
                 app:helperText="@string/importance_priority_1_9"
                 app:layout_constraintEnd_toStartOf="@id/input_layout_category"
@@ -171,7 +176,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="15dp"
-                android:hint="Category"
+                android:hint="@string/category"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/input_layout_priority"
                 app:layout_constraintTop_toBottomOf="@+id/input_layout_description"
@@ -205,10 +210,10 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_set_start_date"
-                    style="@style/ButtonEditTask.AMI.Style"
+                    style="@style/Button.EditProperties.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Start Date"
+                    android:text="@string/set_start_date"
                     app:icon="@drawable/ic_line_start_circle_24"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -222,7 +227,8 @@
                     android:src="@drawable/baseline_clear_24"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/btn_set_start_date"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:contentDescription="@string/remove_start_date_description" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -236,6 +242,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/start_date_selection_group" />
 
+            <!--due date -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/due_date_selection_group"
                 android:layout_width="match_parent"
@@ -246,10 +253,10 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_set_due_date"
-                    style="@style/ButtonEditTask.AMI.Style"
+                    style="@style/Button.EditProperties.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Due Date"
+                    android:text="@string/set_due_date"
                     app:icon="@drawable/ic_commit_24"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -260,7 +267,7 @@
                     style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="button to remove due date"
+                    android:contentDescription="@string/remove_due_date_description"
                     android:src="@drawable/baseline_clear_24"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/btn_set_due_date"
@@ -288,10 +295,10 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_set_deadline"
-                    style="@style/ButtonEditTask.AMI.Style"
+                    style="@style/Button.EditProperties.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Deadline"
+                    android:text="@string/set_deadline"
                     app:icon="@drawable/ic_line_end_circle_24"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -302,7 +309,7 @@
                     style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="button to remove deadline"
+                    android:contentDescription="@string/remove_deadline_description"
                     android:src="@drawable/baseline_clear_24"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/btn_set_deadline"
@@ -331,7 +338,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_repeat_task"
-                    style="@style/ButtonEditTask.AMI.Style"
+                    style="@style/Button.EditProperties.AMI.Style"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/repeat_text"
@@ -371,24 +378,15 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/repeat_selection_group">
 
-                <ImageView
-                    android:id="@+id/icon_add_reminder"
-                    style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="13dp"
-                    android:src="@drawable/baseline_notification_add_24"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_add_reminder"
-                    style="@style/ButtonEditTask.AMI.Style"
+                    style="@style/Button.EditProperties.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="@string/set_reminder"
+                    app:icon="@drawable/baseline_notification_add_24"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_reminder"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -396,7 +394,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_reminder"
+                    android:layout_marginStart="54dp"
+                    app:layout_constraintStart_toStartOf="@id/btn_add_reminder"
                     app:layout_constraintTop_toBottomOf="@id/btn_add_reminder"
                     tools:itemCount="1"
                     tools:listitem="@layout/item_overview_data_edit" />
@@ -424,7 +423,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_set_estimated_time"
-                    style="@style/ButtonEditTask.AMI.Style"
+                    style="@style/Button.EditProperties.AMI.Style"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/set_estimated_time"
@@ -456,10 +455,10 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_attach_project"
-                    style="@style/ButtonEditTask.AMI.Style"
+                    style="@style/Button.EditProperties.AMI.Style"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Attach to a project"
+                    android:text="@string/project_linked_default"
                     app:icon="@drawable/ic_add_task_24"
                     app:layout_constraintEnd_toStartOf="@+id/remove_project_linked"
                     app:layout_constraintStart_toStartOf="parent"
@@ -471,32 +470,21 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/baseline_clear_24"
+                    app:layout_constraintStart_toEndOf="@id/btn_attach_project"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switch_dependency"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:text="Depend another person ?"
-                android:visibility="visible"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/input_layout_user_level"
-                app:layout_constraintTop_toBottomOf="@+id/project_selection_group" />
-
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_user_level"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
-                android:layout_width="175dp"
+                android:layout_width="235dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
-                android:hint="Mastery level"
+                android:hint="@string/mastery_level"
                 android:visibility="visible"
-                app:layout_constraintEnd_toStartOf="@+id/switch_dependency"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/project_selection_group">
 
@@ -510,47 +498,17 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/assessments_group"
-                android:layout_width="match_parent"
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switch_dependency"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/input_layout_user_level">
+                android:layout_margin="10dp"
+                android:text="@string/dependency"
+                android:textAlignment="center"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="@id/input_layout_user_level"
+                app:layout_constraintTop_toBottomOf="@+id/input_layout_user_level" />
 
-                <ImageView
-                    android:id="@+id/icon_add_assessments"
-                    style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="13dp"
-                    android:src="@drawable/ic_list_alt_add_24"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_add_assessment"
-                    style="@style/ButtonEditTask.AMI.Style"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="Create an assessment"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_assessments"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_assessments"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/icon_add_assessments"
-                    app:layout_constraintTop_toBottomOf="@id/btn_add_assessment"
-                    tools:itemCount="1"
-                    tools:listitem="@layout/item_overview_data_edit" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>
@@ -562,9 +520,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="25dp"
         android:contentDescription="Save task"
-        android:text="Save"
-        app:icon="@drawable/ic_save_task_24"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior" />
+        android:text="@string/save"
+        app:icon="@drawable/ic_save_task_24" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

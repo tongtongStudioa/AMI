@@ -6,21 +6,23 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
-import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.InteractionListener
-import com.tongtongstudio.ami.adapter.TaskAdapter
-import com.tongtongstudio.ami.data.datatables.TaskWithSubTasks
-import com.tongtongstudio.ami.data.datatables.Ttd
+import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
+import com.tongtongstudio.ami.adapter.task.InteractionListener
+import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
+import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
+import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.util.exhaustive
@@ -31,7 +33,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
     private val viewModel: HabitsViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var sharedViewModel: MainViewModel
-    private lateinit var taskAdapter: TaskAdapter
+    private lateinit var taskAdapter: ThingToDoAdapter
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -40,7 +42,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         setUpToolbar()
 
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-        taskAdapter = TaskAdapter(this)
+        taskAdapter = ThingToDoAdapter(this)
         binding.apply {
             fabAddTask.setOnClickListener {
                 sharedViewModel.addThingToDo()
@@ -51,15 +53,22 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                 layoutManager = LinearLayoutManager(requireContext())
                 setHasFixedSize(true)
             }
-        }
+            val callback = object : ThingToDoItemCallback(
+                taskAdapter,
+                ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
+                requireContext()
+            ) {
+                override fun actionOnRightSwiped(thingToDo: ThingToDo) {
+                    // delete task
+                    sharedViewModel.deleteTask(thingToDo, requireContext())
+                }
 
-        setFragmentResultListener("add_edit_request") { _, bundle ->
-            val result = bundle.getInt("add_edit_result")
-            sharedViewModel.onAddEditResult(
-                result,
-                resources.getStringArray(R.array.thing_to_do_added),
-                resources.getStringArray(R.array.thing_to_do_updated)
-            )
+                override fun actionLeftSwiped(thingToDo: ThingToDo) {
+                    //update task
+                    sharedViewModel.updateTask(thingToDo)
+                }
+            }
+            ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
         }
 
         loadEvents()
@@ -86,8 +95,11 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                             )
                         findNavController().navigate(action)
                     }
-                    is MainViewModel.SharedEvent.ShowTaskSavedConfirmationMessage -> {
-                        Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_SHORT).show()
+                    is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
+                        val msg = if (event.result == ADD_TASK_RESULT_OK)
+                            getString(R.string.task_added)
+                        else getString(R.string.task_updated)
+                        Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
                     }
 
                     is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {
@@ -121,9 +133,9 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = true
                 binding.mainRecyclerView.isVisible = false
                 binding.emptyRecyclerView.textViewExplication.text =
-                    getString(R.string.text_explication_no_events)
+                    getString(R.string.text_explication_no_habits)
                 binding.emptyRecyclerView.textViewActionText.text =
-                    getString(R.string.text_action_no_events)
+                    getString(R.string.text_action_no_habits)
             } else {
                 taskAdapter.submitList(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
@@ -153,29 +165,29 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         }
     }
 
-    override fun onTaskChecked(thingToDo: Ttd, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
-    override fun onComposedTaskClick(thingToDo: TaskWithSubTasks) {
+    override fun onComposedTaskClick(thingToDo: ThingToDo) {
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
-    override fun onTaskClick(thingToDo: Ttd) {
+    override fun onTaskClick(thingToDo: Task) {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo)
     }
 
-    override fun onProjectAddClick(composedTask: TaskWithSubTasks) {
+    override fun onProjectAddClick(composedTask: ThingToDo) {
         // TODO: create another event for sub task add action which take composed task as argument
         setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
         sharedViewModel.addThingToDo()
     }
 
-    override fun onSubTaskRightSwipe(thingToDo: Ttd) {
+    override fun onSubTaskRightSwipe(thingToDo: Task) {
         TODO("Not yet implemented")
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: Ttd) {
+    override fun onSubTaskLeftSwipe(thingToDo: Task) {
         TODO("Not yet implemented")
     }
 }

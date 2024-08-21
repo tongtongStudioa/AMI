@@ -36,27 +36,35 @@
                     android:icon="@drawable/ic_baseline_checklist_24"
                     android:title="@string/fragment_title_completed" />
                 <item
+                    android:id="@+id/globalObjectivesFragment"
+                    android:icon="@drawable/baseline_outlined_flag_24"
+                    android:title="@string/fragment_global_goals_title" />
+                <item
                     android:id="@id/achievementsFragment"
                     android:icon="@drawable/ic_baseline_leaderboard_24"
                     android:title="@string/menu_drawer_accomplishment" />
             </group>
         </menu>
     </item>
-    <item android:title="Other">
+    <item android:title="@string/others">
         <menu>
             <group>
                 <item
                     android:id="@+id/about_item"
-                    android:icon="@drawable/baseline_outlined_flag_24"
-                    android:title="About" />
-                <item
-                    android:id="@+id/share_item"
-                    android:icon="@drawable/baseline_share_24"
-                    android:title="Share" />
+                    android:icon="@drawable/baseline_info_24"
+                    android:title="@string/about_project" />
                 <item
                     android:id="@+id/rate_item"
                     android:icon="@drawable/baseline_rate_review_24"
-                    android:title="Rate" />
+                    android:title="@string/rate" />
+                <item
+                    android:id="@+id/share_item"
+                    android:icon="@drawable/baseline_share_24"
+                    android:title="@string/share" />
+                <item
+                    android:id="@+id/support"
+                    android:icon="@drawable/ic_coffee_cup"
+                    android:title="@string/buy_me_a_coffee" />
             </group>
         </menu>
     </item>

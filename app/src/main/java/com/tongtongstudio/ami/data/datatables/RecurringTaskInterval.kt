@@ -6,7 +6,7 @@ import androidx.room.TypeConverter
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.ui.dialog.Period
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import java.util.Calendar
 import kotlin.math.pow
 
 
@@ -83,12 +83,12 @@ class RecurringTaskInterval(
      * @param checked : state
      * @return updated task
      */
-    fun updateRecurringTask(ttd: Ttd, checked: Boolean): Ttd {
+    fun updateRecurringTask(ttd: Task, checked: Boolean): Task {
         val oldStartDate = ttd.dueDate
         val updatedStartDate = if (daysOfWeek != null) {
-            findNextOccurrenceDay(oldStartDate, checked)
+            findNextOccurrenceDayInWeek(oldStartDate, checked)
         } else {
-            findNextStartDate(oldStartDate, checked)
+            findNextOccurrenceDay(oldStartDate, checked)
         }
         val newDueDateDate = updatedStartDate.newDueDate
         val timesSkipped = updatedStartDate.timesSkipped
@@ -118,7 +118,7 @@ class RecurringTaskInterval(
         return updatedTask
     }
 
-    private fun findNextOccurrenceDay(oldDueDate: Long, checked: Boolean): UpdatedStartDate {
+    private fun findNextOccurrenceDayInWeek(oldDueDate: Long, checked: Boolean): RepeatProcess {
         var timesSkipped = 0
         val newStartDate = Calendar.getInstance().run {
             set(Calendar.HOUR_OF_DAY, 0)
@@ -146,10 +146,10 @@ class RecurringTaskInterval(
             // if list of recurrence days contains next deadline's day and it's after  today : set a new due date
             timeInMillis
         }
-        return UpdatedStartDate(newStartDate, timesSkipped)
+        return RepeatProcess(newStartDate, timesSkipped)
     }
 
-    private fun findNextStartDate(oldDueDate: Long, checked: Boolean): UpdatedStartDate {
+    private fun findNextOccurrenceDay(oldDueDate: Long, checked: Boolean): RepeatProcess {
         var timesSkipped = 0
         var todayTimeInMillis: Long
         val newStartDate = Calendar.getInstance().run {
@@ -185,7 +185,7 @@ class RecurringTaskInterval(
             } while (timeInMillis < todayTimeInMillis)
             timeInMillis
         }
-        return UpdatedStartDate(newStartDate, timesSkipped)
+        return RepeatProcess(newStartDate, timesSkipped)
     }
 
     fun setStartDateSpecificDay(): Long {
@@ -198,6 +198,15 @@ class RecurringTaskInterval(
             }
             startDate
         } else Calendar.getInstance().timeInMillis
+    }
+
+    fun getNextOccurrenceDay(oldDueDate: Long, validate: Boolean): Long {
+        val repeatProcess = if (daysOfWeek != null) {
+            findNextOccurrenceDayInWeek(oldDueDate, validate)
+        } else {
+            findNextOccurrenceDay(oldDueDate, validate)
+        }
+        return repeatProcess.newDueDate
     }
 
     fun getRecurringIntervalReadable(resources: Resources): String {
@@ -230,4 +239,4 @@ class RecurringTaskInterval(
     }
 }
 
-class UpdatedStartDate(val newDueDate: Long, val timesSkipped: Int = 0)
+class RepeatProcess(val newDueDate: Long, val timesSkipped: Int = 0)

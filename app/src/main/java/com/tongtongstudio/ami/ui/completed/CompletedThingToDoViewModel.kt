@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CompletedThingToDoViewModel @Inject constructor(
-    private val repository: Repository
+    repository: Repository
 ) : ViewModel() {
     val thingsToDoCompleted = repository.getCompletedTasks().asLiveData()
 }

@@ -15,7 +15,7 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
-            app:title="View pager ;)"
+            app:title="@string/fragment_task_details_title"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize" />
 
@@ -27,6 +27,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/app_bar"
         app:layout_constraintEnd_toEndOf="parent"
+        app:tabTextAppearance="@style/TextAppearance.Ami.Subtitle2.Day"
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.viewpager2.widget.ViewPager2

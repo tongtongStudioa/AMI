@@ -11,23 +11,23 @@
 
             <!--<item
                 android:id="@+id/action_sort_by_name"
-                android:title="@string/sort_by_name" />-->
+                android:goalTitle="@string/sort_by_name" />-->
 
             <item
                 android:id="@+id/action_sort_by_eisenhower_matrix"
-                android:title="By Eisenhower matrix" />
+                android:title="@string/by_eisenhower_matrix" />
 
             <item
                 android:id="@+id/action_sort_by_2_minutes_rules"
-                android:title="By 2 minutes rules" />
+                android:title="@string/by_2_minutes_rules" />
 
             <item
                 android:id="@+id/action_sort_by_eat_the_frog"
-                android:title="By Eat The Frog" />
+                android:title="@string/by_eat_the_frog" />
 
             <item
                 android:id="@+id/action_sort_by_creator_sort"
-                android:title="Creator sort" />
+                android:title="@string/creator_sort" />
         </menu>
 
     </item>
@@ -37,4 +37,5 @@
         android:checkable="true"
         android:title="@string/hide_completed"
         app:showAsAction="never" />
+
 </menu>

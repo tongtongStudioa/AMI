@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -102,7 +103,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                 binding.mainRecyclerView.isVisible = false
                 binding.emptyRecyclerView.textViewExplication.text = textExplication
                 binding.emptyRecyclerView.textViewActionText.text =
-                    getString(R.string.text_action_no_tasks)
+                    getString(R.string.text_action_no_tasks_later)
             } else {
                 mainAdapter.submitList(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
@@ -194,7 +195,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                     else -> false
                 }
             }
-        }, viewLifecycleOwner)
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout

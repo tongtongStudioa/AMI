@@ -88,6 +88,13 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
                         ?: getString(R.string.no_information)
             }
 
+            // estimated work time view when task is completed
+            tvEstimatedWorkTime.text =
+                TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedWorkingTime)
+                    ?: getString(R.string.no_information)
+            estimatedWorkTimeView.isVisible =
+                viewModel.estimatedWorkingTime != null && viewModel.task?.isCompleted == true
+
             // completion date
             val dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())
             val completionDateFormatted = viewModel.task?.getCompletionDateFormatted()

@@ -164,7 +164,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_set_due_date"
-                style="@style/ButtonEditTask.AMI.Style"
+                style="@style/Button.EditProperties.AMI.Style"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/set_due_date"
@@ -197,7 +197,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_assessment"
-                style="@style/ButtonEditTask.AMI.Style"
+                style="@style/Button.EditProperties.AMI.Style"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/create_intermediate_assessments"

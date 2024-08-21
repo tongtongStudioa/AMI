@@ -18,7 +18,6 @@ import android.widget.PopupMenu
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getColor
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -36,6 +35,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -58,7 +58,6 @@ import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.ui.dialog.CURRENT_RECURRING_INFO_REQUEST_KEY
-import com.tongtongstudio.ami.ui.dialog.CustomTimePickerDialogFragment
 import com.tongtongstudio.ami.ui.dialog.DAYS_OF_THE_WEEKS_KEY
 import com.tongtongstudio.ami.ui.dialog.DEADLINE
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_DIALOG_TAG
@@ -73,6 +72,7 @@ import com.tongtongstudio.ami.ui.dialog.RECURRING_SELECTION_DIALOG_TAG
 import com.tongtongstudio.ami.ui.dialog.RecurringChoiceDialogFragment
 import com.tongtongstudio.ami.ui.dialog.START_DATE
 import com.tongtongstudio.ami.ui.dialog.TIMES_KEY
+import com.tongtongstudio.ami.ui.dialog.TimePickerDialogFragment
 import com.tongtongstudio.ami.ui.dialog.category.CATEGORY_EDIT_TAG
 import com.tongtongstudio.ami.ui.dialog.category.EditCategoryDialogFragment
 import com.tongtongstudio.ami.ui.dialog.linkproject.EditProjectLinkedDialogFragment
@@ -301,11 +301,11 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 EditAttributesAdapter(object : AttributeListener<Reminder> {
                     override fun onItemClicked(attribute: Reminder) {
                         if (isNotificationPermissionGranted())
-                            return
-                        dateTimePicker.showDialogNewReminder(attribute.dueDate) {
-                            val updatedReminder = attribute.copy(dueDate = it)
-                            viewModel.updateReminder(attribute, updatedReminder)
-                        }
+                            dateTimePicker.showDialogNewReminder(attribute.dueDate) {
+                                val updatedReminder = attribute.copy(dueDate = it)
+                                viewModel.updateReminder(attribute, updatedReminder)
+                            }
+                        else requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
 
                     override fun onRemoveCrossClick(attribute: Reminder) {
@@ -438,13 +438,9 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
         // from dialog estimated time selection
         setFragmentResultListener(ESTIMATED_TIME_LISTENER_REQUEST_KEY) { _, bundle ->
-            val resultValues = bundle.getIntArray(ESTIMATED_TIME_RESULT_KEY)
-            val hours: Int? = resultValues?.get(0)
-            val minutes: Int? = resultValues?.get(1)
-            if (hours != null && minutes != null) {
-                val estimatedTimeMillis: Long =
-                    (hours.toLong() * 60 * 60 * 1000) + (minutes.toLong() * 60 * 1000)
-                viewModel.estimatedTime = estimatedTimeMillis
+            val result = bundle.getLong(ESTIMATED_TIME_RESULT_KEY)
+            if (result != 0L) {
+                viewModel.estimatedTime = result
                 updateSpecificButtonText(
                     binding.btnSetEstimatedTime,
                     binding.removeEstimatedTime,
@@ -716,8 +712,8 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         removeButton: View,
         defaultText: String
     ) {
-        button.setIconTintResource(R.color.boulder)
-        button.setTextColor(getColor(requireContext(), R.color.boulder))
+        //button.setIconTintResource(R.color.md_theme_light_inversePrimary)
+        button.setTextColor(MaterialColors.getColor(requireView(), R.attr.colorPrimaryInverse))
         removeButton.isVisible = false
         button.text = defaultText
     }
@@ -804,15 +800,13 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         valueText: String,
         removeButton: View
     ) {
-        // TODO: how to show good color on dark theme ?
-        button.setIconTintResource(R.color.seed)
-        button.setTextColor(getColor(requireContext(), R.color.french_blue))
+        button.setTextColor(MaterialColors.getColor(requireView(), R.attr.colorPrimary))
         removeButton.isVisible = true
         button.text = valueText
     }
 
     private fun showEstimatedTimePicker() {
-        val newFragment = CustomTimePickerDialogFragment(getString(R.string.set_estimated_time))
+        val newFragment = TimePickerDialogFragment(getString(R.string.set_estimated_time))
         newFragment.show(parentFragmentManager, ESTIMATED_TIME_DIALOG_TAG)
     }
 

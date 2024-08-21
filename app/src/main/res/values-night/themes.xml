@@ -1,28 +1,5 @@
 <resources>
     <!-- Base application theme. -->
-
-    <style name="Theme.AMI.Blue" parent="Theme.MaterialComponents.NoActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">#0091A1</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
-        <item name="colorOnPrimary">@color/link_water</item>
-        <!-- Secondary brand color. -->
-        <item name="colorAccent">@color/teal_200</item>
-        <item name="colorSecondary">@color/french_blue</item>
-        <item name="colorSecondaryVariant">@color/teal_200</item>
-        <item name="colorOnSecondary">@color/link_water</item>
-
-        <item name="textAppearanceSubtitle1">@style/TextAppearance.Ami.Subtitle1.Night</item>
-        <item name="textAppearanceSubtitle2">@style/TextAppearance.Ami.Subtitle2.Night</item>
-
-        <!-- Surface, Error, Background-->
-        <item name="colorOnSurface">@color/white</item>
-        <item name="colorPrimaryDark">#000051</item>
-
-        <item name="statusBarBackground">@color/black</item>
-        <item name="appBarLayoutStyle">@style/AppBarAmi.Light</item>
-    </style>
-
     <style name="Theme.AMI.Seed" parent="Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/md_theme_dark_primary</item>
         <item name="colorOnPrimary">@color/md_theme_dark_onPrimary</item>

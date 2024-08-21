@@ -18,10 +18,10 @@ import com.tongtongstudio.ami.services.TrackingService
 import com.tongtongstudio.ami.timer.TimerType
 import com.tongtongstudio.ami.timer.TrackingConstants
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
-import com.tongtongstudio.ami.ui.dialog.CustomTimePickerDialogFragment
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_DIALOG_TAG
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_LISTENER_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_RESULT_KEY
+import com.tongtongstudio.ami.ui.dialog.TimePickerDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -66,6 +66,13 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
                 binding.timerTextView.text = formattedTime
             }
             updateProgressBar((viewModel.actualWorkTime.value ?: 0) + it)
+        }
+
+        viewModel.actualWorkTime.observe(viewLifecycleOwner) {
+            binding.timerTextView.text =
+                TrackingTimeUtility.getFormattedWorkingTime(it)
+                    ?: getString(R.string.no_information)
+            updateProgressBar(it ?: 0L)
         }
 
         binding.apply {
@@ -121,23 +128,15 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
 
             // from dialog add work time selection
             setFragmentResultListener(ESTIMATED_TIME_LISTENER_REQUEST_KEY) { _, bundle ->
-                val resultValues = bundle.getIntArray(ESTIMATED_TIME_RESULT_KEY)
-                val hours: Int? = resultValues?.get(0)
-                val minutes: Int? = resultValues?.get(1)
-                if (hours != null && minutes != null) {
-                    // TODO: calculus in viewModel
-                    val addedWorkTimeInMillis: Long =
-                        (hours.toLong() * 60 * 60 * 1000) + (minutes.toLong() * 60 * 1000)
+                val result = bundle.getLong(ESTIMATED_TIME_RESULT_KEY)
+                if (result != 0L) {
+                    val addedWorkTimeInMillis: Long = result
                     viewModel.saveTrackingTime(addedWorkTimeInMillis)
                     Snackbar.make(
                         view,
                         getString(R.string.msg_work_session_saved),
                         Snackbar.LENGTH_SHORT
                     ).show()
-                    binding.timerTextView.text = TrackingTimeUtility.getFormattedWorkingTime(
-                        viewModel.actualWorkTime.value ?: 0,
-                        TimerType.STOPWATCH
-                    )
                 }
             }
         }
@@ -190,7 +189,7 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
 
     // TODO: navigate with nav component
     private fun onBtnAddWorkTimeClicked() {
-        val newFragment = CustomTimePickerDialogFragment(getString(R.string.add_working_time))
+        val newFragment = TimePickerDialogFragment(getString(R.string.add_working_time))
         newFragment.show(parentFragmentManager, ESTIMATED_TIME_DIALOG_TAG)
     }
 

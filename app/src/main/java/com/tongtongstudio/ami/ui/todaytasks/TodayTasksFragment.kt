@@ -51,6 +51,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     private lateinit var mainTaskAdapter: ThingToDoAdapter
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var soundPlayer: SoundPlayer
+    private var menuProvider: MenuProvider? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -219,7 +220,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                     else -> false
                 }
             }
-        }, viewLifecycleOwner)
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
 
@@ -274,5 +275,10 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
 
     override fun onSubTaskLeftSwipe(thingToDo: Task) {
         sharedViewModel.updateSubTask(thingToDo)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        menuProvider?.let { requireActivity().removeMenuProvider(it) }
     }
 }

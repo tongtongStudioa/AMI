@@ -106,7 +106,6 @@ dependencies {
     // Dagger Hilt
     implementation "com.google.dagger:hilt-android:$hiltVersion"
     ksp "com.google.dagger:hilt-android-compiler:$hiltVersion"
-    //kapt "androidx.hilt:hilt-compiler:$hiltAndroidXVersion"
 
     // DataStore
     implementation "androidx.datastore:datastore-preferences:$dataStoreVersion"

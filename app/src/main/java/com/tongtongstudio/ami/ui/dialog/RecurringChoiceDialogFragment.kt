@@ -13,8 +13,8 @@ import androidx.fragment.app.setFragmentResultListener
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.RecurringTaskInterval
-import com.tongtongstudio.ami.databinding.DialogSelectRecurringProtocolBinding
-import java.util.*
+import com.tongtongstudio.ami.databinding.DialogSetRepeatingBinding
+import java.util.Calendar
 
 enum class Period { DAYS, WEEKS, MONTHS, YEARS }
 
@@ -31,7 +31,7 @@ const val NO_VALUE = "no_value"
 
 class RecurringChoiceDialogFragment : DialogFragment() {
 
-    private lateinit var binding: DialogSelectRecurringProtocolBinding
+    private lateinit var binding: DialogSetRepeatingBinding
     private var selection: Int = 0
     private lateinit var stringItems: Array<String>
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -39,7 +39,7 @@ class RecurringChoiceDialogFragment : DialogFragment() {
             val builder = MaterialAlertDialogBuilder(it)
             // Get the layout inflater
             val inflater = requireActivity().layoutInflater
-            binding = DialogSelectRecurringProtocolBinding.inflate(inflater)
+            binding = DialogSetRepeatingBinding.inflate(inflater)
             // Inflate and set the layout for the dialog
             // Pass null as the parent view because its going in the dialog layout
             builder.setView(binding.root)
@@ -92,10 +92,12 @@ class RecurringChoiceDialogFragment : DialogFragment() {
             val startDate = bundle.getLong(START_DATE)
             // populate data
             selection = getSelection(period)
+            // TODO: let user choose recurring end : on deadline or repeating number, choice also with learning interval
             binding.deadlineTextView.text =
                 if (deadline == null || deadline == NO_VALUE) getString(R.string.set_recurring_end) else deadline
+            binding.deadlineTextView.isVisible = deadline != NO_VALUE
+            binding.recurringEndInfo.isVisible = deadline != NO_VALUE
             binding.inputLayoutUserChoice.editText?.setText(if (times != 0) times.toString() else "1")
-            // TODO: change text display with which period is already selected
             binding.autoCompleteTextView.setText(setPeriod(period))
             binding.autoCompleteTextView.setAdapter(adapter)
             if (period == Period.WEEKS.name)

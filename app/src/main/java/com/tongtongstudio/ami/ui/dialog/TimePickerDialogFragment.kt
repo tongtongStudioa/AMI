@@ -16,7 +16,7 @@ const val ESTIMATED_TIME_LISTENER_REQUEST_KEY = "estimated_time_user_selection"
 const val ESTIMATED_TIME_RESULT_KEY = "estimated_time_user_selection_result"
 const val ESTIMATED_TIME_DIALOG_TAG = "estimated_time_selection_tag"
 
-class CustomTimePickerDialogFragment(val title: String) : DialogFragment() {
+class TimePickerDialogFragment(val title: String) : DialogFragment() {
 
     private lateinit var binding: DialogCustomTimePickerBinding
 
@@ -59,17 +59,16 @@ class CustomTimePickerDialogFragment(val title: String) : DialogFragment() {
         return binding.root
     }
 
-    private fun onDialogPositiveClick(dialog: CustomTimePickerDialogFragment) {
+    private fun onDialogPositiveClick(dialog: TimePickerDialogFragment) {
         val hours: Int = binding.hoursPicker.value
         val minutes: Int =
             binding.minutesPicker.value * 5 // minutesPicker.value return value between 0 and 11
-        val result = IntArray(2)
-        result[0] = hours
-        result[1] = minutes
+        val estimatedTimeMillis: Long =
+            (hours.toLong() * 60 * 60 * 1000) + (minutes.toLong() * 60 * 1000)
 
         dialog.setFragmentResult(
             ESTIMATED_TIME_LISTENER_REQUEST_KEY,
-            bundleOf(ESTIMATED_TIME_RESULT_KEY to result)
+            bundleOf(ESTIMATED_TIME_RESULT_KEY to estimatedTimeMillis)
         )
         dialog.dismiss()
     }

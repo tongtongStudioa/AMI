@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:gravity="center_vertical"
-            android:textAppearance="@style/TextAppearance.Ami.Subtitle2.Day"
+            android:textAppearance="@style/TextAppearance.Ami.Body1"
             app:layout_constraintEnd_toStartOf="@+id/check_box_completed"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"

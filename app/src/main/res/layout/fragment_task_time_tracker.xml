@@ -33,7 +33,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:trackColor="@color/link_water"
+            app:trackColor="?attr/colorSurfaceVariant"
             app:trackCornerRadius="8dp"
             app:trackThickness="18dp" />
 

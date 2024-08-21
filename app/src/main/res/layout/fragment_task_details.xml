@@ -46,14 +46,14 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="8dp">
+                    android:padding="10dp">
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/task_name"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/montserrat_medium"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                        android:textAppearance="@style/TextAppearance.Ami.Body1"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         tools:text="task name example" />
@@ -62,23 +62,20 @@
                         android:id="@+id/task_category"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/montserrat_medium"
-                        android:gravity="end"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
-                        app:layout_constraintBottom_toBottomOf="@+id/task_name"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toEndOf="@+id/task_name"
-                        app:layout_constraintTop_toTopOf="@+id/task_name"
-                        tools:text="category" />
+                        android:gravity="start"
+                        android:textAppearance="@style/TextAppearance.Ami.Body2"
+                        app:layout_constraintStart_toStartOf="@+id/task_name"
+                        app:layout_constraintTop_toBottomOf="@+id/task_name"
+                        tools:text="Category" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/task_description"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
+                        android:layout_marginTop="2dp"
                         android:textAppearance="@style/TextAppearance.Ami.Caption"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/task_name"
+                        app:layout_constraintTop_toBottomOf="@+id/task_category"
                         tools:text="test description for example task, this text must be on multiple lines" />
 
                     <com.google.android.material.divider.MaterialDivider
@@ -347,7 +344,48 @@
                         app:layout_constraintEnd_toEndOf="@+id/duration_title"
                         app:layout_constraintStart_toStartOf="@+id/duration_title"
                         app:layout_constraintTop_toBottomOf="@+id/duration_title"
-                        tools:text="1:32:56" />
+                        tools:text="1h 32m 56s" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/estimated_work_time_view"
+                style="@style/Widget.Material3.CardView.Elevated"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="15dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/total_duration_view">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="10dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/estimated_work_time_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="@string/estimated_time"
+                        android:textAppearance="@style/TextAppearance.Ami.Subtitle1.Day"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tv_estimated_work_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.Ami.Headline5"
+                        app:layout_constraintEnd_toEndOf="@+id/estimated_work_time_title"
+                        app:layout_constraintStart_toStartOf="@+id/estimated_work_time_title"
+                        app:layout_constraintTop_toBottomOf="@+id/estimated_work_time_title"
+                        tools:text="1h 00m 00s" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -357,7 +395,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/completion_date"
-                app:layout_constraintTop_toBottomOf="@id/total_duration_view"
+                app:layout_constraintTop_toBottomOf="@id/estimated_work_time_view"
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginTop="10dp"
                 tools:text="Completion date : 25/07/2024" />

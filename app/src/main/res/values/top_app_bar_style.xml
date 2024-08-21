@@ -21,13 +21,6 @@
         <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
     </style>
 
-    <style name="ThemeOverlay.App.Toolbar.Light" parent="Widget.Material3.Toolbar">
-        <item name="colorPrimary">@color/white</item>
-        <item name="colorOnPrimary">@color/gun_metal</item>
-        <item name="android:textColorSecondary">@color/gun_metal</item>
-        <item name="colorOnSurfaceVariant">@color/gun_metal</item>
-    </style>
-
     <style name="AppBarAmi.Night" parent="Widget.Material3.AppBarLayout">
         <item name="toolbarStyle">@style/ToolbarAmi.Night</item>
     </style>
@@ -44,8 +37,8 @@
         <!--<item name="materialThemeOverlay">@style/ThemeOverlay.App.Toolbar.Night</item>-->
         <item name="subtitleTextAppearance">@style/TextAppearance.Ami.TitleMedium</item>
         <item name="titleTextAppearance">@style/TextAppearance.Ami.TitleLarge</item>
-        <item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
-        <item name="colorOnSurfaceVariant">@color/md_theme_dark_onSurfaceVariant</item>
+        <!--<item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_dark_onSurfaceVariant</item>-->
     </style>
 
     <style name="ThemeOverlay.App.Toolbar.Night" parent="ThemeOverlay.Material3.Toolbar.Surface">

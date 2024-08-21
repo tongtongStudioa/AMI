@@ -194,18 +194,18 @@ class Repository @Inject constructor(
         else getTimeWorkedByCategory()
     }
 
-    fun getTimeWorkedByCategory(): Flow<List<TimeWorkedDistribution>> {
+    private fun getTimeWorkedByCategory(): Flow<List<TimeWorkedDistribution>> {
         return taskDao.getTimeWorkedPerCategory()
     }
 
-    fun getTimeWorkedByTask(categoryId: Long): Flow<List<TimeWorkedDistribution>> {
+    private fun getTimeWorkedByTask(categoryId: Long): Flow<List<TimeWorkedDistribution>> {
         return taskDao.getRateTimeWorkedPerTask(categoryId)
     }
 
     fun getAccuracyRateEstimation(
         categoryId: Long? = null,
         errorPercent: Float = 0.3F
-    ): Flow<Float> {
+    ): Flow<Float?> {
         return if (categoryId != null)
             taskDao.getCategoryAccuracyRateOfEstimatedWorkTime(categoryId, errorPercent)
         else taskDao.getAccuracyRateOfEstimatedWorkTime(errorPercent)
@@ -213,7 +213,7 @@ class Repository @Inject constructor(
 
     fun getOnTimeCompletionRate(
         categoryId: Long? = null,
-    ): Flow<Float> {
+    ): Flow<Float?> {
         return if (categoryId != null)
             taskDao.getOnTimeCompletionCategoryTasksRate(categoryId)
         else taskDao.getOnTimeCompletionTasksRate()
@@ -237,7 +237,7 @@ class Repository @Inject constructor(
         else taskDao.getCurrentMaxStreakTask()
     }
 
-    fun getHabitCompletionRate(categoryId: Long? = null): Flow<Float> {
+    fun getHabitCompletionRate(categoryId: Long? = null): Flow<Float?> {
         return if (categoryId != null)
             taskDao.getCategoryHabitCompletionRate(categoryId)
         else taskDao.getHabitCompletionRate()

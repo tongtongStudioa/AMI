@@ -100,7 +100,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/set_evaluation_date"
-            style="@style/ButtonEditTask.AMI.Style"
+            style="@style/Button.EditProperties.AMI.Style"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/set_due_date"

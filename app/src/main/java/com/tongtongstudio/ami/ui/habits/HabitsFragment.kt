@@ -133,9 +133,9 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = true
                 binding.mainRecyclerView.isVisible = false
                 binding.emptyRecyclerView.textViewExplication.text =
-                    getString(R.string.text_explication_no_events)
+                    getString(R.string.text_explication_no_habits)
                 binding.emptyRecyclerView.textViewActionText.text =
-                    getString(R.string.text_action_no_events)
+                    getString(R.string.text_action_no_habits)
             } else {
                 taskAdapter.submitList(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false

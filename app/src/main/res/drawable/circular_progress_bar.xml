@@ -24,7 +24,7 @@
                     android:thicknessRatio="16"
                     android:useLevel="true">
                     <corners android:radius="10dp" />
-                    <solid android:color="@color/french_blue">
+                    <solid android:color="?attr/colorPrimary">
 
                     </solid>
                     <!--<gradient

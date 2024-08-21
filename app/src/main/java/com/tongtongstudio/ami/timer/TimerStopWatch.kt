@@ -17,7 +17,7 @@ class TimerStopWatch(
     private var timerType: TimerType = TimerType.STOPWATCH
 
     /**
-     * This variable is essential to count down timer (for pomodoro sessions)
+     * This variable is <br> essential to count down timer (for pomodoro sessions) </br>
      * and it's used for track duration even for StopWatch mode.
      * Equal workTime if type is CountDown and currentWorkingTime else.
      */

@@ -2,8 +2,10 @@ package com.tongtongstudio.ami.adapter
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.color.MaterialColors
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
 import com.tongtongstudio.ami.data.datatables.ThingToDo
@@ -62,6 +64,7 @@ abstract class ThingToDoItemCallback(
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
+
         RecyclerViewSwipeDecorator.Builder(
             context,
             c,
@@ -74,8 +77,20 @@ abstract class ThingToDoItemCallback(
         )
             .addSwipeLeftActionIcon(R.drawable.ic_baseline_edit_24)
             .addSwipeRightActionIcon(R.drawable.ic_baseline_delete_24)
-            .setSwipeLeftActionIconTint(context.resources.getColor(R.color.beautiful_green))
-            .setSwipeRightActionIconTint(context.resources.getColor(R.color.design_default_color_error))
+            .setSwipeLeftActionIconTint(
+                MaterialColors.getColor(
+                    context,
+                    R.attr.colorTertiary,
+                    Color.GREEN
+                )
+            )
+            .setSwipeRightActionIconTint(
+                MaterialColors.getColor(
+                    context,
+                    R.attr.colorError,
+                    Color.RED
+                )
+            )
             .create()
             .decorate()
         super.onChildDraw(

@@ -121,16 +121,17 @@
         android:layout_alignParentStart="true"
         android:layout_marginTop="15dp"
         android:layout_marginStart="15dp"
+        android:textAppearance="@style/TextAppearance.Ami.Body1"
         android:text="@string/recurring_end" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/deadline_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Ami.Caption"
         android:layout_below="@+id/recurring_end_info"
         android:layout_alignStart="@+id/recurring_end_info"
         tools:text="recurring end ? occurs ?" />
-    <!--todo: change this to see deadline to recurring task-->
 
 
 </RelativeLayout>

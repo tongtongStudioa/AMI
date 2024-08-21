@@ -12,7 +12,6 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.appbar.MaterialToolbar
-            style="@style/CollapsingToolbarAmi.Night"
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -104,7 +103,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:textAppearance="@style/TextAppearance.Ami.Headline5"
-                                    android:textColor="@color/md_theme_light_primary"
+                                    android:textColor="?attr/colorOnPrimaryContainer"
                                     app:layout_constraintEnd_toEndOf="@+id/materialTextView"
                                     app:layout_constraintStart_toStartOf="@+id/materialTextView"
                                     app:layout_constraintTop_toBottomOf="@+id/materialTextView"
@@ -145,7 +144,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:textAppearance="@style/TextAppearance.Ami.Headline5"
-                                    android:textColor="@color/md_theme_light_primary"
+                                    android:textColor="?attr/colorOnPrimaryContainer"
                                     app:layout_constraintEnd_toEndOf="@+id/task_achievement_rate_title"
                                     app:layout_constraintStart_toStartOf="@+id/task_achievement_rate_title"
                                     app:layout_constraintTop_toBottomOf="@+id/task_achievement_rate_title"
@@ -167,7 +166,7 @@
                             app:layout_constraintTop_toTopOf="parent">
 
                             <androidx.constraintlayout.widget.ConstraintLayout
-                                android:layout_width="match_parent"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:padding="15dp">
 
@@ -187,7 +186,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:textAppearance="@style/TextAppearance.Ami.Headline5"
-                                    android:textColor="@color/md_theme_light_primary"
+                                    android:textColor="?attr/colorOnPrimaryContainer"
                                     app:layout_constraintEnd_toEndOf="@+id/projects_completed_title"
                                     app:layout_constraintStart_toStartOf="@+id/projects_completed_title"
                                     app:layout_constraintTop_toBottomOf="@+id/projects_completed_title"
@@ -229,7 +228,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:textAppearance="@style/TextAppearance.Ami.Headline5"
-                                    android:textColor="@color/md_theme_light_primary"
+                                    android:textColor="?attr/colorOnPrimaryContainer"
                                     app:layout_constraintEnd_toEndOf="@+id/projects_achievement_rate_title"
                                     app:layout_constraintStart_toStartOf="@+id/projects_achievement_rate_title"
                                     app:layout_constraintTop_toBottomOf="@+id/projects_achievement_rate_title"
@@ -294,7 +293,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="@style/TextAppearance.Ami.Headline5"
-                        android:textColor="@color/md_theme_light_primary"
+                        android:textColor="?attr/colorOnPrimaryContainer"
                         app:layout_constraintEnd_toEndOf="@+id/materialTextView3"
                         app:layout_constraintStart_toStartOf="@+id/materialTextView3"
                         app:layout_constraintTop_toBottomOf="@id/materialTextView3"
@@ -448,7 +447,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="@style/TextAppearance.Ami.Headline5"
-                        android:textColor="@color/md_theme_light_primary"
+                        android:textColor="?attr/colorOnPrimaryContainer"
                         app:layout_constraintEnd_toEndOf="@+id/materialTextView4"
                         app:layout_constraintStart_toStartOf="@+id/materialTextView4"
                         app:layout_constraintTop_toBottomOf="@+id/materialTextView4"
@@ -542,11 +541,13 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:id="@+id/current_max_streak_view"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="10dp"
                     app:layout_constraintHorizontal_weight="3"
                     app:layout_constraintEnd_toStartOf="@id/max_streak_view"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="@id/max_streak_view"
                     app:layout_constraintTop_toBottomOf="@+id/tv_title_section3">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -569,7 +570,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textAppearance="@style/TextAppearance.Ami.Headline5"
-                            android:textColor="@color/md_theme_light_primary"
+                            android:textColor="?attr/colorOnPrimaryContainer"
                             app:layout_constraintEnd_toEndOf="@+id/current_max_streak_title"
                             app:layout_constraintStart_toStartOf="@+id/current_max_streak_title"
                             app:layout_constraintTop_toBottomOf="@+id/current_max_streak_title"
@@ -609,7 +610,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textAppearance="@style/TextAppearance.Ami.Headline5"
-                            android:textColor="@color/md_theme_light_primary"
+                            android:textColor="?attr/colorOnPrimaryContainer"
                             app:layout_constraintEnd_toEndOf="@+id/max_streak_title"
                             app:layout_constraintStart_toStartOf="@+id/max_streak_title"
                             app:layout_constraintTop_toBottomOf="@+id/max_streak_title"
@@ -648,7 +649,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textAppearance="@style/TextAppearance.Ami.Headline5"
-                            android:textColor="@color/md_theme_light_primary"
+                            android:textColor="?attr/colorOnPrimaryContainer"
                             app:layout_constraintEnd_toEndOf="@+id/habit_completion_rate_title"
                             app:layout_constraintStart_toStartOf="@+id/habit_completion_rate_title"
                             app:layout_constraintTop_toBottomOf="@+id/habit_completion_rate_title"

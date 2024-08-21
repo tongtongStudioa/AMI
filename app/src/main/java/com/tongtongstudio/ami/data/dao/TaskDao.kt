@@ -79,7 +79,7 @@ interface TaskDao {
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY isCompleted, task_due_date/8640000 ASC, priority DESC, importance DESC, urgency DESC, estimatedWorkingTime DESC"
+                "ORDER BY isCompleted, priority DESC, importance DESC, urgency DESC, estimatedWorkingTime DESC"
     )
     fun getTasksOrderByEisenhowerMatrixSort(
         hideCompleted: Boolean,
@@ -95,7 +95,7 @@ interface TaskDao {
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY isCompleted ASC, task_due_date/8640000 ASC, estimatedWorkingTime ASC, skillLevel DESC, isRecurring DESC, priority ASC, urgency DESC, importance DESC"
+                "ORDER BY isCompleted ASC, estimatedWorkingTime ASC, skillLevel DESC, isRecurring DESC, priority ASC, urgency DESC, importance DESC"
     )
     fun getTasksOrderBy2minutesRules(
         hideCompleted: Boolean,
@@ -267,20 +267,20 @@ interface TaskDao {
                 "isCompleted AND " +
                 "currentWorkingTime BETWEEN estimatedWorkingTime * (1-:errorPercent) AND estimatedWorkingTime * (1+:errorPercent) " +
                 "THEN 1 END) " +
-                "/ COUNT(CASE WHEN isCompleted THEN 1 END) * 100,1)" +
+                "/ COUNT(CASE WHEN isCompleted AND estimatedWorkingTime NOT NULL THEN 1 END) * 100,1)" +
                 "FROM task_table"
     )
-    fun getAccuracyRateOfEstimatedWorkTime(errorPercent: Float): Flow<Float>
+    fun getAccuracyRateOfEstimatedWorkTime(errorPercent: Float): Flow<Float?>
 
     @Query(
         "SELECT " +
                 "round(1.0 * COUNT(" +
                 "CASE " +
-                "WHEN " +
-                "isCompleted AND " +
-                "currentWorkingTime BETWEEN estimatedWorkingTime * (1-:errorPercent) AND estimatedWorkingTime * (1+:errorPercent) " +
+                "WHEN isCompleted " +
+                "AND estimatedWorkingTime NOT NULL " +
+                "AND currentWorkingTime BETWEEN estimatedWorkingTime * (1-:errorPercent) AND estimatedWorkingTime * (1+:errorPercent) " +
                 "THEN 1 END) " +
-                "/ COUNT(CASE WHEN isCompleted THEN 1 END) * 100,1)" +
+                "/ COUNT(CASE WHEN isCompleted AND estimatedWorkingTime NOT NULL THEN 1 END) * 100,1)" +
                 "FROM task_table " +
                 "WHERE task_due_date BETWEEN :startDate AND :endDate " +
                 "GROUP BY task_due_date /8640000"
@@ -299,14 +299,14 @@ interface TaskDao {
                 "isCompleted AND " +
                 "currentWorkingTime BETWEEN estimatedWorkingTime * (1-:errorPercent) AND estimatedWorkingTime * (1+:errorPercent) " +
                 "THEN 1 END) " +
-                "/ COUNT(CASE WHEN isCompleted THEN 1 END) * 100,1)" +
+                "/ COUNT(CASE WHEN isCompleted AND estimatedWorkingTime NOT NULL THEN 1 END) * 100,1)" +
                 "FROM task_table " +
                 "WHERE categoryId = :categoryId"
     )
     fun getCategoryAccuracyRateOfEstimatedWorkTime(
         categoryId: Long,
         errorPercent: Float
-    ): Flow<Float>
+    ): Flow<Float?>
 
     @Query(
         "SELECT " +
@@ -316,7 +316,7 @@ interface TaskDao {
                 "isCompleted AND " +
                 "currentWorkingTime BETWEEN estimatedWorkingTime * (1-:errorPercent) AND estimatedWorkingTime * (1+:errorPercent) " +
                 "THEN 1 END) " +
-                "/ COUNT(CASE WHEN isCompleted THEN 1 END) * 100,1)" +
+                "/ COUNT(CASE WHEN isCompleted AND estimatedWorkingTime NOT NULL THEN 1 END) * 100,1)" +
                 "FROM task_table " +
                 "WHERE categoryId = :categoryId AND task_due_date BETWEEN :startDate AND :endDate " +
                 "GROUP BY task_due_date /8640000"
@@ -326,14 +326,14 @@ interface TaskDao {
         startDate: Long,
         endDate: Long,
         errorPercent: Float
-    ): Flow<List<Float>>
+    ): Flow<List<Float?>>
 
     @Query(
         "SELECT round(100.0 * COUNT(CASE WHEN completedOnTime THEN 1 END) / COUNT(*),1) " +
                 "FROM task_table " +
                 "WHERE isCompleted"
     )
-    fun getOnTimeCompletionTasksRate(): Flow<Float>
+    fun getOnTimeCompletionTasksRate(): Flow<Float?>
 
     // TODO: get on time completion by week or by month
     @Query(
@@ -342,14 +342,14 @@ interface TaskDao {
                 "WHERE isCompleted AND task_due_date BETWEEN :startDate AND :endDate " +
                 "GROUP BY task_due_date /8640000"
     )
-    fun getOnTimeCompletionTasksRateByPeriod(startDate: Long, endDate: Long): Flow<List<Float>>
+    fun getOnTimeCompletionTasksRateByPeriod(startDate: Long, endDate: Long): Flow<List<Float?>>
 
     @Query(
         "SELECT round(100.0 * COUNT(CASE WHEN completedOnTime THEN 1 END) / COUNT(*),1) " +
                 "FROM task_table " +
                 "WHERE isCompleted AND categoryId = :categoryId"
     )
-    fun getOnTimeCompletionCategoryTasksRate(categoryId: Long): Flow<Float>
+    fun getOnTimeCompletionCategoryTasksRate(categoryId: Long): Flow<Float?>
 
     @Query(
         "SELECT round(100.0 * COUNT(CASE WHEN completedOnTime THEN 1 END) / COUNT(*),1) " +
@@ -380,14 +380,14 @@ interface TaskDao {
                 "FROM task_table " +
                 "WHERE isRecurring"
     )
-    fun getHabitCompletionRate(): Flow<Float>
+    fun getHabitCompletionRate(): Flow<Float?>
 
     @Query(
         "SELECT round(AVG(CASE WHEN totalRepetitionCount != 0 THEN 100.0 * successCount / totalRepetitionCount ELSE NULL END),1) " +
                 "FROM task_table " +
                 "WHERE isRecurring AND categoryId = :categoryId"
     )
-    fun getCategoryHabitCompletionRate(categoryId: Long): Flow<Float>
+    fun getCategoryHabitCompletionRate(categoryId: Long): Flow<Float?>
 
     // ************ Base Method *************** //
 

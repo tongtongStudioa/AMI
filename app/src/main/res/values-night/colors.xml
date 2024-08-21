@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="md_theme_dark_primary">#A7C8FF</color>
+    <color name="md_theme_dark_onPrimary">#003060</color>
+    <color name="md_theme_dark_primaryContainer">#004788</color>
+    <color name="md_theme_dark_onPrimaryContainer">#D5E3FF</color>
+    <color name="md_theme_dark_secondary">#E6C50F</color>
+    <color name="md_theme_dark_onSecondary">#3A3000</color>
+    <color name="md_theme_dark_secondaryContainer">#534600</color>
+    <color name="md_theme_dark_onSecondaryContainer">#FFE262</color>
+    <color name="md_theme_dark_tertiary">#35E189</color>
+    <color name="md_theme_dark_onTertiary">#00391D</color>
+    <color name="md_theme_dark_tertiaryContainer">#00522C</color>
+    <color name="md_theme_dark_onTertiaryContainer">#5CFFA3</color>
+    <color name="md_theme_dark_error">#FFB4AB</color>
+    <color name="md_theme_dark_errorContainer">#93000A</color>
+    <color name="md_theme_dark_onError">#690005</color>
+    <color name="md_theme_dark_onErrorContainer">#FFDAD6</color>
+    <color name="md_theme_dark_background">#001F25</color>
+    <color name="md_theme_dark_onBackground">#A6EEFF</color>
+    <color name="md_theme_dark_surface">#001F25</color>
+    <color name="md_theme_dark_onSurface">#A6EEFF</color>
+    <color name="md_theme_dark_surfaceVariant">#43474E</color>
+    <color name="md_theme_dark_onSurfaceVariant">#C4C6CF</color>
+    <color name="md_theme_dark_outline">#8E9199</color>
+    <color name="md_theme_dark_inverseOnSurface">#001F25</color>
+    <color name="md_theme_dark_inverseSurface">#A6EEFF</color>
+    <color name="md_theme_dark_inversePrimary">#005EB2</color>
+    <color name="md_theme_dark_shadow">#000000</color>
+    <color name="md_theme_dark_surfaceTint">#A7C8FF</color>
+    <color name="md_theme_dark_outlineVariant">#43474E</color>
+    <color name="md_theme_dark_scrim">#000000</color>
+
+    <!-- Pie chart colors -->
+    <color name="pie_chart_text_color">#FFFFFA</color>
+    <color name="pie_chart_color_1">#FFB4AB</color>
+    <color name="pie_chart_color_2">#A6EEFF</color>
+    <color name="pie_chart_color_3">#FFE262</color>
+    <color name="pie_chart_color_4">#D5E3FF</color>
+    <color name="pie_chart_color_5">#35E189</color>
+    <color name="pie_chart_color_6">#FFDAD6</color>
+    <color name="pie_chart_color_7">#5CFFA3</color>
+</resources>

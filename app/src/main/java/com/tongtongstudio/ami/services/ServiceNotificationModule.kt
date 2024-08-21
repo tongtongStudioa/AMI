@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.timer
+package com.tongtongstudio.ami.services
 
 import android.app.NotificationManager
 import android.content.Context
@@ -24,6 +24,7 @@ object ServiceModule {
     ) = NotificationCompat.Builder(context, TimerNotification.CHANNEL_ID_TIMER)
         .setAutoCancel(false)
         .setOngoing(true)
+        .setOnlyAlertOnce(true)
         .setSmallIcon(R.drawable.ic_small_notif)
         .setContentTitle(context.getString(R.string.tracking_notification_title))
         .addAction(

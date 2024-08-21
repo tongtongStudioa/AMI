@@ -155,7 +155,7 @@
         android:id="@+id/recurringChoiceDialogFragment"
         android:name="com.tongtongstudio.ami.ui.dialog.RecurringChoiceDialogFragment"
         android:label="RecurringChoiceDialogFragment"
-        tools:layout="@layout/dialog_select_recurring_protocol" />
+        tools:layout="@layout/dialog_set_repeating" />
 
     <fragment
         android:id="@+id/detailsFragment"
@@ -183,7 +183,7 @@
     <dialog
         tools:layout="@layout/dialog_custom_time_picker"
         android:id="@+id/estimatedTimeDialogFragment"
-        android:name="com.tongtongstudio.ami.ui.dialog.CustomTimePickerDialogFragment"
+        android:name="com.tongtongstudio.ami.ui.dialog.TimePickerDialogFragment"
         android:label="EstimatedTimeDialogFragment" />
     <dialog
         android:id="@+id/missedRecurringTasksDialogFragment"

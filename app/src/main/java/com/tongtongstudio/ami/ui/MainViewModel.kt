@@ -146,15 +146,15 @@ class MainViewModel @Inject constructor(
             set(Calendar.MILLISECOND, 0)
             timeInMillis
         }
-        val missedRecurringTasks: List<Task> = repository.getMissedRecurringTasks(todayDate)
+        val missedRecurringTasks: List<ThingToDo> = repository.getMissedRecurringTasks(todayDate)
         if (missedRecurringTasks.isNotEmpty()) {
             mainEventChannel.send(SharedEvent.ShowMissedRecurringTaskDialog(missedRecurringTasks))
         }
     }
 
-    fun updateRecurringTasksMissed(missedTasks: List<Task>) = viewModelScope.launch {
-        for (task in missedTasks) {
-            val updatedTask = task.updateCheckedState(false)
+    fun updateRecurringTasksMissed(missedThingToDo: List<ThingToDo>) = viewModelScope.launch {
+        for (thingToDo in missedThingToDo) {
+            val updatedTask = thingToDo.mainTask.updateCheckedState(false)
             repository.updateTask(updatedTask)
         }
     }
@@ -179,6 +179,6 @@ class MainViewModel @Inject constructor(
         data class ShowUndoDeleteTaskMessage(val thingToDo: Task) :
             SharedEvent()
 
-        data class ShowMissedRecurringTaskDialog(val missedTasks: List<Task>) : SharedEvent()
+        data class ShowMissedRecurringTaskDialog(val missedTasks: List<ThingToDo>) : SharedEvent()
     }
 }

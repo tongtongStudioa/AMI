@@ -192,7 +192,7 @@
         android:label="@string/recurring_tasks_missed">
         <argument
             android:name="missedRecurringTasks"
-            app:argType="com.tongtongstudio.ami.data.datatables.Task[]" />
+            app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo[]" />
     </dialog>
     <fragment
         android:id="@+id/viewPagerTrackingAndStatsFragment"

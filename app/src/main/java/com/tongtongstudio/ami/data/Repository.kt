@@ -76,7 +76,7 @@ class Repository @Inject constructor(
         return taskDao.getPotentialProject()
     }
 
-    suspend fun getMissedRecurringTasks(todayDate: Long): List<Task> {
+    suspend fun getMissedRecurringTasks(todayDate: Long): List<ThingToDo> {
         return taskDao.getMissedRecurringTasks(todayDate)
     }
 

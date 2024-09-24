@@ -152,7 +152,7 @@ interface TaskDao {
     fun getSubTasks(parentId: Long): Flow<List<Task>>
 
     @Query("SELECT * FROM task_table WHERE task_due_date < :todayDate AND isRecurring ORDER BY task_due_date ASC")
-    suspend fun getMissedRecurringTasks(todayDate: Long): List<Task>
+    suspend fun getMissedRecurringTasks(todayDate: Long): List<ThingToDo>
 
 
     // ***********  Statistics *********** //

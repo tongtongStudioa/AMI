@@ -178,7 +178,7 @@
                 style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="button to remove due date"
+                android:contentDescription="@string/remove_due_date_description"
                 android:src="@drawable/baseline_clear_24"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/btn_set_due_date"

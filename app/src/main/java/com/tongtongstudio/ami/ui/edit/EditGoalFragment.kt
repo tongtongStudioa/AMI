@@ -16,6 +16,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
@@ -28,6 +29,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -160,6 +162,14 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             if (viewModel.dueDate != null) {
                 btnSetDueDate.text =
                     DateFormat.getDateInstance().format(viewModel.dueDate)
+            } else {
+                removeDueDate.isVisible = false
+                btnSetDueDate.setTextColor(
+                    MaterialColors.getColor(
+                        requireView(),
+                        R.attr.colorPrimaryInverse
+                    )
+                )
             }
 
             btnSetDueDate.setOnClickListener {
@@ -172,7 +182,25 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
                 dueDatePicker.addOnPositiveButtonClickListener {
                     viewModel.dueDate = it
                     btnSetDueDate.text = DateFormat.getDateInstance().format(viewModel.dueDate)
+                    removeDueDate.isVisible = true
+                    btnSetDueDate.setTextColor(
+                        MaterialColors.getColor(
+                            requireView(),
+                            R.attr.colorPrimary
+                        )
+                    )
                 }
+            }
+            removeDueDate.setOnClickListener {
+                btnSetDueDate.setTextColor(
+                    MaterialColors.getColor(
+                        requireView(),
+                        R.attr.colorPrimaryInverse
+                    )
+                )
+                removeDueDate.isVisible = false
+                viewModel.dueDate = null
+                btnSetDueDate.text = getString(R.string.set_due_date)
             }
 
             // assessment edit's section

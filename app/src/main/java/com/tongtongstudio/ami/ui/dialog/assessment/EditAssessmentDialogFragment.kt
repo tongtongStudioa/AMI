@@ -8,10 +8,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -135,6 +137,14 @@ class EditAssessmentDialogFragment : DialogFragment() {
             if (dueDate != null) {
                 setEvaluationDate.text =
                     DateFormat.getDateInstance().format(dueDate)
+            } else {
+                setEvaluationDate.setTextColor(
+                    MaterialColors.getColor(
+                        requireView(),
+                        R.attr.colorPrimaryInverse
+                    )
+                )
+                removeDueDate.isVisible = false
             }
 
             setEvaluationDate.setOnClickListener {
@@ -151,9 +161,26 @@ class EditAssessmentDialogFragment : DialogFragment() {
                     )
                 dueDatePicker.addOnPositiveButtonClickListener {
                     dueDate = it
+                    setEvaluationDate.setTextColor(
+                        MaterialColors.getColor(
+                            requireView(),
+                            R.attr.colorPrimary
+                        )
+                    )
                     setEvaluationDate.text = DateFormat.getDateInstance().format(dueDate)
                     positiveButton.isEnabled = safeSave()
                 }
+            }
+            removeDueDate.setOnClickListener {
+                setEvaluationDate.setTextColor(
+                    MaterialColors.getColor(
+                        requireView(),
+                        R.attr.colorPrimaryInverse
+                    )
+                )
+                removeDueDate.isVisible = false
+                dueDate = null
+                setEvaluationDate.text = getString(R.string.set_due_date)
             }
         }
 

@@ -25,10 +25,17 @@ class Repository @Inject constructor(
     fun getThingsToDoToday(
         sortOrder: SortOrder,
         hideCompleted: Boolean,
+        hideLateTasks: Boolean,
         startOfToday: Long,
         endOfToday: Long,
     ): Flow<List<ThingToDo>> {
-        return taskDao.getTodayTasks(sortOrder, hideCompleted, startOfToday, endOfToday)
+        return taskDao.getTodayTasks(
+            sortOrder,
+            hideCompleted,
+            hideLateTasks,
+            startOfToday,
+            endOfToday
+        )
     }
 
     fun getLaterThingsToDo(

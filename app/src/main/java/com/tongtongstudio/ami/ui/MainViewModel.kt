@@ -43,6 +43,10 @@ class MainViewModel @Inject constructor(
         preferencesManager.updateHideCompleted(hideCompleted)
     }
 
+    fun onHideLateClick(hideLate: Boolean) = viewModelScope.launch {
+        preferencesManager.updateHideLateTasks(hideLate)
+    }
+
     fun onLaterFilterSelected(laterFilter: LaterFilter) = viewModelScope.launch {
         preferencesManager.updateLaterFilter(laterFilter)
     }

@@ -251,4 +251,5 @@
     <string name="all">All</string>
     <string name="text_explication_no_habits">No habits</string>
     <string name="text_action_no_habits">Add new repeating tasks or go rest !</string>
+    <string name="hide_late_tasks">Hide late tasks</string>
 </resources>

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,6 +21,7 @@ enum class LayoutMode { EXTENT, SIMPLIFIED }
 data class FilterPreferences(
     val sortOrder: SortOrder,
     val hideCompleted: Boolean,
+    val hideLate: Boolean,
     val filter: LaterFilter
 )
 
@@ -51,12 +53,12 @@ class PreferencesManager @Inject constructor(@ApplicationContext context: Contex
                 preferences[PreferencesKeys.SORT_ORDER] ?: SortOrder.BY_CREATOR_SORT.name
             )
             val hideCompleted = preferences[PreferencesKeys.HIDE_COMPLETED] ?: false
-
+            val hideLateTasks = preferences[PreferencesKeys.HIDE_LATE_TASKS] ?: false
             val filter = LaterFilter.valueOf(
                 preferences[PreferencesKeys.FILTER] ?: LaterFilter.LATER.name
             )
 
-            FilterPreferences(sortOrder, hideCompleted, filter)
+            FilterPreferences(sortOrder, hideCompleted, hideLateTasks, filter)
         }
 
     val globalPreferencesFlow = context.dataStore.data
@@ -98,9 +100,24 @@ class PreferencesManager @Inject constructor(@ApplicationContext context: Contex
         }
     }
 
+    suspend fun updateHideLateTasks(hideLate: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HIDE_LATE_TASKS] = hideLate
+        }
+    }
+
+    // TODO: update this method to hide multiple category in the same time
+    suspend fun updateHideCategoryId(id: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HIDE_CATEGORY_ID] = id
+        }
+    }
+
     private object PreferencesKeys {
         val SORT_ORDER = stringPreferencesKey("sort_order")
         val HIDE_COMPLETED = booleanPreferencesKey("hide_completed")
+        val HIDE_LATE_TASKS = booleanPreferencesKey("hide_late_tasks")
+        val HIDE_CATEGORY_ID = longPreferencesKey("hide_category_id")
         val FILTER = stringPreferencesKey("later_filter")
         val LAYOUT_MODE = stringPreferencesKey("layout_mode")
     }

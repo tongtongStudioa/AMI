@@ -217,6 +217,12 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                         sharedViewModel.onHideCompletedClick(menuItem.isChecked)
                         true
                     }
+
+                    R.id.action_hide_late_tasks -> {
+                        menuItem.isChecked = !menuItem.isChecked
+                        sharedViewModel.onHideLateClick(menuItem.isChecked)
+                        true
+                    }
                     else -> false
                 }
             }

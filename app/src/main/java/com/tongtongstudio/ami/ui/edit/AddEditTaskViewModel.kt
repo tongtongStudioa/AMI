@@ -11,6 +11,7 @@ import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.Reminder
 import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.ui.ADD_DRAFT_TASK_OK
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.EDIT_TASK_RESULT_OK
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -63,8 +64,8 @@ class AddEditTaskViewModel @Inject constructor(
             state["thingToDoName"] = value
         }
 
-    var priority =
-        state.get<String>("thingToDoPriority") ?: thingToDo?.priority.toString()
+    var priority: Int? =
+        state.get<Int>("thingToDoPriority") ?: thingToDo?.priority
         set(value) {
             field = value
             state["thingToDoPriority"] = value
@@ -208,23 +209,25 @@ class AddEditTaskViewModel @Inject constructor(
 
     private fun saveThingToDo(modeExtent: Boolean) = viewModelScope.launch {
         val taskId: Long
+        val isDraft = dueDate == null || priority == null
         val newThingToDo =
             Task(
                 title = title,
-                priority = priority.toInt(),
-                dueDate = dueDate!!,
+                priority = priority,
+                dueDate = dueDate,
                 startDate = startDate,
                 isRecurring = isRecurring,
                 repetitionFrequency = recurringTaskInterval,
                 parentTaskId = projectId,
                 categoryId = categoryId,
+                isDraft = isDraft,
                 type = Nature.TASK.name
             )
 
         taskId = if (modeExtent) {
-            urgency = Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
+            urgency = Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate, deadline)
             val newThingToDoExtent = newThingToDo.copy(
-                priority = Task.calculatingPriority(priority.toInt(), importance, urgency),
+                priority = Task.calculatingPriority(priority, importance, urgency),
                 deadline = deadline,
                 description = description,
                 importance = importance,
@@ -242,7 +245,7 @@ class AddEditTaskViewModel @Inject constructor(
         // navigate back with result "OK"
         addEditChannelEvent.send(
             AddEditTaskEvent.NavigateBackWithResult(
-                ADD_TASK_RESULT_OK
+                if (isDraft) ADD_DRAFT_TASK_OK else ADD_TASK_RESULT_OK
             )
         )
     }
@@ -252,20 +255,21 @@ class AddEditTaskViewModel @Inject constructor(
             val updatedThingToDo =
                 thingToDo.copy(
                     title = title,
-                    priority = priority.toInt(),
-                    dueDate = dueDate!!,
+                    priority = priority,
+                    dueDate = dueDate,
                     startDate = startDate,
                     isRecurring = isRecurring,
                     repetitionFrequency = recurringTaskInterval,
                     parentTaskId = projectId,
                     categoryId = categoryId,
+                    isDraft = dueDate == null || priority == null,
                     type = Nature.TASK.name
                 )
             if (modeExtent) {
                 urgency =
-                    Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
+                    Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate, deadline)
                 val updatedThingToDoExtent = updatedThingToDo.copy(
-                    priority = Task.calculatingPriority(priority.toInt(), importance, urgency),
+                    priority = Task.calculatingPriority(priority, importance, urgency),
                     deadline = deadline,
                     description = description,
                     importance = importance,

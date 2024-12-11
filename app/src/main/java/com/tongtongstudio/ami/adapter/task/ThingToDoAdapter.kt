@@ -2,6 +2,7 @@ package com.tongtongstudio.ami.adapter.task
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -100,17 +101,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
                         val task = taskList[position].mainTask
-                        listener.onTaskClick(task)
-                        // Scale animation on click
-                        /*root.animate()
-                            .scaleX(1.1f)
-                            .scaleY(1.2f)
-                            .setDuration(150)
-                            .withEndAction {
-                                val task = taskList[position].mainTask
-                                listener.onTaskClick(task)
-                            }
-                            .start()*/
+                        listener.onTaskClick(task, itemView)
                     }
                 }
             }
@@ -118,8 +109,10 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
 
         override fun bind(data: ThingToDo) {
             binding.apply {
+                ViewCompat.setTransitionName(binding.root, "shared_element_${data.mainTask.id}")
                 tvTaskName.text = data.mainTask.title
                 checkBoxCompleted.isChecked = data.mainTask.isCompleted
+                checkBoxCompleted.isVisible = !data.mainTask.isDraft
                 tvTaskName.paint.isStrikeThruText = data.mainTask.isCompleted
                 tvCategory.text = data.category?.title ?: "null"
                 tvCategory.isVisible = data.category != null
@@ -128,7 +121,9 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                         R.string.importance_thing_to_do,
                         data.mainTask.priority
                     )
-
+                tvNumberPriority.isVisible = data.mainTask.priority != null
+                tvDeadline.isVisible = data.mainTask.dueDate != null
+                divider.isVisible = data.mainTask.dueDate != null || data.mainTask.priority != null
                 /*if (data.dueDate < todayDate && !data.isCompleted) {
                     tvTaskName.setTextColor(
                         ContextCompat.getColor(
@@ -221,6 +216,8 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                     layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
                     adapter = SubTaskAdapter(listener, data.subTasks)
                 }
+                tvCategory.text = data.category?.title
+                tvCategory.isVisible = data.category != null
 
                 // TODO: resolve sub item touch behavior
                 ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(

@@ -2,7 +2,9 @@ package com.tongtongstudio.ami.ui.monitoring.project
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -35,21 +37,25 @@ class ProjectStatsFragment : Fragment(R.layout.fragment_project_stats), Interact
 
         setUpToolbar()
         updateProgressBar()
-        binding.estimatedTime.text =
-            TrackingTimeUtility.getFormattedTimeWorked(viewModel.estimatedTime)
-                ?: getText(R.string.no_information)
-        binding.totalWorkTime.text =
-            TrackingTimeUtility.getFormattedTimeWorked(viewModel.workTime)
-                ?: getText(R.string.no_information)
-        updateEstimatedTimeIndicator()
 
         val subTasksAdapter = SubTaskAdapter(this, viewModel.subTasks)
+        binding.apply {
+            tvProjectTitle.text = viewModel.projectName
+            tvDescription.text = viewModel.description ?: ""
 
-        binding.rvSubtasks.apply {
-            layoutManager = LinearLayoutManager(context)
-            setHasFixedSize(true)
-            adapter = subTasksAdapter
+            estimatedTime.text =
+                TrackingTimeUtility.getFormattedTimeWorked(viewModel.estimatedTime)
+                    ?: getText(R.string.no_information)
+            totalWorkTime.text =
+                TrackingTimeUtility.getFormattedTimeWorked(viewModel.workTime)
+                    ?: getText(R.string.no_information)
+            rvSubtasks.apply {
+                layoutManager = LinearLayoutManager(context)
+                setHasFixedSize(true)
+                adapter = subTasksAdapter
+            }
         }
+        updateEstimatedTimeIndicator()
 
         // TODO: resolve sub item touch behavior
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
@@ -100,45 +106,44 @@ class ProjectStatsFragment : Fragment(R.layout.fragment_project_stats), Interact
     }
 
     private fun updateProgressBar() {
-        var sum = 0
-        for (task in viewModel.subTasks) {
-            sum += task.priority * if (task.isCompleted) 1 else 0
-        }
-        val progress =
-            sum / (if (viewModel.subTasks.isEmpty()) 1F else viewModel.subTasks.sumOf { it.priority }
+        val progress = viewModel.subTasks.sumOf { if (it.isCompleted) it.priority!! else 0 }
+        val totalPriority = viewModel.subTasks.sumOf { it.priority ?: 0 }
+        val progressPercentage =
+            progress / (if (viewModel.subTasks.isEmpty()) 1F else totalPriority
                 .toFloat()) * 100
-        // Update project progress
-        binding.projectProgress.progress = progress.toInt()
 
         // Update text progress
-        binding.progressText.text = getString(R.string.completion_rate_value, progress)
+        binding.progressText.text = getString(R.string.completion_rate_value, progressPercentage)
+        binding.projectProgress.progress = progress.toInt()
 
-        //if (progress == 100F)
-        //make a sound
     }
 
     override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
-        //TODO("Not yet implemented")
+        sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
+        if (isChecked) {
+            //soundPlayer.playSuccessSound()
+        }
     }
 
     override fun onComposedTaskClick(thingToDo: ThingToDo) {
-        //TODO("Not yet implemented")
+        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
-    override fun onTaskClick(thingToDo: Task) {
-        //TODO("Not yet implemented")
+    override fun onTaskClick(thingToDo: Task, itemView: View) {
+        sharedViewModel.navigateToTaskInfoScreen(thingToDo, itemView)
     }
 
     override fun onProjectAddClick(composedTask: ThingToDo) {
-        //TODO("Not yet implemented")
+        setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
+        sharedViewModel.addThingToDo()
     }
 
     override fun onSubTaskRightSwipe(thingToDo: Task) {
-        //TODO("Not yet implemented")
+        sharedViewModel.deleteSubTask(thingToDo)
     }
 
     override fun onSubTaskLeftSwipe(thingToDo: Task) {
-        //TODO("Not yet implemented")
+        sharedViewModel.updateSubTask(thingToDo)
     }
 
 }

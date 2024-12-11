@@ -179,16 +179,18 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             }
 
             // edit priority
-            if (InputValidation.isValidPriority(viewModel.priority))
-                editTextPriority.setText(viewModel.priority)
+            if (InputValidation.isValidPriority(viewModel.priority)) {
+                val text = if (viewModel.priority != null) viewModel.priority.toString() else ""
+                editTextPriority.setText(text)
+            }
             editTextPriority.addTextChangedListener {
                 if (InputValidation.isValidPriority(it)) {
                     inputLayoutPriority.error = null
-                    viewModel.priority = it.toString()
+                    viewModel.priority = it.toString().toInt()
                     viewModel.importance = it.toString().toInt()
                 } else {
                     inputLayoutPriority.error = getString(R.string.error_no_priority)
-                    viewModel.priority = ""
+                    viewModel.priority = null
                     viewModel.importance = null
                 }
             }
@@ -815,19 +817,18 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     }
 
     private fun safeSave(modeExtent: Boolean) {
-        if (!InputValidation.isNotNull(viewModel.dueDate)) {
+        /*if (!InputValidation.isNotNull(viewModel.dueDate)) {
             viewModel.showInvalidInputMessage(getString(R.string.error_no_date))
             return
-        }
-        if (InputValidation.isValidText(viewModel.title) && InputValidation.isValidText(viewModel.priority) && InputValidation.isNotNull(
-                viewModel.dueDate
-            )
-        ) {
+        }*/
+        /*if (InputValidation.isValidText(viewModel.title) && InputValidation.isValidText(viewModel.priority) && InputValidation.isNotNull(viewModel.dueDate))
+            viewModel.showInvalidInputMessage("Draft task")*/
+        if (InputValidation.isValidText(viewModel.title)) {
             viewModel.onSaveClick(modeExtent)
             for (reminder in reminders) {
                 scheduleReminder(requireContext(), reminder, viewModel.title)
             }
-        }
+        } else binding.inputLayoutName.error = getString(R.string.error_no_title)
     }
 
     private fun scheduleReminder(context: Context, reminder: Reminder, taskName: String) {

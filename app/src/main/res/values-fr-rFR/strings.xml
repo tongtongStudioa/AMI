@@ -224,4 +224,17 @@
     <string name="all">Tous</string>
     <string name="text_explication_no_habits">Pas de tâches répétable</string>
     <string name="text_action_no_habits">Ajoute de nouvelles tâches répétitives ou va te reposer !</string>
+    <string name="hide_late_tasks">Cacher tâches en retard</string>
+    <string name="draft_fragment_title">Tâches brouillons</string>
+    <string name="welcom_msg">Je suis ravis de t\'accueillir :) Pour commencer, je te propose un rapide tutoriel pour découvrir les principales fonctionnalités. \nPrêt à découvrir tout cela ?</string>
+    <string name="welcome_title_msg">Bienvenue dans l\'application AMI !</string>
+    <string name="skip">Passer</string>
+    <string name="start_the_tutorial">Démarrer le tutoriel</string>
+    <string name="primary_text_tuto_step1_frag1">Qu\'as tu à faire aujourd\'hui ?</string>
+    <string name="text_action_no_drafts">Les tâches qui n\'ont pas de date d\'échéance ou de priorité seront affiché ici.</string>
+    <string name="text_explication_no_drafts">Tu n\'as pas de tâches brouillons pour l\'instant !</string>
+    <string name="secondary_text_tuto_step1_frag1">Tu ne verras apparaître qu\'ici les tâches pour aujourd\'hui.</string>
+    <string name="primary_text_tuto_step2_frag1">Ajoute une tâche ici.</string>
+    <string name="secondary_text_tuto_step2_frag1">Tu peux ajouter une tâche à faire ou un brouillon à partir de ce bouton.</string>
+    <string name="draft_task_created">Brouillon ajouté</string>
 </resources>

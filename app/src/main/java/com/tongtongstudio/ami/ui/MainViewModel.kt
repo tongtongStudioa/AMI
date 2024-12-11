@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
@@ -126,16 +127,16 @@ class MainViewModel @Inject constructor(
         mainEventChannel.send(SharedEvent.ShowUndoDeleteTaskMessage(subTask))
     }
 
-    fun navigateToTaskInfoScreen(thingToDo: Task) = viewModelScope.launch {
-        mainEventChannel.send(SharedEvent.NavigateToTaskViewPager(thingToDo))
+    fun navigateToTaskInfoScreen(thingToDo: Task, sharedView: View) = viewModelScope.launch {
+        mainEventChannel.send(SharedEvent.NavigateToTaskViewPager(thingToDo, sharedView))
     }
 
     fun navigateToTaskComposedInfoScreen(composedTask: ThingToDo) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToLocalProjectStatsScreen(composedTask))
     }
 
-    fun navigateToTaskDetailsScreen(task: Task) = viewModelScope.launch {
-        mainEventChannel.send(SharedEvent.NavigateToTaskDetailsScreen(task))
+    fun navigateToTaskDetailsScreen(task: Task, sharedView: View) = viewModelScope.launch {
+        mainEventChannel.send(SharedEvent.NavigateToTaskDetailsScreen(task, sharedView))
     }
 
     fun lookForMissedRecurringTasks() = viewModelScope.launch {
@@ -159,6 +160,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun navigateToDraftTasksScreen() = viewModelScope.launch {
+        mainEventChannel.send(SharedEvent.NavigateToDraftScreen)
+    }
+
     sealed class SharedEvent {
         data class NavigateToEditScreen(val thingToDo: Task) : SharedEvent()
         data object NavigateToAddScreen : SharedEvent()
@@ -166,10 +171,10 @@ class MainViewModel @Inject constructor(
         /**
          * Event to navigate to view pager which display stats and time tracker for a specific task
          */
-        data class NavigateToTaskViewPager(val task: Task) :
+        data class NavigateToTaskViewPager(val task: Task, val sharedView: View) :
             SharedEvent()
 
-        data class NavigateToTaskDetailsScreen(val task: Task) :
+        data class NavigateToTaskDetailsScreen(val task: Task, val sharedView: View) :
             SharedEvent()
 
         data class NavigateToLocalProjectStatsScreen(val composedTaskData: ThingToDo) :
@@ -180,5 +185,6 @@ class MainViewModel @Inject constructor(
             SharedEvent()
 
         data class ShowMissedRecurringTaskDialog(val missedTasks: List<ThingToDo>) : SharedEvent()
+        data object NavigateToDraftScreen : SharedEvent()
     }
 }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ui.monitoring.project.ProjectStatsFragment">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -25,49 +25,93 @@
         android:padding="10dp"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
-        <TextView
-            android:id="@+id/titleText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/project_progress"
-            android:textAppearance="@style/TextAppearance.Ami.Subtitle1.Day"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:id="@+id/project_progress"
-            style="@style/Widget.Material3.LinearProgressIndicator"
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_project_title"
             android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:layout_margin="10dp"
-            android:layout_marginTop="20dp"
-            android:max="100"
-            android:progress="74"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="10dp"
+            android:textAppearance="@style/TextAppearance.Ami.Headline6"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/titleText" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Test project" />
 
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/progressText"
-            android:layout_width="wrap_content"
+            android:id="@+id/tv_description"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:text="Progress: 0%"
-            android:textAppearance="@style/TextAppearance.Ami.Caption"
-            app:layout_constraintTop_toBottomOf="@+id/project_progress"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_margin="10dp"
+            android:layout_marginTop="5dp"
+            android:textAppearance="@style/TextAppearance.Ami.Body1"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="5dp" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_project_title"
+            tools:text="This the description." />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/progress_view"
+            style="@style/Widget.Material3.CardView.Elevated"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            app:layout_constraintEnd_toStartOf="@id/total_work_time_view"
+            app:layout_constraintBottom_toBottomOf="@id/total_work_time_view"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_description">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/titleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/project_progress"
+                    android:textAppearance="@style/TextAppearance.Ami.Body2"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/project_progress"
+                    style="@style/Widget.Material3.LinearProgressIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_margin="10dp"
+                    android:layout_marginTop="20dp"
+                    android:max="100"
+                    android:progress="74"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/titleText" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/progressText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:textAppearance="@style/TextAppearance.Ami.Caption"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/project_progress"
+                    tools:text="Progress: 0%" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/total_work_time_view"
-            style="@style/Widget.Material3.CardView.Filled"
-            android:layout_width="wrap_content"
+            style="@style/Widget.Material3.CardView.Elevated"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             app:layout_constraintEnd_toEndOf="parent"
 
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/progressText">
+            app:layout_constraintStart_toEndOf="@id/progress_view"
+            app:layout_constraintTop_toBottomOf="@id/tv_description">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="wrap_content"
@@ -78,8 +122,8 @@
                     android:id="@+id/tv_title2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="50dp"
                     android:layout_marginStart="50dp"
+                    android:layout_marginEnd="50dp"
                     android:text="@string/project_total_work_time"
                     android:textAppearance="@style/TextAppearance.Ami.Body2"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -91,7 +135,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat_medium"
-                    android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
+                    android:textAppearance="@style/TextAppearance.Ami.Headline6"
                     app:layout_constraintEnd_toEndOf="@+id/tv_title2"
                     app:layout_constraintStart_toStartOf="@+id/tv_title2"
                     app:layout_constraintTop_toBottomOf="@+id/tv_title2"
@@ -112,7 +156,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat_medium"
-                    android:textAppearance="@style/TextAppearance.Ami.Headline6"
+                    android:textAppearance="@style/TextAppearance.Ami.Caption"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tv_title3"
@@ -135,9 +179,9 @@
             android:id="@+id/tv_project_subtasks"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/project_subtasks"
             android:layout_marginTop="25dp"
-            android:textAppearance="@style/TextAppearance.Ami.Headline6"
+            android:text="@string/project_subtasks"
+            android:textAppearance="@style/TextAppearance.Ami.Body1"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/divider" />
@@ -145,13 +189,22 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_subtasks"
             android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_margin="5dp"
-            android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_project_subtasks"
             tools:itemCount="5"
             tools:listitem="@layout/item_task" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fab_add_sub_task"
+        android:src="@drawable/ic_add"
+        android:layout_margin="25dp"
+        android:layout_gravity="bottom|right" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

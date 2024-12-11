@@ -15,7 +15,7 @@ android {
         minSdkVersion 21
         targetSdk 34
         versionCode 10
-        versionName '1.0.2'
+        versionName '1.0.2-beta'
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         versionNameSuffix 'alpha'
@@ -50,6 +50,9 @@ android {
 }
 
 dependencies {
+
+    // Tutorial guide
+    implementation 'uk.co.samuelwall:material-tap-target-prompt:3.3.2'
 
     // Ksp dependency
     ksp "com.google.devtools.ksp:symbol-processing-api:$ksp_version"

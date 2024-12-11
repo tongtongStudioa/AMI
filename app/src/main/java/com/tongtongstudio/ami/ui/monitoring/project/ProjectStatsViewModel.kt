@@ -24,6 +24,8 @@ class ProjectStatsViewModel @Inject constructor(
     }
 
     private val projectData = state.get<ThingToDo>("project")
+    val projectName = projectData?.mainTask?.title
+    val description = projectData?.mainTask?.description
     val subTasks = projectData?.subTasks ?: listOf<Task>()
     val workTime = projectData?.mainTask?.currentWorkingTime ?: 0
     val estimatedTime = projectData?.mainTask?.estimatedWorkingTime

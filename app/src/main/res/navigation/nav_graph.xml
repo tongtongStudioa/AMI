@@ -79,6 +79,10 @@
             app:exitAnim="@anim/fade_out"
             app:popExitAnim="@anim/slide_down"
             app:popEnterAnim="@anim/fade_in" />
+        <!---->
+        <action
+            android:id="@+id/action_todayTasksFragment_to_draftsFragment"
+            app:destination="@id/draftsFragment" />
 
     </fragment>
     <fragment
@@ -258,5 +262,24 @@
     <action
         android:id="@+id/action_global_completeAssessmentDialogFragment"
         app:destination="@id/completeAssessmentDialogFragment" />
+    <fragment
+        android:id="@+id/draftsFragment"
+        android:name="com.tongtongstudio.ami.ui.drafts.DraftsFragment"
+        android:label="@string/draft_fragment_title"
+        tools:layout="@layout/fragment_drafts">
+        <action
+            android:id="@+id/action_draftsFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment"
+            app:enterAnim="@anim/slide_up"
+            app:exitAnim="@anim/fade_out"
+            app:popExitAnim="@anim/slide_down"
+            app:popEnterAnim="@anim/fade_in" />
+        <action
+            android:id="@+id/action_draftsFragment_to_addEditTaskFragment"
+            app:destination="@id/addEditTaskFragment" />
+        <action
+            android:id="@+id/action_draftsFragment_to_projectDetailsFragment"
+            app:destination="@id/projectDetailsFragment" />
+    </fragment>
 
 </navigation>

@@ -43,5 +43,4 @@
         android:checkable="true"
         android:title="@string/hide_late_tasks"
         app:showAsAction="never" />
-
 </menu>

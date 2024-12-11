@@ -115,7 +115,7 @@
     <string name="text_action_no_tasks_completed">Add somethings to do or go working !</string>
     <string name="text_explication_no_tasks_today">No things to do today !</string>
     <string name="text_action_no_tasks_later">Add somethings to do later or go to nap !</string>
-    <string name="text_action_no_tasks_today">%d tasks upcoming \n Add somethings to do today or go to nap !</string>
+    <string name="text_action_no_tasks_today">%d tasks upcoming \nAdd somethings to do today or go to nap !</string>
     <string name="set_estimated_time">Set estimated work time</string>
     <string name="text_explication_no_projects">No projects</string>
     <string name="text_action_no_projects">Add projects</string>
@@ -252,4 +252,16 @@
     <string name="text_explication_no_habits">No habits</string>
     <string name="text_action_no_habits">Add new repeating tasks or go rest !</string>
     <string name="hide_late_tasks">Hide late tasks</string>
+    <string name="draft_fragment_title">Draft tasks</string>
+    <string name="welcom_msg">I\'m delighted to welcome you :) To get you started, we\'ll give you a quick tutorial on the main features. \\nReady to find out all about it?</string>
+    <string name="welcome_title_msg">Welcome to the AMI (everyday) application!</string>
+    <string name="skip">Skip</string>
+    <string name="start_the_tutorial">Start the tutorial</string>
+    <string name="text_action_no_drafts">Tasks that don\'t have any priority or due date will be here.</string>
+    <string name="text_explication_no_drafts">You don\'t have any draft tasks for the moment.</string>
+    <string name="primary_text_tuto_step2_frag1">Add a task here.</string>
+    <string name="primary_text_tuto_step1_frag1">What do you have to do today ?</string>
+    <string name="secondary_text_tuto_step2_frag1">You can add a task or a draft from this button.</string>
+    <string name="secondary_text_tuto_step1_frag1">You will see only today\'s tasks in this screen.</string>
+    <string name="draft_task_created">Draft task created</string>
 </resources>

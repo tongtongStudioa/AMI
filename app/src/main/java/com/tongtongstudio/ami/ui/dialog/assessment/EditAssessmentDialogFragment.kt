@@ -80,6 +80,11 @@ class EditAssessmentDialogFragment : DialogFragment() {
             parentObjectiveId = result
         }*/
 
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         binding.apply {
             // assessment's goalTitle
             if (title != null)
@@ -183,8 +188,6 @@ class EditAssessmentDialogFragment : DialogFragment() {
                 setEvaluationDate.text = getString(R.string.set_due_date)
             }
         }
-
-        return binding.root
     }
 
     private fun showDatePickerMaterial(

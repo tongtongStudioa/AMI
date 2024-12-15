@@ -103,8 +103,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        viewModel.lookForMissedRecurringTasks()
 
+        // Check at the opening of the app
+        viewModel.lookForMissedRecurringTasks()
+        viewModel.updateTasksUrgency()
         intent?.let {
             if (intent.hasExtra(ASSESSMENT_ID)) {
                 showCompleteAssessmentDialog(intent)

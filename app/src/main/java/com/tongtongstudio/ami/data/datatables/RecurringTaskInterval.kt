@@ -84,7 +84,7 @@ class RecurringTaskInterval(
      * @return updated task
      */
     fun updateRecurringTask(ttd: Task, checked: Boolean): Task {
-        val oldStartDate = ttd.dueDate
+        val oldStartDate = ttd.dueDate!!
         val updatedStartDate = if (daysOfWeek != null) {
             findNextOccurrenceDayInWeek(oldStartDate, checked)
         } else {

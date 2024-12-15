@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ArrayAdapter
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,6 +35,7 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.simple.AttributeListener
 import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
@@ -80,6 +82,12 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
 
         binding = FragmentAddEditGoalBinding.bind(view)
         setUpToolbar()
+
+        // Transition d'entrée avec MaterialSharedAxis
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+            interpolator = AccelerateDecelerateInterpolator()
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
 
         binding.apply {
 
@@ -259,6 +267,10 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
                                 "add_edit_request",
                                 bundleOf("add_edit_result" to event.result)
                             )
+                            exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+                                interpolator = AccelerateDecelerateInterpolator()
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
                             findNavController().popBackStack()
                         }
                     }.exhaustive

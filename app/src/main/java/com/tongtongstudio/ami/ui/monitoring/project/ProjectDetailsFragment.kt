@@ -18,26 +18,27 @@ import com.tongtongstudio.ami.adapter.task.InteractionListener
 import com.tongtongstudio.ami.adapter.task.SubTaskAdapter
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
-import com.tongtongstudio.ami.databinding.FragmentProjectStatsBinding
+import com.tongtongstudio.ami.databinding.FragmentProjectDetailsBinding
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ProjectStatsFragment : Fragment(R.layout.fragment_project_stats), InteractionListener {
-    lateinit var binding: FragmentProjectStatsBinding
-    private val viewModel: ProjectStatsViewModel by viewModels()
+class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), InteractionListener {
+    lateinit var binding: FragmentProjectDetailsBinding
+    private val viewModel: ProjectDetailsViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = FragmentProjectStatsBinding.bind(view)
+        binding = FragmentProjectDetailsBinding.bind(view)
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
         setUpToolbar()
         updateProgressBar()
 
+        // TODO: Change this method to update sub tasks list if a task is removed
         val subTasksAdapter = SubTaskAdapter(this, viewModel.subTasks)
         binding.apply {
             tvProjectTitle.text = viewModel.projectName
@@ -106,7 +107,8 @@ class ProjectStatsFragment : Fragment(R.layout.fragment_project_stats), Interact
     }
 
     private fun updateProgressBar() {
-        val progress = viewModel.subTasks.sumOf { if (it.isCompleted) it.priority!! else 0 }
+        val progress =
+            viewModel.subTasks.sumOf { if (it.isCompleted && !it.isDraft) it.priority!! else 0 }
         val totalPriority = viewModel.subTasks.sumOf { it.priority ?: 0 }
         val progressPercentage =
             progress / (if (viewModel.subTasks.isEmpty()) 1F else totalPriority

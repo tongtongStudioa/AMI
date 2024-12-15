@@ -8,8 +8,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.adapter.WorkSessionListener
+import com.tongtongstudio.ami.adapter.WorkSessionsAdapter
+import com.tongtongstudio.ami.data.datatables.WorkSession
 import com.tongtongstudio.ami.databinding.FragmentTaskTimeTrackerBinding
 import com.tongtongstudio.ami.notification.TimerNotification.Companion.ACTION_CANCEL
 import com.tongtongstudio.ami.notification.TimerNotification.Companion.ACTION_PAUSE
@@ -25,7 +30,7 @@ import com.tongtongstudio.ami.ui.dialog.TimePickerDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
+class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker), WorkSessionListener {
 
     lateinit var binding: FragmentTaskTimeTrackerBinding
     private val viewModel: TaskDetailsAndTimeTrackerViewModel by viewModels({ requireParentFragment() })
@@ -57,29 +62,31 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
         }
 
         TrackingService.timeWorkedInMillis.observe(viewLifecycleOwner) {
-            viewModel.timeWorked = it
             if (viewModel.timerType == TimerType.STOPWATCH) {
                 val formattedTime =
                     TrackingTimeUtility.getFormattedWorkingTime(
-                        (viewModel.actualWorkTime.value ?: 0) + it
+                        (viewModel.currentTotalWorkTime.value ?: 0) + it
                     )
                 binding.timerTextView.text = formattedTime
             }
-            updateProgressBar((viewModel.actualWorkTime.value ?: 0) + it)
+            updateProgressBar((viewModel.currentTotalWorkTime.value ?: 0) + it)
         }
 
-        viewModel.actualWorkTime.observe(viewLifecycleOwner) {
+        viewModel.currentTotalWorkTime.observe(viewLifecycleOwner) {
             binding.timerTextView.text =
                 TrackingTimeUtility.getFormattedWorkingTime(it)
                     ?: getString(R.string.no_information)
             updateProgressBar(it ?: 0L)
         }
 
+        val workSessionsAdapter = WorkSessionsAdapter(this)
         binding.apply {
-            timerTextView.text = TrackingTimeUtility.getFormattedWorkingTime(
-                viewModel.primaryWorkTime ?: 0
-            ) ?: getString(R.string.no_information)
 
+            rvWorkSessions.apply {
+                adapter = workSessionsAdapter
+                layoutManager = LinearLayoutManager(this@TimeTrackerFragment.context)
+                itemAnimator = DefaultItemAnimator()
+            }
             // estimated work time view
             val formattedTime =
                 TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedWorkingTime)
@@ -102,7 +109,7 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
                 // reset ui
                 timerTextView.text = TrackingTimeUtility.getFormattedWorkingTime(
                     if (viewModel.timerType == TimerType.STOPWATCH)
-                        viewModel.actualWorkTime.value
+                        viewModel.currentTotalWorkTime.value
                     else viewModel.curTimeInMillis, viewModel.timerType
                 ) ?: getString(R.string.no_information)
             }
@@ -110,7 +117,7 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
             if (viewModel.estimatedWorkingTime != null) {
                 circularProgressIndicator.max = (viewModel.estimatedWorkingTime!! / 1000).toInt()
                 circularProgressIndicator.progress =
-                    (viewModel.actualWorkTime.value?.div(1000))?.toInt() ?: 0
+                    (viewModel.currentTotalWorkTime.value?.div(1000))?.toInt() ?: 0
                 circularProgressIndicator.animate()
             }
 
@@ -126,18 +133,23 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
                 onBtnAddWorkTimeClicked()
             }
 
-            // from dialog add work time selection
-            setFragmentResultListener(ESTIMATED_TIME_LISTENER_REQUEST_KEY) { _, bundle ->
-                val result = bundle.getLong(ESTIMATED_TIME_RESULT_KEY)
-                if (result != 0L) {
-                    val addedWorkTimeInMillis: Long = result
-                    viewModel.saveTrackingTime(addedWorkTimeInMillis)
-                    Snackbar.make(
-                        view,
-                        getString(R.string.msg_work_session_saved),
-                        Snackbar.LENGTH_SHORT
-                    ).show()
-                }
+        }
+
+        viewModel.workSessions.observe(viewLifecycleOwner) {
+            workSessionsAdapter.submitList(it)
+        }
+
+        // from dialog add work time selection
+        setFragmentResultListener(ESTIMATED_TIME_LISTENER_REQUEST_KEY) { _, bundle ->
+            val result = bundle.getLong(ESTIMATED_TIME_RESULT_KEY)
+            if (result != 0L) {
+                val addedWorkTimeInMillis: Long = result
+                viewModel.saveTrackingTime(addedWorkTimeInMillis)
+                Snackbar.make(
+                    view,
+                    getString(R.string.msg_work_session_saved),
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -148,7 +160,7 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
             sendCommandToService(ACTION_PAUSE)
             binding.fabReset.isVisible = true
             // TODO: create a button and function aside --> no possibility to save from notif
-            viewModel.saveTrackingTime()
+            TrackingService.timeWorkedInMillis.value?.let { viewModel.saveTrackingTime(it) }
         } else sendCommandToService(ACTION_START)
     }
 
@@ -207,5 +219,13 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker) {
     override fun onDestroy() {
         super.onDestroy()
         stopTrackingService()
+    }
+
+    override fun onClick(workSession: WorkSession) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onRemoveClick(workSession: WorkSession) {
+        viewModel.removeWorkSession(workSession)
     }
 }

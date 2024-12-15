@@ -8,6 +8,7 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
@@ -16,12 +17,17 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialElevationScale
+import com.google.android.material.transition.MaterialFadeThrough
+import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
@@ -30,11 +36,13 @@ import com.tongtongstudio.ami.data.LaterFilter
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
+import com.tongtongstudio.ami.ui.ADD_DRAFT_TASK_OK
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListener {
@@ -45,6 +53,12 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
     private lateinit var mainAdapter: ThingToDoAdapter
     private lateinit var textExplication: String
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enterTransition = MaterialFadeThrough().apply {
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+        super.onCreate(savedInstanceState)
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentMainBinding.bind(view)
@@ -115,60 +129,92 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
             val result = bundle.getInt("add_edit_result")
         }
 
-        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-            sharedViewModel.mainEvent.collect { event ->
-                when (event) {
-                    is MainViewModel.SharedEvent.NavigateToEditScreen -> {
-                        val action =
-                            OthersTasksFragmentDirections.actionOthersTasksFragmentToAddEditTaskFragment(
-                                getString(R.string.fragment_title_edit_thing_to_do),
-                                event.thingToDo
-                            )
-                        findNavController().navigate(action)
-                    }
-                    is MainViewModel.SharedEvent.NavigateToAddScreen -> {
-                        val action =
-                            OthersTasksFragmentDirections.actionOthersTasksFragmentToAddEditTaskFragment(
-                                getString(R.string.fragment_title_add_thing_to_do),
-                                null
-                            )
-                        findNavController().navigate(action)
-                    }
-                    is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
-                        val msg = if (event.result == ADD_TASK_RESULT_OK)
-                            getString(R.string.task_added)
-                        else getString(R.string.task_updated)
-                        Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
-                    }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                sharedViewModel.mainEvent.collect { event ->
+                    when (event) {
+                        is MainViewModel.SharedEvent.NavigateToEditScreen -> {
+                            val action =
+                                OthersTasksFragmentDirections.actionOthersTasksFragmentToAddEditTaskFragment(
+                                    getString(R.string.fragment_title_edit_thing_to_do),
+                                    event.thingToDo
+                                )
+                            findNavController().navigate(action)
+                        }
 
-                    is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {
-                        Snackbar.make(
-                            requireView(),
-                            getString(R.string.msg_thing_to_do_deleted),
-                            Snackbar.LENGTH_LONG
-                        )
-                            .setAction(getString(R.string.msg_action_undo)) {
-                                sharedViewModel.onUndoDeleteClick(event.thingToDo)
-                            }.show()
-                    }
-                    is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
-                        val action =
-                            OthersTasksFragmentDirections.actionOthersTasksFragmentToDetailsFragment(
-                                event.task
+                        is MainViewModel.SharedEvent.NavigateToAddScreen -> {
+                            val action =
+                                OthersTasksFragmentDirections.actionOthersTasksFragmentToAddEditTaskFragment(
+                                    getString(R.string.fragment_title_add_thing_to_do),
+                                    null
+                                )
+                            // Transition de sortie avec MaterialSharedAxis (DIRECTION X pour effet slide)
+                            exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            // Transition de retour avec MaterialSharedAxis
+                            reenterTransition =
+                                MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+                                    duration =
+                                        resources.getInteger(R.integer.middle_duration).toLong()
+                                }
+                            findNavController().navigate(action)
+                        }
+
+                        is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
+                            val msg = when (event.result) {
+                                ADD_TASK_RESULT_OK -> getString(R.string.task_added)
+                                ADD_DRAFT_TASK_OK -> getString(R.string.draft_task_created)
+                                else -> getString(R.string.task_updated)
+                            }
+                            Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
+                        }
+
+                        is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {
+                            Snackbar.make(
+                                requireView(),
+                                getString(R.string.msg_thing_to_do_deleted),
+                                Snackbar.LENGTH_LONG
                             )
-                        findNavController().navigate(action)
-                    }
-                    is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
-                        val action =
-                            OthersTasksFragmentDirections.actionOthersTasksFragmentToLocalProjectStatsFragment2(
-                                event.composedTaskData
-                            )
-                        findNavController().navigate(action)
-                    }
-                    else -> {}
-                }.exhaustive
+                                .setAction(getString(R.string.msg_action_undo)) {
+                                    sharedViewModel.onUndoDeleteClick(event.thingToDo)
+                                }.show()
+                        }
+
+                        is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
+                            val action =
+                                OthersTasksFragmentDirections.actionOthersTasksFragmentToDetailsFragment(
+                                    event.task
+                                )
+                            val extras =
+                                FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            findNavController().navigate(action, extras)
+                        }
+
+                        is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
+                            val action =
+                                OthersTasksFragmentDirections.actionOthersTasksFragmentToLocalProjectStatsFragment2(
+                                    event.composedTaskData
+                                )
+                            findNavController().navigate(action)
+                        }
+
+                        else -> {}
+                    }.exhaustive
+                }
             }
         }
+        /**
+         * The below code is required to animate correctly when the user returns from [TaskDetailsFragment].
+         */
+        postponeEnterTransition()
+        view.doOnPreDraw { startPostponedEnterTransition() }
 
         (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -215,6 +261,9 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
             appBarConfiguration
         )
         binding.toolbar.setNavigationOnClickListener {
+            exitTransition = MaterialFadeThrough().apply {
+                duration = resources.getInteger(R.integer.middle_duration).toLong()
+            }
             navController.navigateUp(appBarConfiguration)
         }
     }
@@ -241,8 +290,8 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
-    override fun onTaskClick(thingToDo: Task) {
-        sharedViewModel.navigateToTaskDetailsScreen(thingToDo)
+    override fun onTaskClick(thingToDo: Task, itemView: View) {
+        sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 
     override fun onProjectAddClick(composedTask: ThingToDo) {

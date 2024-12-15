@@ -1,7 +1,7 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
-    <style name="Theme.AMI.Seed" parent="Theme.Material3.Light.NoActionBar">
+    <style name="Theme.AMI.Seed" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/md_theme_light_primary</item>
         <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
         <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
@@ -45,9 +45,21 @@
         <item name="textAppearanceCaption">@style/TextAppearance.Ami.Caption</item>
         <item name="textAppearanceOverline">@style/TextAppearance.Ami.Overline</item>
 
-        <!--<item name="android:statusBarColor">@color/white</item>-->
+        <!--<item name="motion">@android:interpolator/fast_out_slow_in</item>
+        <item name="motionInterpolatorIncoming">@android:interpolator/decelerate_cubic</item>
+        <item name="motionInterpolatorOutgoing">@android:interpolator/accelerate_cubic</item>-->
+
+        <!--System/Platform attributes-->
+        <item name="android:windowBackground">?android:colorBackground</item>
+        <item name="android:windowLightStatusBar" tools:ignore="NewApi">true</item>
+
         <item name="appBarLayoutStyle">@style/AppBarAmi.Light</item>
         <item name="collapsingToolbarLayoutStyle">@style/CollapsingToolbarAmi.Light</item>
+
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:fragmentSharedElementEnterTransition">@id/transition_transform</item>
+
     </style>
 
 </resources>

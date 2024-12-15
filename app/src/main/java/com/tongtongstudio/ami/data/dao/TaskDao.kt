@@ -62,7 +62,7 @@ interface TaskDao {
     @Transaction
     @Query(
         "SELECT * FROM task_table " +
-                "WHERE isCompleted == 0 " +
+                "WHERE isCompleted == 0 AND NOT isDraft " +
                 "AND (task_due_date > :endOfDay OR startDate > :endOfDay) " +
                 "ORDER BY task_due_date/8640000 ASC, deadline/8640000 ASC, startDate ASC, priority DESC, estimatedWorkingTime DESC"
     )
@@ -71,7 +71,7 @@ interface TaskDao {
     @Transaction
     @Query(
         "SELECT * FROM task_table " +
-                "WHERE isCompleted == 0 AND (task_due_date BETWEEN :endOfDay AND :endOfDayFilter OR startDate BETWEEN :endOfDay AND :endOfDayFilter) " +
+                "WHERE isCompleted == 0 AND NOT isDraft AND (task_due_date BETWEEN :endOfDay AND :endOfDayFilter OR startDate BETWEEN :endOfDay AND :endOfDayFilter) " +
                 "ORDER BY task_due_date/8640000 ASC, deadline/8640000 ASC, startDate ASC, priority DESC, estimatedWorkingTime DESC"
     )
     fun getLaterTasksFilter(endOfDay: Long, endOfDayFilter: Long): Flow<List<ThingToDo>>
@@ -79,7 +79,7 @@ interface TaskDao {
     @Transaction
     @Query(
         "SELECT * FROM task_table " +
-                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0) " +
+                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0) AND NOT isDraft " +
                 "AND (startDate BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 AND NOT :hideLateTasks " +
@@ -96,7 +96,7 @@ interface TaskDao {
     @Transaction
     @Query(
         "SELECT * FROM task_table " +
-                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0) " +
+                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0 AND NOT isDraft) " +
                 "AND (startDate BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 AND NOT :hideLateTasks " +
@@ -113,7 +113,7 @@ interface TaskDao {
     @Transaction
     @Query(
         "SELECT * FROM task_table " +
-                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0) " +
+                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0 AND NOT isDraft) " +
                 "AND (startDate BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 AND NOT :hideLateTasks " +
@@ -130,7 +130,7 @@ interface TaskDao {
     @Transaction
     @Query(
         "SELECT * FROM task_table " +
-                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0) " +
+                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0 AND NOT isDraft) " +
                 "AND (startDate < :endOfDay AND isCompleted == 0 AND isRecurring == 0 " +    //startDate BETWEEN :startOfDay AND :endOfDay
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 AND NOT :hideLateTasks " +
@@ -442,5 +442,15 @@ interface TaskDao {
     @Transaction
     @Query("SELECT * FROM task_table WHERE task_id =:parentTaskId LIMIT 1")
     suspend fun getComposedTask(parentTaskId: Long): ThingToDo
+
+    @Transaction
+    @Query(
+        "SELECT * FROM task_table " +
+                "WHERE isCompleted == 0 AND isDraft"
+    )
+    fun getDraftTask(): Flow<List<ThingToDo>>
+
+    @Query("SELECT * FROM task_table WHERE isCompleted = 0")
+    fun getTasksNotCompeted(): Flow<List<Task>>
 
 }

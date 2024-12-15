@@ -2,12 +2,13 @@ package com.tongtongstudio.ami.ui.monitoring.task
 
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.WorkSession
 import com.tongtongstudio.ami.timer.TimerType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -37,34 +38,18 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
 
     val estimatedWorkingTime = task?.estimatedWorkingTime
 
-    val primaryWorkTime = task?.currentWorkingTime
-    private val _actualWorkTime = MutableLiveData<Long?>(primaryWorkTime)
-    val actualWorkTime: LiveData<Long?>
-        get() = _actualWorkTime
+    val currentTotalWorkTime: LiveData<Long?> = repository.getTaskTimeWorked(task!!.id).asLiveData()
+    val workSessions = repository.getWorkSessions(task?.id!!).asLiveData()
 
     var curTimeInMillis: Long = 0L
     var isTracking = false
-    var timeWorked = 0L
 
-    // TODO: create another entity to save work session apart
-    fun saveTrackingTime(newWorkTimeSession: Long = timeWorked) = viewModelScope.launch {
-        if (task != null) {
-            if (task!!.parentTaskId != null) {
-                val parentTask = repository.getTask(task!!.parentTaskId!!)
-                val updatedProjectWorkTime =
-                    if (parentTask.currentWorkingTime != null) parentTask.currentWorkingTime + newWorkTimeSession else newWorkTimeSession
-                repository.updateTask(
-                    parentTask.copy(
-                        currentWorkingTime = updatedProjectWorkTime
-                    )
-                )
-            }
-            val updatedTaskTimeWorked =
-                actualWorkTime.value?.plus(newWorkTimeSession) ?: newWorkTimeSession
-            val updatedThingToDo = task!!.copy(currentWorkingTime = updatedTaskTimeWorked)
-            repository.updateTask(updatedThingToDo)
-            _actualWorkTime.value = updatedTaskTimeWorked
+    fun saveTrackingTime(newWorkTimeSession: Long = 0L) = viewModelScope.launch {
+        if (task == null) {
+            return@launch
         }
+        // TODO: add comment for the work session
+        repository.insertWorkSession(WorkSession(task!!.id, newWorkTimeSession, null))
     }
 
     fun updateTaskCompletionDate(newCompletionDate: Long) = viewModelScope.launch {
@@ -73,6 +58,11 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
             repository.updateTask(changeState)
             task = changeState
         }
+    }
+
+
+    fun removeWorkSession(workSession: WorkSession) = viewModelScope.launch {
+        repository.suppressWorkSession(workSession)
     }
 
     val category: String = runBlocking {

@@ -71,7 +71,7 @@ class PreferencesManager @Inject constructor(@ApplicationContext context: Contex
         }
         .map { preferences ->
             val layoutMode = LayoutMode.valueOf(
-                preferences[PreferencesKeys.LAYOUT_MODE] ?: LayoutMode.SIMPLIFIED.name
+                preferences[PreferencesKeys.LAYOUT_MODE] ?: LayoutMode.EXTENT.name
             )
             LayoutPreferences(layoutMode)
         }

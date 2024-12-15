@@ -14,6 +14,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.PopupMenu
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -39,6 +40,7 @@ import com.google.android.material.color.MaterialColors
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.AutoCompleteAdapter
 import com.tongtongstudio.ami.adapter.simple.AttributeListener
@@ -139,6 +141,21 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 safeSave(layoutPreference.layoutMode == LayoutMode.EXTENT)
             }
         }
+        // Transition d'entrée avec MaterialSharedAxis
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+            interpolator = AccelerateDecelerateInterpolator()
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+
+        /*binding.nestedScroolView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+            if (scrollY > oldScrollY) {
+                // Défilement vers le bas
+                binding.fabSaveTask.hide() // Cacher le FAB
+            } else {
+                // Défilement vers le haut
+                binding.fabSaveTask.show() // Réafficher le FAB
+            }
+        }*/
 
         binding.apply {
             radioGroupChoiceNature.check(if (viewModel.ttdNature == Nature.TASK.name) rbTask.id else rbProject.id)
@@ -944,6 +961,10 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             appBarConfiguration
         )
         binding.toolbar.setNavigationOnClickListener {
+            exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+                interpolator = AccelerateDecelerateInterpolator()
+                duration = resources.getInteger(R.integer.middle_duration).toLong()
+            }
             navController.navigateUp(appBarConfiguration)
         }
     }

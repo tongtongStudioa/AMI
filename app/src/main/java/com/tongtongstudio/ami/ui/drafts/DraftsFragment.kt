@@ -18,6 +18,8 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialElevationScale
+import com.google.android.material.transition.MaterialFadeThrough
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
@@ -39,6 +41,12 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
     private lateinit var binding: FragmentDraftsBinding
     private lateinit var sharedViewModel: MainViewModel
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enterTransition = MaterialFadeThrough().apply {
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+        super.onCreate(savedInstanceState)
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentDraftsBinding.bind(view)
@@ -127,6 +135,12 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
                                 )
                             val extras =
                                 FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
                             findNavController().navigate(action, extras)
                         }
 
@@ -183,6 +197,9 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
         // to set hamburger menu work and open drawer layout
         binding.toolbar.setupWithNavController(navController, appBarConfiguration)
         binding.toolbar.setNavigationOnClickListener {
+            exitTransition = MaterialFadeThrough().apply {
+                duration = resources.getInteger(R.integer.middle_duration).toLong()
+            }
             navController.navigateUp(appBarConfiguration)
         }
     }

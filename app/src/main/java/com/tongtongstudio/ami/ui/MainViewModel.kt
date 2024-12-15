@@ -164,6 +164,11 @@ class MainViewModel @Inject constructor(
         mainEventChannel.send(SharedEvent.NavigateToDraftScreen)
     }
 
+    fun updateTasksUrgency() = viewModelScope.launch {
+        val todayDate = Calendar.getInstance().timeInMillis
+        repository.updateTasksUrgency(todayDate)
+    }
+
     sealed class SharedEvent {
         data class NavigateToEditScreen(val thingToDo: Task) : SharedEvent()
         data object NavigateToAddScreen : SharedEvent()

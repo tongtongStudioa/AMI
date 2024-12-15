@@ -29,25 +29,13 @@
         tools:layout="@layout/fragment_main">
         <action
             android:id="@+id/action_othersTasksFragment_to_addEditTaskFragment"
-            app:destination="@id/addEditTaskFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:destination="@id/addEditTaskFragment" />
         <action
             android:id="@+id/action_othersTasksFragment_to_detailsFragment"
-            app:destination="@id/detailsFragment"
-            app:enterAnim="@anim/slide_up"
-            app:exitAnim="@anim/fade_out"
-            app:popExitAnim="@anim/slide_down"
-            app:popEnterAnim="@anim/fade_in" />
+            app:destination="@id/detailsFragment" />
         <action
             android:id="@+id/action_othersTasksFragment_to_localProjectStatsFragment2"
-            app:destination="@id/projectDetailsFragment"
-            app:enterAnim="@anim/slide_up"
-            app:exitAnim="@anim/fade_out"
-            app:popExitAnim="@anim/slide_down"
-            app:popEnterAnim="@anim/fade_in" />
+            app:destination="@id/projectDetailsFragment" />
     </fragment>
     <fragment
         android:id="@+id/todayTasksFragment"
@@ -56,29 +44,17 @@
         tools:layout="@layout/fragment_main">
         <action
             android:id="@+id/action_todayTasksFragment_to_addEditTaskFragment"
-            app:destination="@id/addEditTaskFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:destination="@id/addEditTaskFragment" />
 
         <action
             android:id="@+id/action_todayTasksFragment_to_localProjectStatsFragment2"
-            app:destination="@id/projectDetailsFragment"
-            app:enterAnim="@anim/slide_up"
-            app:exitAnim="@anim/fade_out"
-            app:popExitAnim="@anim/slide_down"
-            app:popEnterAnim="@anim/fade_in" />
+            app:destination="@id/projectDetailsFragment" />
         <action
             android:id="@+id/action_todayTasksFragment_to_missedRecurringTasksDialogFragment"
             app:destination="@id/missedRecurringTasksDialogFragment" />
         <action
             android:id="@+id/action_todayTasksFragment_to_tabPageTrackingStats"
-            app:destination="@id/viewPagerTrackingAndStatsFragment"
-            app:enterAnim="@anim/slide_up"
-            app:exitAnim="@anim/fade_out"
-            app:popExitAnim="@anim/slide_down"
-            app:popEnterAnim="@anim/fade_in" />
+            app:destination="@id/viewPagerTrackingAndStatsFragment" />
         <!---->
         <action
             android:id="@+id/action_todayTasksFragment_to_draftsFragment"
@@ -92,26 +68,14 @@
         tools:layout="@layout/fragment_main">
         <action
             android:id="@+id/action_projectFragment_to_addEditTaskFragment"
-            app:destination="@id/addEditTaskFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:destination="@id/addEditTaskFragment" />
 
         <action
             android:id="@+id/action_projectFragment_to_localProjectStatsFragment2"
-            app:destination="@id/projectDetailsFragment"
-            app:enterAnim="@anim/slide_up"
-            app:exitAnim="@anim/fade_out"
-            app:popExitAnim="@anim/slide_down"
-            app:popEnterAnim="@anim/fade_in" />
+            app:destination="@id/projectDetailsFragment" />
         <action
             android:id="@+id/action_projectFragment_to_tabPageTrackingStats"
-            app:destination="@id/viewPagerTrackingAndStatsFragment"
-            app:enterAnim="@anim/slide_up"
-            app:exitAnim="@anim/fade_out"
-            app:popExitAnim="@anim/slide_down"
-            app:popEnterAnim="@anim/fade_in" />
+            app:destination="@id/viewPagerTrackingAndStatsFragment" />
     </fragment>
 
     <fragment
@@ -121,18 +85,10 @@
         tools:layout="@layout/fragment_main">
         <action
             android:id="@+id/action_eventFragment_to_addEditTaskFragment"
-            app:destination="@id/addEditTaskFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:destination="@id/addEditTaskFragment" />
         <action
             android:id="@+id/action_habitsFragment_to_detailsFragment"
-            app:destination="@id/detailsFragment"
-            app:enterAnim="@anim/slide_up"
-            app:exitAnim="@anim/fade_out"
-            app:popExitAnim="@anim/slide_down"
-            app:popEnterAnim="@anim/fade_in" />
+            app:destination="@id/detailsFragment" />
     </fragment>
     <fragment
         tools:layout="@layout/fragment_main"
@@ -141,18 +97,10 @@
         android:label="@string/fragment_title_completed">
         <action
             android:id="@+id/action_completedThingToDoFragment_to_detailsFragment"
-            app:destination="@id/detailsFragment"
-            app:enterAnim="@anim/slide_up"
-            app:exitAnim="@anim/fade_out"
-            app:popExitAnim="@anim/slide_down"
-            app:popEnterAnim="@anim/fade_in" />
+            app:destination="@id/detailsFragment" />
         <action
             android:id="@+id/action_completedThingToDoFragment_to_localProjectStatsFragment2"
-            app:destination="@id/projectDetailsFragment"
-            app:enterAnim="@anim/slide_up"
-            app:exitAnim="@anim/fade_out"
-            app:popExitAnim="@anim/slide_down"
-            app:popEnterAnim="@anim/fade_in" />
+            app:destination="@id/projectDetailsFragment" />
     </fragment>
 
     <dialog
@@ -177,9 +125,9 @@
         tools:layout="@layout/fragment_insights" />
     <fragment
         android:id="@+id/projectDetailsFragment"
-        android:name="com.tongtongstudio.ami.ui.monitoring.project.ProjectStatsFragment"
+        android:name="com.tongtongstudio.ami.ui.monitoring.project.ProjectDetailsFragment"
         android:label="@string/fragment_title_local_project_stats"
-        tools:layout="@layout/fragment_project_stats">
+        tools:layout="@layout/fragment_project_details">
         <argument
             android:name="project"
             app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo" />
@@ -244,11 +192,7 @@
         tools:layout="@layout/fragment_main">
         <action
             android:id="@+id/action_globalObjectivesFragment_to_editGoalFragment"
-            app:destination="@id/editGoalFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
+            app:destination="@id/editGoalFragment" />
     </fragment>
     <dialog
         android:id="@+id/completeAssessmentDialogFragment"
@@ -269,11 +213,7 @@
         tools:layout="@layout/fragment_drafts">
         <action
             android:id="@+id/action_draftsFragment_to_detailsFragment"
-            app:destination="@id/detailsFragment"
-            app:enterAnim="@anim/slide_up"
-            app:exitAnim="@anim/fade_out"
-            app:popExitAnim="@anim/slide_down"
-            app:popEnterAnim="@anim/fade_in" />
+            app:destination="@id/detailsFragment" />
         <action
             android:id="@+id/action_draftsFragment_to_addEditTaskFragment"
             app:destination="@id/addEditTaskFragment" />

@@ -4,11 +4,13 @@ import android.text.format.DateUtils.DAY_IN_MILLIS
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tongtongstudio.ami.data.dao.AssessmentDao
 import com.tongtongstudio.ami.data.dao.CategoryDao
 import com.tongtongstudio.ami.data.dao.ReminderDao
 import com.tongtongstudio.ami.data.dao.TaskDao
+import com.tongtongstudio.ami.data.dao.WorkSessionDao
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.AssessmentType
 import com.tongtongstudio.ami.data.datatables.Category
@@ -25,6 +27,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
 
+val MIGRATION_4_2 = object : Migration(4, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE task_table ADD COLUMN isDraft INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE task_table ALTER COLUMN importance INTEGER DEFAULT NULL")
+        db.execSQL("ALTER TABLE task_table ALTER COLUMN priority INTEGER")
+        db.execSQL("ALTER TABLE task_table ALTER COLUMN dueDate LONG")
+    }
+}
+
 @Database(
     entities = [
         Task::class,
@@ -32,7 +43,7 @@ import javax.inject.Provider
         Reminder::class,
         Category::class, Unit::class,
         WorkSession::class, PomodoroSession::class],
-    version = 4, exportSchema = false
+    version = 2, exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class ThingToDoDatabase : RoomDatabase() {
@@ -41,6 +52,7 @@ abstract class ThingToDoDatabase : RoomDatabase() {
     abstract fun reminderDao(): ReminderDao
     abstract fun categoryDao(): CategoryDao
     abstract fun assessmentDao(): AssessmentDao
+    abstract fun workSession(): WorkSessionDao
 
     open class Callback @Inject constructor(
         private val database: Provider<ThingToDoDatabase>,

@@ -39,15 +39,16 @@ enum class Nature { PROJECT, TASK }
 )
 data class Task(
     val title: String,
-    val priority: Int,
+    val priority: Int?,
     @ColumnInfo(name = "task_due_date")
-    val dueDate: Long, // when the task must be complete (to get ahead of the deadline)
+    val dueDate: Long?, // when the task must be complete (to get ahead of the deadline)
     val startDate: Long? = null, // when the task or the project start
     val deadline: Long? = null, // to have a vision of the main targetGoal (exam's date, project's end, etc.)
     val description: String? = null,
     val type: String? = null,
     val importance: Int? = null, // task's impact on the smooth running of daily life
     val urgency: Int? = null,
+    val isDraft: Boolean = false,
 
     val isCompleted: Boolean = false,
     val completionDate: Long? = null,
@@ -119,7 +120,7 @@ data class Task(
      * @return boolean
      */
     private fun hasBeenCompletedOnTime(): Boolean {
-        return isCompleted && completionDate != null && (completionDate < dueDate || (deadline != null && completionDate < deadline))
+        return isCompleted && completionDate != null && dueDate != null && (completionDate < dueDate || (deadline != null && completionDate < deadline))
     }
 
     fun getCreationDateFormatted(): String {
@@ -132,7 +133,7 @@ data class Task(
             set(Calendar.MINUTE, 0)
             timeInMillis
         }
-        return dueDate < todayDate && isCompleted
+        return dueDate != null && dueDate < todayDate && isCompleted
     }
 
     fun getCompletionDateFormatted(): String {
@@ -147,8 +148,8 @@ data class Task(
          * Delay between due date and deadline otherwise, if no deadline, urgency = 9.
          * @return Int : between 2 and 10
          */
-        fun calculusUrgency(todayDateMillis: Long, dueDate: Long, deadline: Long?): Int {
-            val delay = if (deadline != null) abs(dueDate - deadline) else 9
+        fun calculusUrgency(todayDateMillis: Long, dueDate: Long?, deadline: Long?): Int {
+            val delay = if (deadline != null && dueDate != null) abs(dueDate - deadline) else 9
             return when {
                 delay <= 1 * DAY_IN_MILLIS -> 9
                 delay <= 2 * DAY_IN_MILLIS -> 8
@@ -164,13 +165,16 @@ data class Task(
 
         /**
          * To calculate priority :
-         * 2 * (importance * urgency) / (importance + urgency)
+         * (importance * urgency) / 10
          * @return int priority
          */
-        fun calculatingPriority(priority: Int, importance: Int? = null, urgency: Int? = null): Int {
-            // TODO: change way of calculus priority
+        fun calculatingPriority(
+            priority: Int?,
+            importance: Int? = null,
+            urgency: Int? = null
+        ): Int? {
             return if (importance != null && urgency != null)
-                2 * (importance * urgency) / (importance + urgency)
+                (importance * urgency) / 10
             else
                 priority
         }

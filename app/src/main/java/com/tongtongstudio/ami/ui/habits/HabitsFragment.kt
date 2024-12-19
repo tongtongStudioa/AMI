@@ -3,18 +3,23 @@ package com.tongtongstudio.ami.ui.habits
 import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialElevationScale
+import com.google.android.material.transition.MaterialFadeThrough
+import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
@@ -22,6 +27,7 @@ import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
+import com.tongtongstudio.ami.ui.ADD_DRAFT_TASK_OK
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
@@ -34,6 +40,13 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
     private lateinit var binding: FragmentMainBinding
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var taskAdapter: ThingToDoAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enterTransition = MaterialFadeThrough().apply {
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+        super.onCreate(savedInstanceState)
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -81,9 +94,13 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                             HabitsFragmentDirections.actionEventFragmentToAddEditTaskFragment(
                                 getString(R.string.fragment_title_edit_thing_to_do),
                                 event.thingToDo
-                                // TODO: 06/09/2022 change to resource string
-
                             )
+                        exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+                            duration = resources.getInteger(R.integer.middle_duration).toLong()
+                        }
+                        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+                            duration = resources.getInteger(R.integer.middle_duration).toLong()
+                        }
                         findNavController().navigate(action)
                     }
                     is MainViewModel.SharedEvent.NavigateToAddScreen -> {
@@ -93,12 +110,20 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                                 null
 
                             )
+                        exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+                            duration = 300
+                        }
+                        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+                            duration = 300
+                        }
                         findNavController().navigate(action)
                     }
                     is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
-                        val msg = if (event.result == ADD_TASK_RESULT_OK)
-                            getString(R.string.task_added)
-                        else getString(R.string.task_updated)
+                        val msg = when (event.result) {
+                            ADD_TASK_RESULT_OK -> getString(R.string.task_added)
+                            ADD_DRAFT_TASK_OK -> getString(R.string.draft_task_created)
+                            else -> getString(R.string.task_updated)
+                        }
                         Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
                     }
 
@@ -117,7 +142,15 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                             HabitsFragmentDirections.actionHabitsFragmentToDetailsFragment(
                                 event.task
                             )
-                        findNavController().navigate(action)
+                        val extras =
+                            FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
+                        exitTransition = MaterialElevationScale(false).apply {
+                            duration = resources.getInteger(R.integer.middle_duration).toLong()
+                        }
+                        reenterTransition = MaterialElevationScale(true).apply {
+                            duration = resources.getInteger(R.integer.middle_duration).toLong()
+                        }
+                        findNavController().navigate(action, extras)
                     }
                     else -> {
                         // do nothing
@@ -125,7 +158,14 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                 }.exhaustive
             }
         }
+        /**
+         * The below code is required to animate correctly when the user returns from [TaskDetailsFragment].
+         */
+        postponeEnterTransition()
+        view.doOnPreDraw { startPostponedEnterTransition() }
+
     }
+
 
     private fun loadEvents() {
         viewModel.habits.observe(viewLifecycleOwner) {
@@ -161,6 +201,9 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
             appBarConfiguration
         )
         binding.toolbar.setNavigationOnClickListener {
+            exitTransition = MaterialFadeThrough().apply {
+                duration = resources.getInteger(R.integer.middle_duration).toLong()
+            }
             navController.navigateUp(appBarConfiguration)
         }
     }
@@ -173,8 +216,8 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
-    override fun onTaskClick(thingToDo: Task) {
-        sharedViewModel.navigateToTaskDetailsScreen(thingToDo)
+    override fun onTaskClick(thingToDo: Task, itemView: View) {
+        sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 
     override fun onProjectAddClick(composedTask: ThingToDo) {

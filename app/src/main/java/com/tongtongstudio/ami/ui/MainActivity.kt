@@ -31,7 +31,7 @@ import hotchemi.android.rate.AppRate
 class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
-    lateinit var drawerLayout: DrawerLayout
+    private lateinit var drawerLayout: DrawerLayout
     lateinit var appBarConfiguration: AppBarConfiguration
     lateinit var toolbar: Toolbar
 
@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
 
         AppRate.with(this)
             .setInstallDays(10) // default 10, 0 means install day.
@@ -64,6 +65,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.todayTasksFragment,
                 R.id.othersTasksFragment,
                 R.id.achievementsFragment,
+                R.id.draftsFragment,
                 R.id.habitsFragment,
                 R.id.completedThingToDoFragment,
                 R.id.projectFragment,
@@ -101,8 +103,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        viewModel.lookForMissedRecurringTasks()
 
+        // Check at the opening of the app
+        viewModel.lookForMissedRecurringTasks()
+        viewModel.updateTasksUrgency()
         intent?.let {
             if (intent.hasExtra(ASSESSMENT_ID)) {
                 showCompleteAssessmentDialog(intent)
@@ -206,4 +210,21 @@ const val ADD_TASK_RESULT_OK = Activity.RESULT_FIRST_USER
 const val EDIT_TASK_RESULT_OK = Activity.RESULT_FIRST_USER + 1
 const val EDIT_GOAL_RESULT_OK = Activity.RESULT_FIRST_USER + 2
 const val ADD_GOAL_RESULT_OK = Activity.RESULT_FIRST_USER + 3
+const val ADD_DRAFT_TASK_OK = Activity.RESULT_FIRST_USER + 4
 
+// Define each preference key for each tutorial step
+const val PREF_TUTORIAL = "tutorial_preferences"
+const val KEY_DIALOG_SHOWN = "welcome_dialog_shown"
+const val KEY_APP_BAR = "tutorial_app_bar"
+const val KEY_TUTORIAL_FAB_ADD_TASK = "tutorial_fab_add_task"
+const val KEY_TUTORIAL_CLICK_TASK_DETAILS = "tutorial_click_task_details"
+const val KEY_TUTORIAL_SWIPE_MODIFY_DELETE_TASK = "tutorial_swipe_modify_delete_task"
+const val KEY_TUTORIAL_MENU_SORT_OPTIONS = "tutorial_menu_sort_options"
+const val KEY_TUTORIAL_DRAFT_TASKS_ICON = "tutorial_draft_tasks_icon"
+const val KEY_TUTORIAL_DUE_DATE = "tutorial_due_date"
+const val KEY_TUTORIAL_PRIORITY = "tutorial_priority"
+const val KEY_TUTORIAL_ESTIMATED_WORK_TIME = "tutorial_estimated_work_time"
+const val KEY_TUTORIAL_DEPENDENCY_PERSON = "tutorial_dependency_person"
+const val KEY_TUTORIAL_SKILL_LEVEL = "tutorial_skill_level"
+const val KEY_TUTORIAL_STATS_COMPLETION_RATE = "tutorial_stats_completion_rate"
+const val KEY_TUTORIAL_STATS_TIME_ESTIMATION_ACCURACY = "tutorial_stats_time_estimation_accuracy"

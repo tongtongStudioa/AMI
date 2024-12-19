@@ -25,6 +25,10 @@
                     android:id="@+id/habitsFragment"
                     android:icon="@drawable/baseline_calendar_24"
                     android:title="@string/menu_drawer_habits" />
+                <item
+                    android:id="@+id/draftsFragment"
+                    android:icon="@drawable/ic_upcoming_24"
+                    android:title="@string/draft_fragment_title" />
             </group>
         </menu>
     </item>

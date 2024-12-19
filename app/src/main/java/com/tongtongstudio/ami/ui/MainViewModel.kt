@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
@@ -41,6 +42,10 @@ class MainViewModel @Inject constructor(
 
     fun onHideCompletedClick(hideCompleted: Boolean) = viewModelScope.launch {
         preferencesManager.updateHideCompleted(hideCompleted)
+    }
+
+    fun onHideLateClick(hideLate: Boolean) = viewModelScope.launch {
+        preferencesManager.updateHideLateTasks(hideLate)
     }
 
     fun onLaterFilterSelected(laterFilter: LaterFilter) = viewModelScope.launch {
@@ -122,16 +127,16 @@ class MainViewModel @Inject constructor(
         mainEventChannel.send(SharedEvent.ShowUndoDeleteTaskMessage(subTask))
     }
 
-    fun navigateToTaskInfoScreen(thingToDo: Task) = viewModelScope.launch {
-        mainEventChannel.send(SharedEvent.NavigateToTaskViewPager(thingToDo))
+    fun navigateToTaskInfoScreen(thingToDo: Task, sharedView: View) = viewModelScope.launch {
+        mainEventChannel.send(SharedEvent.NavigateToTaskViewPager(thingToDo, sharedView))
     }
 
     fun navigateToTaskComposedInfoScreen(composedTask: ThingToDo) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToLocalProjectStatsScreen(composedTask))
     }
 
-    fun navigateToTaskDetailsScreen(task: Task) = viewModelScope.launch {
-        mainEventChannel.send(SharedEvent.NavigateToTaskDetailsScreen(task))
+    fun navigateToTaskDetailsScreen(task: Task, sharedView: View) = viewModelScope.launch {
+        mainEventChannel.send(SharedEvent.NavigateToTaskDetailsScreen(task, sharedView))
     }
 
     fun lookForMissedRecurringTasks() = viewModelScope.launch {
@@ -142,17 +147,26 @@ class MainViewModel @Inject constructor(
             set(Calendar.MILLISECOND, 0)
             timeInMillis
         }
-        val missedRecurringTasks: List<Task> = repository.getMissedRecurringTasks(todayDate)
+        val missedRecurringTasks: List<ThingToDo> = repository.getMissedRecurringTasks(todayDate)
         if (missedRecurringTasks.isNotEmpty()) {
             mainEventChannel.send(SharedEvent.ShowMissedRecurringTaskDialog(missedRecurringTasks))
         }
     }
 
-    fun updateRecurringTasksMissed(missedTasks: List<Task>) = viewModelScope.launch {
-        for (task in missedTasks) {
-            val updatedTask = task.updateCheckedState(false)
+    fun updateRecurringTasksMissed(missedThingToDo: List<ThingToDo>) = viewModelScope.launch {
+        for (thingToDo in missedThingToDo) {
+            val updatedTask = thingToDo.mainTask.updateCheckedState(false)
             repository.updateTask(updatedTask)
         }
+    }
+
+    fun navigateToDraftTasksScreen() = viewModelScope.launch {
+        mainEventChannel.send(SharedEvent.NavigateToDraftScreen)
+    }
+
+    fun updateTasksUrgency() = viewModelScope.launch {
+        val todayDate = Calendar.getInstance().timeInMillis
+        repository.updateTasksUrgency(todayDate)
     }
 
     sealed class SharedEvent {
@@ -162,10 +176,10 @@ class MainViewModel @Inject constructor(
         /**
          * Event to navigate to view pager which display stats and time tracker for a specific task
          */
-        data class NavigateToTaskViewPager(val task: Task) :
+        data class NavigateToTaskViewPager(val task: Task, val sharedView: View) :
             SharedEvent()
 
-        data class NavigateToTaskDetailsScreen(val task: Task) :
+        data class NavigateToTaskDetailsScreen(val task: Task, val sharedView: View) :
             SharedEvent()
 
         data class NavigateToLocalProjectStatsScreen(val composedTaskData: ThingToDo) :
@@ -175,6 +189,7 @@ class MainViewModel @Inject constructor(
         data class ShowUndoDeleteTaskMessage(val thingToDo: Task) :
             SharedEvent()
 
-        data class ShowMissedRecurringTaskDialog(val missedTasks: List<Task>) : SharedEvent()
+        data class ShowMissedRecurringTaskDialog(val missedTasks: List<ThingToDo>) : SharedEvent()
+        data object NavigateToDraftScreen : SharedEvent()
     }
 }

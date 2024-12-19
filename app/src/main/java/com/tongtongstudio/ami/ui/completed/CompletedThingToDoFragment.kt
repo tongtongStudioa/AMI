@@ -2,17 +2,21 @@ package com.tongtongstudio.ami.ui.completed
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialElevationScale
+import com.google.android.material.transition.MaterialFadeThrough
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
@@ -31,6 +35,13 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
     private val viewModel: CompletedThingToDoViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var sharedViewModel: MainViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enterTransition = MaterialFadeThrough().apply {
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -80,7 +91,15 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                             CompletedThingToDoFragmentDirections.actionCompletedThingToDoFragmentToDetailsFragment(
                                 event.task
                             )
-                        findNavController().navigate(action)
+                        val extras =
+                            FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
+                        exitTransition = MaterialElevationScale(false).apply {
+                            duration = resources.getInteger(R.integer.middle_duration).toLong()
+                        }
+                        reenterTransition = MaterialElevationScale(true).apply {
+                            duration = resources.getInteger(R.integer.middle_duration).toLong()
+                        }
+                        findNavController().navigate(action, extras)
                     }
                     is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
                         val action =
@@ -95,6 +114,12 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                 }
             }
         }
+
+        /**
+         * The below code is required to animate correctly when the user returns from [TaskDetailsFragment].
+         */
+        postponeEnterTransition()
+        view.doOnPreDraw { startPostponedEnterTransition() }
 
         viewModel.thingsToDoCompleted.observe(viewLifecycleOwner) {
             if (it.isEmpty()) {
@@ -133,6 +158,9 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
             appBarConfiguration
         )
         binding.toolbar.setNavigationOnClickListener {
+            exitTransition = MaterialFadeThrough().apply {
+                duration = resources.getInteger(R.integer.middle_duration).toLong()
+            }
             navController.navigateUp(appBarConfiguration)
         }
         binding.toolbar.subtitle = getString(R.string.completed_tasks_subtitle)
@@ -146,8 +174,8 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
-    override fun onTaskClick(thingToDo: Task) {
-        sharedViewModel.navigateToTaskDetailsScreen(thingToDo)
+    override fun onTaskClick(thingToDo: Task, itemView: View) {
+        sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 
     override fun onProjectAddClick(composedTask: ThingToDo) {

@@ -42,7 +42,7 @@ class SubTaskAdapter(private val listener: InteractionListener, val subTasks: Li
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
                         val task = subTasks[position]
-                        listener.onTaskClick(task)
+                        listener.onTaskClick(task, itemView)
                     }
                 }
             }

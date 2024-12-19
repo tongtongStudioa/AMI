@@ -14,6 +14,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.PopupMenu
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -39,6 +40,7 @@ import com.google.android.material.color.MaterialColors
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.AutoCompleteAdapter
 import com.tongtongstudio.ami.adapter.simple.AttributeListener
@@ -139,6 +141,21 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 safeSave(layoutPreference.layoutMode == LayoutMode.EXTENT)
             }
         }
+        // Transition d'entrée avec MaterialSharedAxis
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+            interpolator = AccelerateDecelerateInterpolator()
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+
+        /*binding.nestedScroolView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+            if (scrollY > oldScrollY) {
+                // Défilement vers le bas
+                binding.fabSaveTask.hide() // Cacher le FAB
+            } else {
+                // Défilement vers le haut
+                binding.fabSaveTask.show() // Réafficher le FAB
+            }
+        }*/
 
         binding.apply {
             radioGroupChoiceNature.check(if (viewModel.ttdNature == Nature.TASK.name) rbTask.id else rbProject.id)
@@ -179,16 +196,18 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             }
 
             // edit priority
-            if (InputValidation.isValidPriority(viewModel.priority))
-                editTextPriority.setText(viewModel.priority)
+            if (InputValidation.isValidPriority(viewModel.priority)) {
+                val text = if (viewModel.priority != null) viewModel.priority.toString() else ""
+                editTextPriority.setText(text)
+            }
             editTextPriority.addTextChangedListener {
                 if (InputValidation.isValidPriority(it)) {
                     inputLayoutPriority.error = null
-                    viewModel.priority = it.toString()
+                    viewModel.priority = it.toString().toInt()
                     viewModel.importance = it.toString().toInt()
                 } else {
                     inputLayoutPriority.error = getString(R.string.error_no_priority)
-                    viewModel.priority = ""
+                    viewModel.priority = null
                     viewModel.importance = null
                 }
             }
@@ -815,19 +834,18 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     }
 
     private fun safeSave(modeExtent: Boolean) {
-        if (!InputValidation.isNotNull(viewModel.dueDate)) {
+        /*if (!InputValidation.isNotNull(viewModel.dueDate)) {
             viewModel.showInvalidInputMessage(getString(R.string.error_no_date))
             return
-        }
-        if (InputValidation.isValidText(viewModel.title) && InputValidation.isValidText(viewModel.priority) && InputValidation.isNotNull(
-                viewModel.dueDate
-            )
-        ) {
+        }*/
+        /*if (InputValidation.isValidText(viewModel.title) && InputValidation.isValidText(viewModel.priority) && InputValidation.isNotNull(viewModel.dueDate))
+            viewModel.showInvalidInputMessage("Draft task")*/
+        if (InputValidation.isValidText(viewModel.title)) {
             viewModel.onSaveClick(modeExtent)
             for (reminder in reminders) {
                 scheduleReminder(requireContext(), reminder, viewModel.title)
             }
-        }
+        } else binding.inputLayoutName.error = getString(R.string.error_no_title)
     }
 
     private fun scheduleReminder(context: Context, reminder: Reminder, taskName: String) {
@@ -943,6 +961,10 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             appBarConfiguration
         )
         binding.toolbar.setNavigationOnClickListener {
+            exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+                interpolator = AccelerateDecelerateInterpolator()
+                duration = resources.getInteger(R.integer.middle_duration).toLong()
+            }
             navController.navigateUp(appBarConfiguration)
         }
     }

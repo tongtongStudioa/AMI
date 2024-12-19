@@ -1,10 +1,14 @@
 package com.tongtongstudio.ami.ui.todaytasks
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -16,12 +20,18 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialElevationScale
+import com.google.android.material.transition.MaterialFadeThrough
+import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
 import com.tongtongstudio.ami.adapter.task.InteractionListener
@@ -31,16 +41,24 @@ import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.notification.SoundPlayer
+import com.tongtongstudio.ami.ui.ADD_DRAFT_TASK_OK
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
+import com.tongtongstudio.ami.ui.KEY_APP_BAR
+import com.tongtongstudio.ami.ui.KEY_DIALOG_SHOWN
+import com.tongtongstudio.ami.ui.KEY_TUTORIAL_FAB_ADD_TASK
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
+import com.tongtongstudio.ami.ui.PREF_TUTORIAL
 import com.tongtongstudio.ami.ui.todaytasks.TodayTasksFragmentDirections.Companion.actionTodayTasksFragmentToAddEditTaskFragment
 import com.tongtongstudio.ami.ui.todaytasks.TodayTasksFragmentDirections.Companion.actionTodayTasksFragmentToTabPageTrackingStats
+import com.tongtongstudio.ami.util.AppTutorial
+import com.tongtongstudio.ami.util.TutorialStep
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import kotlin.properties.Delegates
 
 
 @AndroidEntryPoint
@@ -53,10 +71,32 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     private lateinit var soundPlayer: SoundPlayer
     private var menuProvider: MenuProvider? = null
 
+    private lateinit var sharedPreferences: SharedPreferences
+    private var isWelcomeDialogShown by Delegates.notNull<Boolean>()
+    private lateinit var tutorial: AppTutorial
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        sharedPreferences =
+            requireActivity().getSharedPreferences(PREF_TUTORIAL, Context.MODE_PRIVATE)
+        isWelcomeDialogShown = sharedPreferences.getBoolean(KEY_DIALOG_SHOWN, false)
+        tutorial = AppTutorial(requireActivity(), sharedPreferences)
+        enterTransition = MaterialFadeThrough().apply {
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentMainBinding.inflate(layoutInflater)
+        return binding.root
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding = FragmentMainBinding.bind(view)
 
         //collapse toolbar
         setUpToolbar()
@@ -65,6 +105,26 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
         mainTaskAdapter = ThingToDoAdapter(this)
         soundPlayer = SoundPlayer(requireContext())
+
+        val listTutorialStep = listOf(
+            TutorialStep(
+                KEY_APP_BAR, binding.toolbar.rootView,
+                getString(R.string.primary_text_tuto_step1_frag1),
+                getString(R.string.secondary_text_tuto_step1_frag1)
+            ),
+            TutorialStep(
+                KEY_TUTORIAL_FAB_ADD_TASK, binding.fabAddTask,
+                getString(R.string.primary_text_tuto_step2_frag1),
+                getString(R.string.secondary_text_tuto_step2_frag1)
+            ),
+        )
+
+        if (!isWelcomeDialogShown) {
+            showWelcomeDialog(requireContext()) {
+                tutorial.startTutorialSequence(listTutorialStep)
+            }
+            sharedPreferences.edit().putBoolean(KEY_DIALOG_SHOWN, true).apply()
+        }
 
         // implement UI
         binding.apply {
@@ -76,7 +136,9 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 adapter = mainTaskAdapter
                 layoutManager = LinearLayoutManager(requireContext())
                 setHasFixedSize(false)
+                itemAnimator = DefaultItemAnimator()
             }
+
             val callback = object : ThingToDoItemCallback(
                 mainTaskAdapter,
                 ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
@@ -133,12 +195,25 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                                     getString(R.string.fragment_title_add_thing_to_do),
                                     null
                                 )
+                            //val extras = FragmentNavigatorExtras(binding.fabAddTask to binding.fabAddTask.transitionName)
+                            // Transition de sortie avec MaterialSharedAxis (DIRECTION X pour effet slide)
+                            exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            // Transition de retour avec MaterialSharedAxis
+                            reenterTransition =
+                                MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+                                    duration =
+                                        resources.getInteger(R.integer.middle_duration).toLong()
+                                }
                             findNavController().navigate(action)
                         }
                         is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
-                            val msg = if (event.result == ADD_TASK_RESULT_OK)
-                                getString(R.string.task_added)
-                            else getString(R.string.task_updated)
+                            val msg = when (event.result) {
+                                ADD_TASK_RESULT_OK -> getString(R.string.task_added)
+                                ADD_DRAFT_TASK_OK -> getString(R.string.draft_task_created)
+                                else -> getString(R.string.task_updated)
+                            }
                             Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
                         }
                         is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {
@@ -156,7 +231,15 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                                 actionTodayTasksFragmentToTabPageTrackingStats(
                                     event.task
                                 )
-                            findNavController().navigate(action)
+                            val extras =
+                                FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            findNavController().navigate(action, extras)
                         }
                         is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
                             val action =
@@ -172,6 +255,12 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                                 )
                             findNavController().navigate(action)
                         }
+
+                        is MainViewModel.SharedEvent.NavigateToDraftScreen -> {
+                            val action =
+                                TodayTasksFragmentDirections.actionTodayTasksFragmentToDraftsFragment()
+                            findNavController().navigate(action)
+                        }
                         else -> {
                             // do nothing
                         }
@@ -180,6 +269,16 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             }
         }
 
+        /**
+         * The below code is required to animate correctly when the user returns from [DetailFragment].
+         */
+        postponeEnterTransition()
+        (requireView().parent as ViewGroup).viewTreeObserver
+            .addOnPreDrawListener {
+                startPostponedEnterTransition()
+                true
+            }
+
         // add menu
         (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -187,6 +286,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 lifecycleScope.launch {
                     menu.findItem(R.id.action_hide_completed_tasks).isChecked =
                         viewModel.preferencesFlow.first().hideCompleted
+                    menu.findItem(R.id.action_hide_late_tasks).isChecked =
+                        viewModel.preferencesFlow.first().hideLate
                 }
             }
 
@@ -217,13 +318,27 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                         sharedViewModel.onHideCompletedClick(menuItem.isChecked)
                         true
                     }
+
+                    R.id.action_hide_late_tasks -> {
+                        menuItem.isChecked = !menuItem.isChecked
+                        sharedViewModel.onHideLateClick(menuItem.isChecked)
+                        true
+                    }
                     else -> false
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-
+    private fun showWelcomeDialog(context: Context, onPositiveClick: () -> Unit) {
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setTitle(getString(R.string.welcome_title_msg))
+            .setMessage(getString(R.string.welcom_msg))
+            .setPositiveButton(getString(R.string.start_the_tutorial)) { _, _ -> onPositiveClick() }
+            .setNegativeButton(getString(R.string.skip), null)
+            .create()
+        dialog.show()
+    }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout
     private fun setUpToolbar() {
@@ -242,6 +357,9 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             appBarConfiguration
         )
         binding.toolbar.setNavigationOnClickListener {
+            exitTransition = MaterialFadeThrough().apply {
+                duration = resources.getInteger(R.integer.middle_duration).toLong()
+            }
             navController.navigateUp(appBarConfiguration)
         }
         binding.toolbar.subtitle = "Today's things to do"
@@ -260,8 +378,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
-    override fun onTaskClick(thingToDo: Task) {
-        sharedViewModel.navigateToTaskInfoScreen(thingToDo)
+    override fun onTaskClick(thingToDo: Task, itemView: View) {
+        sharedViewModel.navigateToTaskInfoScreen(thingToDo, itemView)
     }
 
     override fun onProjectAddClick(composedTask: ThingToDo) {

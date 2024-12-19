@@ -38,4 +38,9 @@
         android:title="@string/hide_completed"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_hide_late_tasks"
+        android:checkable="true"
+        android:title="@string/hide_late_tasks"
+        app:showAsAction="never" />
 </menu>

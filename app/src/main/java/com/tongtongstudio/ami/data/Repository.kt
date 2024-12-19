@@ -4,6 +4,7 @@ import com.tongtongstudio.ami.data.dao.AssessmentDao
 import com.tongtongstudio.ami.data.dao.CategoryDao
 import com.tongtongstudio.ami.data.dao.ReminderDao
 import com.tongtongstudio.ami.data.dao.TaskDao
+import com.tongtongstudio.ami.data.dao.WorkSessionDao
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.Reminder
@@ -12,23 +13,34 @@ import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.data.datatables.TimeWorkedDistribution
 import com.tongtongstudio.ami.data.datatables.TtdAchieved
 import com.tongtongstudio.ami.data.datatables.TtdStreakInfo
+import com.tongtongstudio.ami.data.datatables.WorkSession
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 
 class Repository @Inject constructor(
     private val taskDao: TaskDao,
     private val categoryDao: CategoryDao,
     private val reminderDao: ReminderDao,
-    private val assessmentDao: AssessmentDao
+    private val assessmentDao: AssessmentDao,
+    private val workSessionDao: WorkSessionDao
 ) {
 
     fun getThingsToDoToday(
         sortOrder: SortOrder,
         hideCompleted: Boolean,
+        hideLateTasks: Boolean,
         startOfToday: Long,
         endOfToday: Long,
     ): Flow<List<ThingToDo>> {
-        return taskDao.getTodayTasks(sortOrder, hideCompleted, startOfToday, endOfToday)
+        return taskDao.getTodayTasks(
+            sortOrder,
+            hideCompleted,
+            hideLateTasks,
+            startOfToday,
+            endOfToday
+        )
     }
 
     fun getLaterThingsToDo(
@@ -69,7 +81,7 @@ class Repository @Inject constructor(
         return taskDao.getPotentialProject()
     }
 
-    suspend fun getMissedRecurringTasks(todayDate: Long): List<Task> {
+    suspend fun getMissedRecurringTasks(todayDate: Long): List<ThingToDo> {
         return taskDao.getMissedRecurringTasks(todayDate)
     }
 
@@ -249,6 +261,37 @@ class Repository @Inject constructor(
 
     fun getGlobalGoals(): Flow<List<Assessment>> {
         return assessmentDao.getGlobalGoals()
+    }
+
+    fun getDraftsTasks(): Flow<List<ThingToDo>> {
+        return taskDao.getDraftTask()
+    }
+
+    fun getWorkSessions(taskId: Long): Flow<List<WorkSession>> {
+        return workSessionDao.getWorkSessions(taskId)
+    }
+
+    suspend fun suppressWorkSession(workSession: WorkSession) {
+        workSessionDao.delete(workSession)
+    }
+
+    suspend fun insertWorkSession(workSession: WorkSession) {
+        workSessionDao.insert(workSession)
+    }
+
+    fun getTaskTimeWorked(taskId: Long?): Flow<Long> {
+        return if (taskId != null)
+            workSessionDao.getTaskTimeWorked(taskId)
+        else flowOf(0)
+    }
+
+    suspend fun updateTasksUrgency(todayDate: Long) {
+        val taskList = taskDao.getTasksNotCompeted().first()
+        for (task in taskList) {
+            val urgency = Task.calculusUrgency(todayDate, task.dueDate, task.deadline)
+            val priority = Task.calculatingPriority(task.priority, task.importance, task.urgency)
+            taskDao.update(task.copy(urgency = urgency, priority = priority))
+        }
     }
 
 }

@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialFadeThrough
+import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.GoalsAdapter
 import com.tongtongstudio.ami.adapter.GoalsListener
@@ -45,6 +47,13 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var soundPlayer: SoundPlayer
     private lateinit var goalsAdapter: GoalsAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enterTransition = MaterialFadeThrough().apply {
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+        super.onCreate(savedInstanceState)
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -173,6 +182,15 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                                 GlobalObjectivesFragmentDirections.actionGlobalObjectivesFragmentToEditGoalFragment(
                                     title
                                 )
+                            exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            // Transition de retour avec MaterialSharedAxis
+                            reenterTransition =
+                                MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+                                    duration =
+                                        resources.getInteger(R.integer.middle_duration).toLong()
+                                }
                             findNavController().navigate(action)
                         }
                         is GlobalObjectivesViewModel.GoalsEvent.NavigateToEditGlobalGoalScreen -> {
@@ -182,6 +200,16 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                                     title,
                                     event.goal
                                 )
+                            // Transition de sortie avec MaterialSharedAxis (DIRECTION X pour effet slide)
+                            exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            // Transition de retour avec MaterialSharedAxis
+                            reenterTransition =
+                                MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+                                    duration =
+                                        resources.getInteger(R.integer.middle_duration).toLong()
+                                }
                             findNavController().navigate(action)
                         }
                         is GlobalObjectivesViewModel.GoalsEvent.NavigateToDetailsGlobalGoalScreen -> {
@@ -221,6 +249,9 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
             appBarConfiguration
         )
         binding.toolbar.setNavigationOnClickListener {
+            exitTransition = MaterialFadeThrough().apply {
+                duration = resources.getInteger(R.integer.middle_duration).toLong()
+            }
             navController.navigateUp(appBarConfiguration)
         }
     }

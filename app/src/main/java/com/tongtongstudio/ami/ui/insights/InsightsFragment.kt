@@ -27,6 +27,7 @@ import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.transition.MaterialFadeThrough
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.PATTERN_FORMAT_DATE
 import com.tongtongstudio.ami.data.datatables.TimeWorkedDistribution
@@ -45,6 +46,13 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
     private val viewModel: InsightsViewModel by viewModels()
     private lateinit var binding: FragmentInsightsBinding
     private val combinedAchievementsData = CombinedData()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enterTransition = MaterialFadeThrough().apply {
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -290,7 +298,11 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
         val appBarConfiguration = mainActivity.appBarConfiguration
 
         // to set hamburger menu work and open drawer layout
-        binding.toolbar.setupWithNavController(navController, appBarConfiguration)
+        binding.toolbar.setupWithNavController(navController, appBarConfiguration).apply {
+            exitTransition = MaterialFadeThrough().apply {
+                duration = resources.getInteger(R.integer.middle_duration).toLong()
+            }
+        }
     }
 
     private fun createLineData(entries: List<Entry>): LineData {

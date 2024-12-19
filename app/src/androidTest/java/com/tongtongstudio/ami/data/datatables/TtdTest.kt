@@ -54,6 +54,7 @@ internal class TtdTest {
         val resultedFlow = taskDao.getTodayTasks(
             SortOrder.BY_EISENHOWER_MATRIX,
             false,
+            false,
             dataTestUtil.startOfDay,
             dataTestUtil.endOfDay
         )
@@ -169,7 +170,7 @@ internal class TtdTest {
         val list = dataTestUtil.getTasks()
         val tasksList = ArrayList<Task>()
         for (task in list) {
-            if ((task.dueDate < endOfDayTomorrow || task.startDate != null && task.startDate!! < endOfDayTomorrow) && task.dueDate > endOfDay && task.startDate != null && task.startDate!! > endOfDay) {
+            if ((task.dueDate != null && task.dueDate!! < endOfDayTomorrow || task.startDate != null && task.startDate!! < endOfDayTomorrow) && task.dueDate != null && task.dueDate!! > endOfDay && task.startDate != null && task.startDate!! > endOfDay) {
                 tasksList.add(task)
             }
         }

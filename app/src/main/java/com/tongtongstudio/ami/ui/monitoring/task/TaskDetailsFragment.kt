@@ -1,16 +1,21 @@
 package com.tongtongstudio.ami.ui.monitoring.task
 
+import android.graphics.Color
 import android.icu.text.DateFormat
 import android.icu.util.Calendar
 import android.os.Build
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.RequiresApi
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.transition.MaterialContainerTransform
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.databinding.FragmentTaskDetailsBinding
@@ -33,18 +38,38 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
         }
     }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentTaskDetailsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
     // for calendar getInstance function
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding = FragmentTaskDetailsBinding.bind(view)
+        sharedElementEnterTransition = MaterialContainerTransform().apply {
+            drawingViewId = R.id.nav_host_fragment
+            duration = resources.getInteger(R.integer.long_duration).toLong()
+            scrimColor = Color.TRANSPARENT
+        }
+        // Shared transition id
+        ViewCompat.setTransitionName(binding.taskInfo, "shared_element_${viewModel.task?.id}")
+
+        // Postpone transition until layout is ready
+        //startPostponedEnterTransition()
 
         // show or hide app bar if fragment is in unique mode
         if (parentFragment !is ViewPagerTrackingAndStatsFragment) {
             binding.appBar.isVisible = true
             setUpToolbar()
-        } else binding.appBar.isVisible = false
+        } else {
+            binding.appBar.isVisible = false
+        }
 
         // binding elements layout
         binding.apply {
@@ -81,7 +106,7 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
                 getString(R.string.completion_rate_value, completionRate)
             else getString(R.string.no_information)
 
-            viewModel.actualWorkTime.observe(viewLifecycleOwner) {
+            viewModel.currentTotalWorkTime.observe(viewLifecycleOwner) {
                 totalDurationView.isVisible = it != null
                 tvTotalDuration.text =
                     TrackingTimeUtility.getFormattedTimeWorked(it)
@@ -93,7 +118,7 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
                 TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedWorkingTime)
                     ?: getString(R.string.no_information)
             estimatedWorkTimeView.isVisible =
-                viewModel.estimatedWorkingTime != null && viewModel.task?.isCompleted == true
+                viewModel.estimatedWorkingTime != null
 
             // completion date
             val dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())

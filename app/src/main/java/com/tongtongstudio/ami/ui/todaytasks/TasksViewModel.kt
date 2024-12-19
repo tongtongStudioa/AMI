@@ -7,7 +7,7 @@ import com.tongtongstudio.ami.data.PreferencesManager
 import com.tongtongstudio.ami.data.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.flatMapLatest
-import java.util.*
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,6 +38,7 @@ class TasksViewModel @Inject constructor(
             repository.getThingsToDoToday(
                 filterPreferences.sortOrder,
                 filterPreferences.hideCompleted,
+                filterPreferences.hideLate,
                 startOfToday,
                 endOfToday
             )

@@ -22,6 +22,77 @@ const val PATTERN_FORMAT_DATE = "E dd/MM"
 
 enum class Nature { PROJECT, TASK }
 
+@Entity(tableName = "days_of_week_table")
+data class DaysOfWeek(
+    @PrimaryKey(autoGenerate = false) // Les jours sont fixes
+    val dayId: Int, // 1 (Monday) à 7 (Sunday)
+    val name: String // "Monday", "Tuesday", etc.
+)
+
+@Entity(tableName = "task_recurrence_table")
+data class TaskRecurrence(
+    val frequency: String, // e.g., "DAILY", "WEEKLY", "MONTHLY", etc.
+    val interval: Int, // e.g., 1 (every 1 day), 2 (every 2 weeks), etc.
+    @ColumnInfo(name = "days_of_week")
+    val daysOfWeek: List<Int>? = null, // on Monday and Wednesday for example
+    @ColumnInfo(name = "start_date")
+    val startDate: Long?, // Timestamp when the recurrence starts
+    @ColumnInfo(name = "end_date")
+    val endDate: Long? = null, // Timestamp when the recurrence ends
+    @ColumnInfo(name = "is_active")
+    val isActive: Boolean = true, // Whether the recurrence is currently active
+    @ColumnInfo(name = "occurrence_limit")
+    val occurrenceLimit: Int? = null, // Number of occurrences before the recurrence stops
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "recurrence_id")
+    val recurrenceId: Long = 0
+)
+
+@Entity(
+    tableName = "task_recurrence_days_cross_ref",
+    primaryKeys = ["recurrenceId", "dayId"],
+    foreignKeys = [
+        ForeignKey(
+            entity = TaskRecurrence::class,
+            parentColumns = ["recurrence_id"],
+            childColumns = ["recurrenceId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = DaysOfWeek::class,
+            parentColumns = ["dayId"],
+            childColumns = ["dayId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class TaskRecurrenceDaysCrossRef(
+    val recurrenceId: Long,
+    val dayId: Int
+)
+
+@Parcelize
+@Entity(
+    tableName = "task_completion_table", foreignKeys = [
+        ForeignKey(
+            entity = Category::class,
+            parentColumns = ["task_id"],
+            childColumns = ["parent_task_id"],
+            onDelete = CASCADE
+        )
+    ])
+data class Completion(
+    @ColumnInfo(name = "parent_task_id")
+    val taskId: Long,
+    val isCompleted: Boolean = false,
+    val completionDate: Long? = null,
+    val comment: String? = null,
+    val emotions: Int? = 1,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "completion_id")
+    val id: Long = 0
+) : Parcelable
+
 @Parcelize
 @Entity(
     tableName = "task_table", foreignKeys = [
@@ -35,6 +106,18 @@ enum class Nature { PROJECT, TASK }
             parentColumns = ["task_id"],
             childColumns = ["parent_task_id"],
             onDelete = CASCADE
+        ),
+        ForeignKey(
+            entity = TaskRecurrence::class,
+            parentColumns = ["recurrence_id"],
+            childColumns = ["task_recurrence_id"],
+            onDelete = ForeignKey.SET_NULL
+        ),
+        ForeignKey(
+            entity = Task::class,
+            parentColumns = ["task_id"],
+            childColumns = ["dependency_task_id"],
+            onDelete = ForeignKey.SET_NULL
         )]
 )
 data class Task(
@@ -49,28 +132,19 @@ data class Task(
     val importance: Int? = null, // task's impact on the smooth running of daily life
     val urgency: Int? = null,
     val isDraft: Boolean = false,
-
-    val isCompleted: Boolean = false,
-    val completionDate: Long? = null,
-    val completedOnTime: Boolean? = null,
+    val estimatedEmotions: Int = 1, // 0, 1 or 2 to express feelings on the task to accomplish
     val estimatedWorkingTime: Long? = null,
-    val currentWorkingTime: Long? = null,
-    val isRecurring: Boolean = false,
-    val currentStreak: Int = 0,
-    val maxStreak: Int = 0,
-    val repetitionFrequency: RecurringTaskInterval? = null,
-    val totalRepetitionCount: Int = 0,
-    val timesMissed: Int = 0,
-    val successCount: Int = 0, // achievements number for recurrent tasks
-    val comment: String? = null,
-    val dependency: Boolean? = null, // dependency on other people
     val skillLevel: Int? = null, // task mastery level posses
     val creationDate: Long = System.currentTimeMillis(),
-    @ColumnInfo(name = "task_id")
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @ColumnInfo(name = "dependency_task_id")
+    val dependencyId:Long? = null, // dependency on other tasks
+    @ColumnInfo(name = "task_recurrence_id")
+    val recurrenceInfosId: Long? = null, // recurrenceInfosId
     val categoryId: Long? = null,
     @ColumnInfo(name = "parent_task_id")
     val parentTaskId: Long? = null,
+    @ColumnInfo(name = "task_id")
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
 ) : Parcelable {
 
     /**
@@ -82,7 +156,7 @@ data class Task(
         val updatedTask = when {
             // it is a recurring task
             isRecurring && repetitionFrequency != null -> repetitionFrequency.updateRecurringTask(
-                this@Task,
+                this,
                 state
             )
             // it is checked
@@ -108,38 +182,8 @@ data class Task(
         return updatedTask
     }
 
-    fun getHabitSuccessRate(): Float? {
-        return if (totalRepetitionCount != 0)
-            (successCount.toFloat() / totalRepetitionCount) * 100
-        else null
-    }
-
-    /**
-     * This function decide if a task is completed on time or not.
-     * It compares completionDate and dueDate or completionDate and deadline if it was define
-     * @return boolean
-     */
-    private fun hasBeenCompletedOnTime(): Boolean {
-        return isCompleted && completionDate != null && dueDate != null && (completionDate < dueDate || (deadline != null && completionDate < deadline))
-    }
-
     fun getCreationDateFormatted(): String {
         return DateFormat.getDateInstance().format(creationDate)
-    }
-
-    fun isLate(): Boolean {
-        val todayDate = Calendar.getInstance().run {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            timeInMillis
-        }
-        return dueDate != null && dueDate < todayDate && isCompleted
-    }
-
-    fun getCompletionDateFormatted(): String {
-        return if (isCompleted && completionDate != null)
-            DateFormat.getDateInstance().format(completionDate)
-        else "null"
     }
 
     companion object {
@@ -193,7 +237,13 @@ data class Task(
             } else null
         }
     }
+}
 
+data class TaskAndCompletion(
+    @Embedded
+    val task: Task,
+    val completions: List<Completion>,
+) {
 
 }
 
@@ -202,19 +252,59 @@ data class ThingToDo(
     @Embedded
     val mainTask: Task,
     @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = Task::class)
-    val subTasks: List<Task>,
+    val subTasks: List<ThingToDo>,
     @Relation(parentColumn = "categoryId", entityColumn = "category_id", entity = Category::class)
     val category: Category?,
     @Relation(parentColumn = "task_id", entityColumn = "parent_id", entity = Reminder::class)
-    val reminders: List<Reminder>
+    val reminders: List<Reminder>,
+    @Relation(parentColumn = "task_id", entityColumn = "dependency_id", entity = Task::class)
+    val dependencies: List<ThingToDo>,
+    @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = Completion::class)
+    val completions: List<Completion> // Historique d’achèvement
 
 ) : Parcelable {
     fun isProject(): Boolean {
         return mainTask.type == Nature.PROJECT.name || subTasks.isNotEmpty()
     }
 
-    fun getNbSubTasksCompleted(): Int = subTasks.count { it.isCompleted }
+    // TODO: modify this using subtasks and completions list to take in account repeating tasks
+    fun getNbSubTasksCompleted(): Int {
+
+    }
     fun getNbSubTasks(): Int = subTasks.size
+    // TODO: create attribute to use these method
+
+    fun getHabitSuccessRate(): Float? {
+        val totalRepetitionCount = completions.size
+        val successCount = completions.count { it.isCompleted }
+        return if (totalRepetitionCount != 0)
+            (successCount.toFloat() / totalRepetitionCount) * 100
+        else null
+    }
+
+    /**
+     * This function decide if a task is completed on time or not.
+     * It compares completionDate and dueDate or completionDate and deadline if it was define
+     * @return boolean
+     */
+    private fun hasBeenCompletedOnTime(): Boolean {
+        return isCompleted && completionDate != null && dueDate != null && (completionDate < dueDate || (deadline != null && completionDate < deadline))
+    }
+
+    fun isLate(): Boolean {
+        val todayDate = Calendar.getInstance().run {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            timeInMillis
+        }
+        return dueDate != null && dueDate < todayDate && isCompleted
+    }
+
+    fun getCompletionDateFormatted(): String {
+        return if (isCompleted && completionDate != null)
+            DateFormat.getDateInstance().format(completionDate)
+        else "null"
+    }
 }
 
 /**

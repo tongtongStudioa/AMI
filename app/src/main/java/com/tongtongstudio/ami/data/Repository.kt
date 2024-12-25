@@ -113,7 +113,7 @@ class Repository @Inject constructor(
         return assessmentDao.get(id)
     }
 
-    fun getTasksAssessments(taskId: Long?): Flow<MutableList<Assessment>>? {
+    fun getGoalAssessments(taskId: Long?): Flow<MutableList<Assessment>>? {
         return if (taskId != null)
             assessmentDao.getIntermediateAssessments(taskId)
         else null

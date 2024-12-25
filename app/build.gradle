@@ -59,7 +59,7 @@ dependencies {
     // Rate me dialog dependency
     implementation 'com.github.hotchemi:android-rate:1.0.1'
 
-    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    implementation 'androidx.viewpager2:viewpager2:1.1.0'
 
     // MPAndroidChart dependency
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'

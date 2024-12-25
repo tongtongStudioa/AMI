@@ -67,7 +67,7 @@ class EditGoalViewModel @Inject constructor(
     init {
         // TODO: change repository method
         viewModelScope.launch {
-            repository.getTasksAssessments(objective?.id)?.collect { assessments ->
+            repository.getGoalAssessments(objective?.id)?.collect { assessments ->
                 _assessments.value = assessments
             }
         }

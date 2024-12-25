@@ -78,7 +78,9 @@ interface TaskDao {
 
     @Transaction
     @Query(
-        "SELECT * FROM task_table " +
+        "SELECT * FROM task_table AS t " +
+                "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
+                "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
                 "WHERE (isCompleted != :hideCompleted OR isCompleted == 0) AND NOT isDraft " +
                 "AND (startDate BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
@@ -95,13 +97,14 @@ interface TaskDao {
 
     @Transaction
     @Query(
-        "SELECT * FROM task_table " +
+        "SELECT * FROM task_table AS t " +
+                "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
                 "WHERE (isCompleted != :hideCompleted OR isCompleted == 0 AND NOT isDraft) " +
                 "AND (startDate BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND isCompleted == 0 AND NOT :hideLateTasks " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY isCompleted ASC, estimatedWorkingTime ASC, skillLevel DESC, isRecurring DESC, priority ASC, urgency DESC, importance DESC"
+                "ORDER BY c.isCompleted ASC, estimatedWorkingTime ASC, skillLevel DESC, isRecurring DESC, priority ASC, urgency DESC, importance DESC"
     )
     fun getTasksOrderBy2minutesRules(
         hideCompleted: Boolean,

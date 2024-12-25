@@ -9,6 +9,6 @@ interface InteractionListener {
     fun onComposedTaskClick(thingToDo: ThingToDo)
     fun onTaskClick(thingToDo: Task, itemView: View)
     fun onProjectAddClick(composedTask: ThingToDo)
-    fun onSubTaskRightSwipe(thingToDo: Task)
-    fun onSubTaskLeftSwipe(thingToDo: Task)
+    fun onSubTaskRightSwipe(thingToDo: ThingToDo)
+    fun onSubTaskLeftSwipe(thingToDo: ThingToDo)
 }

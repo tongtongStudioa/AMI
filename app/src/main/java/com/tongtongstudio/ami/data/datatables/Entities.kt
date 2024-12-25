@@ -1,7 +1,6 @@
 package com.tongtongstudio.ami.data.datatables
 
 import android.content.res.Resources
-import android.os.Parcel
 import android.os.Parcelable
 import android.text.format.DateUtils.DAY_IN_MILLIS
 import androidx.room.ColumnInfo
@@ -14,7 +13,6 @@ import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.ui.dialog.Period
 import kotlinx.parcelize.Parcelize
 import java.text.DateFormat
@@ -35,15 +33,13 @@ data class DaysOfWeek(
     @PrimaryKey(autoGenerate = false) // days are fixed
     val dayId: Int, // 1 (Monday) to 7 (Sunday)
     val name: String // "Monday", "Tuesday", etc.
-): Parcelable
+) : Parcelable
 
 @Parcelize
 @Entity(tableName = "task_recurrence_table")
 data class TaskRecurrence(
     val frequency: String, // e.g., "DAILY", "WEEKLY", "MONTHLY", etc.
     val interval: Int, // e.g., 1 (every 1 day), 2 (every 2 weeks), etc.
-    @ColumnInfo(name = "days_of_week")
-    val daysOfWeek: List<Int>? = null, // on Monday and Wednesday for example
     @ColumnInfo(name = "start_date")
     val startDate: Long?, // Timestamp when the recurrence starts
     @ColumnInfo(name = "end_date")
@@ -55,7 +51,7 @@ data class TaskRecurrence(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "recurrence_id")
     val recurrenceId: Long = 0
-): Parcelable {
+) : Parcelable {
 
     /**
      * Create a new interval with user's feedback to increase or decrease last recurring interval.
@@ -86,13 +82,13 @@ data class TaskRecurrence(
             entity = TaskRecurrence::class,
             parentColumns = ["recurrence_id"],
             childColumns = ["recurrenceId"],
-            onDelete = ForeignKey.CASCADE
+            onDelete = CASCADE
         ),
         ForeignKey(
             entity = DaysOfWeek::class,
             parentColumns = ["dayId"],
             childColumns = ["dayId"],
-            onDelete = ForeignKey.CASCADE
+            onDelete = CASCADE
         )
     ]
 )
@@ -110,7 +106,8 @@ data class TaskRecurrenceDaysCrossRef(
             childColumns = ["parent_task_id"],
             onDelete = CASCADE
         )
-    ])
+    ]
+)
 data class Completion(
     @ColumnInfo(name = "parent_task_id")
     val taskId: Long,
@@ -127,7 +124,11 @@ data class Completion(
      * It compares completionDate and dueDate or completionDate and deadline if it was define
      * @return boolean
      */
-    private fun hasBeenCompletedOnTime(completionDate: Long, dueDate: Long, deadline: Long?): Boolean {
+    private fun hasBeenCompletedOnTime(
+        completionDate: Long,
+        dueDate: Long,
+        deadline: Long?
+    ): Boolean {
         return completionDate < dueDate || (deadline != null && completionDate < deadline)
     }
 
@@ -154,13 +155,13 @@ data class Completion(
             entity = TaskRecurrence::class,
             parentColumns = ["recurrence_id"],
             childColumns = ["task_recurrence_id"],
-            onDelete = ForeignKey.SET_NULL
+            onDelete = SET_NULL
         ),
         ForeignKey(
             entity = Task::class,
             parentColumns = ["task_id"],
             childColumns = ["dependency_task_id"],
-            onDelete = ForeignKey.SET_NULL
+            onDelete = SET_NULL
         )]
 )
 data class Task(
@@ -180,7 +181,7 @@ data class Task(
     val skillLevel: Int? = null, // task mastery level posses
     val creationDate: Long = System.currentTimeMillis(),
     @ColumnInfo(name = "dependency_task_id")
-    val dependencyId:Long? = null, // dependency on other tasks
+    val dependencyId: Long? = null, // dependency on other tasks
     @ColumnInfo(name = "task_recurrence_id")
     val recurrenceInfosId: Long? = null, // recurrenceInfosId
     val categoryId: Long? = null,
@@ -259,7 +260,7 @@ data class TaskRecurrenceWithDays(
         associateBy = Junction(TaskRecurrenceDaysCrossRef::class)
     )
     val daysOfWeek: List<DaysOfWeek> // days associate
-): Parcelable {
+) : Parcelable {
     /**
      * Update recurring task depending with task's recurrence characteristics (delay, repetition frequency, etc.)
      * @param oldDueDate : old task due date
@@ -289,7 +290,7 @@ data class TaskRecurrenceWithDays(
             timeInMillis = oldDueDate
             do {
                 // manage skipped if it contains the day and it's not checked
-                if (daysOfWeek.any{ it.dayId == get(Calendar.DAY_OF_WEEK)} && !checked)
+                if (daysOfWeek.any { it.dayId == get(Calendar.DAY_OF_WEEK) } && !checked)
                     timesSkipped++
 
                 add(Calendar.DAY_OF_WEEK, 1)
@@ -301,7 +302,7 @@ data class TaskRecurrenceWithDays(
                 }
                 val nextDueDate = timeInMillis
                 val notContainsAndBeforeToday =
-                    !(daysOfWeek.any{ it.dayId == nextDay} && nextDueDate >= todayDateInMillis)
+                    !(daysOfWeek.any { it.dayId == nextDay } && nextDueDate >= todayDateInMillis)
             } while (notContainsAndBeforeToday)
             // if list of recurrence days contains next deadline's day and it's after  today : set a new due date
             timeInMillis
@@ -326,18 +327,22 @@ data class TaskRecurrenceWithDays(
                         Calendar.DAY_OF_MONTH,
                         taskRecurrence.interval * 1
                     )
+
                     Period.WEEKS.name -> add(
                         Calendar.DAY_OF_MONTH,
                         taskRecurrence.interval * 7
                     )
+
                     Period.MONTHS.name -> add(
                         Calendar.MONTH,
                         taskRecurrence.interval * 1
                     )
+
                     Period.YEARS.name -> add(
                         Calendar.YEAR,
                         taskRecurrence.interval * 1
                     )
+
                     else -> add(Calendar.DAY_OF_MONTH, 0)
                 }
                 if (!checked)
@@ -380,19 +385,33 @@ data class TaskRecurrenceWithDays(
             }
         } else if (daysOfWeek.isNotEmpty()) {
             // TODO: create function to retrieve E from int : Mon, Tue, Wed, Thu, Fri (Lun, Mar, Mer, Jeu, Ven, ...)
-            if ( daysOfWeek.size == 1) resources.getString(
+            if (daysOfWeek.size == 1) resources.getString(
                 R.string.weekly_interval,
-                daysOfWeek[0].name)
+                daysOfWeek[0].name
+            )
             else "On $daysOfWeek every ${taskRecurrence.interval} weeks"
         } else {
             when (taskRecurrence.frequency.lowercase()) {
-                Period.DAYS.name -> resources.getString(R.string.every_x_days, taskRecurrence.interval)
-                Period.WEEKS.name -> resources.getString(R.string.every_x_weeks, taskRecurrence.interval)
+                Period.DAYS.name -> resources.getString(
+                    R.string.every_x_days,
+                    taskRecurrence.interval
+                )
+
+                Period.WEEKS.name -> resources.getString(
+                    R.string.every_x_weeks,
+                    taskRecurrence.interval
+                )
+
                 Period.MONTHS.name -> resources.getString(
                     R.string.every_x_months,
                     taskRecurrence.interval
                 )
-                Period.YEARS.name -> resources.getString(R.string.every_x_years, taskRecurrence.interval)
+
+                Period.YEARS.name -> resources.getString(
+                    R.string.every_x_years,
+                    taskRecurrence.interval
+                )
+
                 else -> resources.getString(R.string.every_x_days, taskRecurrence.interval)
             }
         }
@@ -406,7 +425,11 @@ class RepeatProcess(val newDueDate: Long, val timesSkipped: Int = 0)
 data class ThingToDo(
     @Embedded
     val mainTask: Task,
-    @Relation(parentColumn = "task_recurrence_id", entityColumn = "recurrence_id", entity = TaskRecurrence::class)
+    @Relation(
+        parentColumn = "task_recurrence_id",
+        entityColumn = "recurrence_id",
+        entity = TaskRecurrence::class
+    )
     val recurrence: TaskRecurrenceWithDays?,
     @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = Task::class)
     val subTasks: List<ThingToDo>,
@@ -450,7 +473,7 @@ data class ThingToDo(
     }
 
     fun isLate(todayDateMillis: Long, dueDate: Long): Boolean {
-        return  dueDate < todayDateMillis
+        return dueDate < todayDateMillis
     }
 }
 

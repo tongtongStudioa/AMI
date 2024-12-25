@@ -45,11 +45,9 @@ class DataTestUtil(private val ttdDao: TaskDao) {
             importance = 4,
             urgency = 8,
             estimatedWorkingTime = util.getTimeInMillis(2, 30),
-            dependency = true,
-            skillLevel = 10,
             isRecurring = true,
-            totalRepetitionCount = 15,
-            successCount = 10
+            dependency = true,
+            skillLevel = 10
         ),
         Task(
             "Créer un test pour la base de donnée",

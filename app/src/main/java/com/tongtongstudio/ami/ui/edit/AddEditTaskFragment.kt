@@ -48,7 +48,6 @@ import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
 import com.tongtongstudio.ami.data.LayoutMode
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.PATTERN_FORMAT_DATE
-import com.tongtongstudio.ami.data.datatables.RecurringTaskInterval
 import com.tongtongstudio.ami.data.datatables.Reminder
 import com.tongtongstudio.ami.data.datatables.TaskRecurrence
 import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
@@ -350,7 +349,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 setHasFixedSize(false)
             }
 
-            // set repeatable task
+            // set repeatable thingToDo
             // TODO: create a custom interval for learning category tasks
             // TODO: update start date and stopAndReset on deadline
             val dropDownMenuRepeat = PopupMenu(requireContext(), btnRepeatTask)
@@ -448,8 +447,8 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         .toInt()
             }
 
-            // TODO: change add add logic to update dependency on other task
-            // TODO: add view for dependency task
+            // TODO: change add add logic to update dependency on other thingToDo
+            // TODO: add view for dependency thingToDo
         }
 
         // from dialog estimated time selection
@@ -475,7 +474,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         setFragmentResultListener(RECURRING_REQUEST_KEY) { _, bundle ->
             val result = bundle.getParcelable<TaskRecurrenceWithDays>(RECURRING_RESULT_KEY)
             viewModel.taskRecurrenceWithDays = result
-            // update task start date if not set
+            // update thingToDo start date if not set
             if (result != null) {
                 updateTaskRecurringStartDate(result)
             }
@@ -507,7 +506,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         setFragmentResultListener("is_new_sub_task") { _, bundle ->
             val result = bundle.getLong("project_id")
             viewModel.projectId = result
-            // can't change project id of add sub task demand
+            // can't change project id of add sub thingToDo demand
             binding.removeProjectLinked.isVisible = false
             binding.btnAttachProject.isClickable = false
             updateSpecificButtonText(
@@ -526,7 +525,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                     }
 
                     is AddEditTaskViewModel.AddEditTaskEvent.NavigateBackWithResult -> {
-                        // update project if task is linked
+                        // update project if thingToDo is linked
                         sharedViewModel.updateParentTask(viewModel.projectId)
                         clearFocus()
                         sharedViewModel.showConfirmationMessage(event.result)
@@ -651,7 +650,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 removeDueDate,
                 getString(R.string.set_due_date)
             )
-            // update estimateTime button and recurring task interval button
+            // update estimateTime button and recurring thingToDo interval button
             updateSpecificButtonText(
                 btnRepeatTask, removeRepeatedChoice,
                 viewModel.taskRecurrenceWithDays != null,
@@ -836,7 +835,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             return
         }*/
         /*if (InputValidation.isValidText(viewModel.title) && InputValidation.isValidText(viewModel.priority) && InputValidation.isNotNull(viewModel.dueDate))
-            viewModel.showInvalidInputMessage("Draft task")*/
+            viewModel.showInvalidInputMessage("Draft thingToDo")*/
         if (InputValidation.isValidText(viewModel.title)) {
             viewModel.onSaveClick(modeExtent)
             for (reminder in reminders) {

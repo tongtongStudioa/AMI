@@ -7,12 +7,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
-import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.Category
+import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.data.datatables.WorkSession
 import com.tongtongstudio.ami.timer.TimerType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.w3c.dom.Comment
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,40 +25,43 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
 
     var isServiceAlive: Boolean = false
     var timerType: TimerType = TimerType.STOPWATCH
-    var task = state.get<Task>("task")
+    var thingToDo = state.get<ThingToDo>("thingToDo")
         set(value) {
             field = value
-            state["task"] = value
+            state["thingToDo"] = value
         }
 
-    val name = task?.title
-    val description = task?.description
-    val startDate = task?.startDate
-    val dueDate = task?.dueDate
-    val deadline = task?.deadline
-    val streak: Int = task?.currentStreak ?: 0
+    val name = thingToDo?.mainTask?.title
+    val description = thingToDo?.mainTask?.description
+    val startDate = thingToDo?.mainTask?.startDate
+    val dueDate = thingToDo?.mainTask?.dueDate
+    val deadline = thingToDo?.mainTask?.deadline
+    val estimatedWorkingTime = thingToDo?.mainTask?.estimatedWorkingTime
 
-    val estimatedWorkingTime = task?.estimatedWorkingTime
+    val currentTotalWorkTime: LiveData<Long?> = repository.getTaskTimeWorked(thingToDo!!.mainTask.id).asLiveData()
+    val workSessions = repository.getWorkSessions(thingToDo?.mainTask?.id!!).asLiveData()
 
-    val currentTotalWorkTime: LiveData<Long?> = repository.getTaskTimeWorked(task!!.id).asLiveData()
-    val workSessions = repository.getWorkSessions(task?.id!!).asLiveData()
+    val successCount: Int = repository.getTaskMaxStreak(thingToDo?.mainTask?.id!!)
+
 
     var curTimeInMillis: Long = 0L
     var isTracking = false
 
-    fun saveTrackingTime(newWorkTimeSession: Long = 0L) = viewModelScope.launch {
-        if (task == null) {
+    fun saveTrackingTime(newWorkTimeSession: Long = 0L, date: Long? = null, comment: String? = null) = viewModelScope.launch {
+        if (thingToDo == null) {
             return@launch
         }
-        // TODO: add comment for the work session
-        repository.insertWorkSession(WorkSession(task!!.id, newWorkTimeSession, null))
+        var workSession = WorkSession(thingToDo!!.mainTask.id, newWorkTimeSession, comment)
+        if (date != null)
+            workSession = workSession.copy(date = date)
+        repository.insertWorkSession(workSession)
     }
 
     fun updateTaskCompletionDate(newCompletionDate: Long) = viewModelScope.launch {
-        if (task != null) {
-            val changeState = task!!.updateCheckedState(newCompletionDate = newCompletionDate)
+        if (thingToDo != null) {
+            val changeState = thingToDo!!.updateCheckedState(newCompletionDate = newCompletionDate)
             repository.updateTask(changeState)
-            task = changeState
+            thingToDo = changeState
         }
     }
 
@@ -65,13 +70,8 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
         repository.suppressWorkSession(workSession)
     }
 
-    val category: String = runBlocking {
-        return@runBlocking task?.categoryId?.let {
-            repository.getCategoryById(
-                it
-            ).title
-        } ?: ""
-    }
+    val category: Category? = thingToDo?.category
+
     var fragmentPos: Int = state.get<Int>("fragment_pos") ?: 0
         set(value) {
             field = value

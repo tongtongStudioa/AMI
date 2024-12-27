@@ -97,11 +97,11 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val goal = goalsAdapter.getGoalsList()[viewHolder.absoluteAdapterPosition]
                     if (direction == ItemTouchHelper.RIGHT) {
-                        // delete task
+                        // delete thingToDo
                         goalsAdapter.notifyItemRemoved(viewHolder.absoluteAdapterPosition)
                         viewModel.deleteGoal(goal)
                     } else if (direction == ItemTouchHelper.LEFT) {
-                        // edit task
+                        // edit thingToDo
                         goalsAdapter.notifyItemChanged(viewHolder.absoluteAdapterPosition)
                         viewModel.updateGoal(goal)
                     }

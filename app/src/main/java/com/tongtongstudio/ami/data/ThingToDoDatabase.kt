@@ -3,7 +3,6 @@ package com.tongtongstudio.ami.data
 import android.text.format.DateUtils.DAY_IN_MILLIS
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tongtongstudio.ami.data.dao.AssessmentDao
@@ -15,7 +14,6 @@ import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.AssessmentType
 import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.Completion
-import com.tongtongstudio.ami.data.datatables.Converters
 import com.tongtongstudio.ami.data.datatables.DaysOfWeek
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.PomodoroSession
@@ -168,7 +166,6 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         WorkSession::class, PomodoroSession::class],
     version = 2, exportSchema = false
 )
-@TypeConverters(Converters::class)
 abstract class ThingToDoDatabase : RoomDatabase() {
 
     abstract fun taskDao(): TaskDao
@@ -192,19 +189,19 @@ abstract class ThingToDoDatabase : RoomDatabase() {
                 insertInitialTasks(taskDao, categoryDao, assessmentDao)
                 /*val category1 = Category(
                     "Personnel",
-                    "a sample categories for all kind of task in personal life",
+                    "a sample categories for all kind of thingToDo in personal life",
                 )
                 val category2 = Category("Job", null)
                 val category3 = Category("Housework", null)
                 categoryDao.insertMultipleCategories(listOf(category1, category2, category3))
 
                 // test
-                val sampleTsk = Task("Simple task", 2, System.currentTimeMillis())
+                val sampleTsk = Task("Simple thingToDo", 2, System.currentTimeMillis())
                 ttdDao.insert(sampleTsk)
                 val composedTask = Task("Composed Task", 3, System.currentTimeMillis())
                 val parentId = ttdDao.insert(composedTask)
                 val subTask =
-                    Task("Sub task", 1, System.currentTimeMillis(), parentTaskId = parentId)
+                    Task("Sub thingToDo", 1, System.currentTimeMillis(), parentTaskId = parentId)
                 ttdDao.insert(subTask)*/
             }
         }

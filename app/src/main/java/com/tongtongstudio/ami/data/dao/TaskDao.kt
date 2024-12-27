@@ -269,7 +269,7 @@ interface TaskDao {
 
     /**
      * Get accuracy rate of estimated work time for all tasks completed.
-     * If the current working time is equal to estimated time +- errorPercent so the task's time work is well estimated.
+     * If the current working time is equal to estimated time +- errorPercent so the thingToDo's time work is well estimated.
      */
     @Query(
         "SELECT " +

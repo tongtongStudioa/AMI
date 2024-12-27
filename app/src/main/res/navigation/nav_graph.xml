@@ -16,7 +16,7 @@
             app:argType="string" />
 
         <argument
-            android:name="thingToDo"
+            android:name="@string/thing_to_do"
             app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo"
             app:nullable="true"
             android:defaultValue="@null" />
@@ -115,8 +115,8 @@
         android:label="@string/fragment_task_details_title"
         tools:layout="@layout/fragment_task_details">
         <argument
-            android:name="task"
-            app:argType="com.tongtongstudio.ami.data.datatables.Task" />
+            android:name="@string/thing_to_do"
+            app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo" />
     </fragment>
     <fragment
         android:id="@+id/achievementsFragment"
@@ -129,7 +129,7 @@
         android:label="@string/fragment_title_local_project_stats"
         tools:layout="@layout/fragment_project_details">
         <argument
-            android:name="project"
+            android:name="@string/thing_to_do"
             app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo" />
     </fragment>
     <dialog
@@ -153,8 +153,8 @@
         android:label="@string/view_pager_screen_title">
 
         <argument
-            android:name="task"
-            app:argType="com.tongtongstudio.ami.data.datatables.Task" />
+            android:name="@string/thing_to_do"
+            app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo" />
 
         <argument
             android:name="fragment_pos"

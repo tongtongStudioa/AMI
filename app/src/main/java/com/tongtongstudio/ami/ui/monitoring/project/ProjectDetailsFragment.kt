@@ -38,7 +38,7 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
         setUpToolbar()
         updateProgressBar()
 
-        // TODO: Change this method to update sub tasks list if a task is removed
+        // TODO: Change this method to update sub tasks list if a thingToDo is removed
         val subTasksAdapter = SubTaskAdapter(this, viewModel.subTasks)
         binding.apply {
             tvProjectTitle.text = viewModel.projectName

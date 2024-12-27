@@ -264,4 +264,5 @@
     <string name="secondary_text_tuto_step2_frag1">You can add a task or a draft from this button.</string>
     <string name="secondary_text_tuto_step1_frag1">You will see only today\'s tasks in this screen.</string>
     <string name="draft_task_created">Draft task created</string>
+    <string name="thing_to_do">thingToDo</string>
 </resources>

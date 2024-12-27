@@ -12,7 +12,8 @@ import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.datatables.RecurringTaskInterval
+import com.tongtongstudio.ami.data.datatables.TaskRecurrence
+import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
 import com.tongtongstudio.ami.databinding.DialogSetRepeatingBinding
 import java.util.Calendar
 
@@ -62,11 +63,12 @@ class RecurringChoiceDialogFragment : DialogFragment() {
             if (binding.inputLayoutUserChoice.editText?.text?.isNotEmpty() == true) {
                 binding.inputLayoutUserChoice.editText?.text.toString().toInt()
             } else 1
-        val period = getPeriod(selection)
+        val frequency = getPeriod(selection)
         val recurrenceDays = getDaysOfWeek()
-        val recurringTaskInterval = RecurringTaskInterval(nDays, period, recurrenceDays)
+        // TODO: update method to share task recurrence infos
+        //val taskRecurrence = TaskRecurrence(frequency, interval = )
         val result = Bundle().apply {
-            putParcelable(RECURRING_RESULT_KEY, recurringTaskInterval)
+            //putParcelable(RECURRING_RESULT_KEY, taskRecurrence)
         }
 
         dialog.setFragmentResult(
@@ -84,6 +86,7 @@ class RecurringChoiceDialogFragment : DialogFragment() {
         stringItems = resources.getStringArray(R.array.period_list)
         val adapter = ArrayAdapter(requireContext(), R.layout.item_options, stringItems)
 
+        TODO("Change method and listener to get recurrence infos")
         setFragmentResultListener(CURRENT_RECURRING_INFO_REQUEST_KEY) { _, bundle ->
             val times = bundle.getInt(TIMES_KEY)
             val period = bundle.getString(PERIOD_KEY)
@@ -92,7 +95,6 @@ class RecurringChoiceDialogFragment : DialogFragment() {
             val startDate = bundle.getLong(START_DATE)
             // populate data
             selection = getSelection(period)
-            // TODO: let user choose recurring end : on deadline or repeating number, choice also with learning interval
             binding.deadlineTextView.text =
                 if (deadline == null || deadline == NO_VALUE) getString(R.string.set_recurring_end) else deadline
             binding.deadlineTextView.isVisible = deadline != NO_VALUE

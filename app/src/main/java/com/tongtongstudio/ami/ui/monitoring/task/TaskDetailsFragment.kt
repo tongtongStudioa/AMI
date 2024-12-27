@@ -58,7 +58,7 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
             scrimColor = Color.TRANSPARENT
         }
         // Shared transition id
-        ViewCompat.setTransitionName(binding.taskInfo, "shared_element_${viewModel.task?.id}")
+        ViewCompat.setTransitionName(binding.taskInfo, "shared_element_${viewModel.thingToDo?.mainTask?.id}")
 
         // Postpone transition until layout is ready
         //startPostponedEnterTransition()
@@ -73,11 +73,12 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
 
         // binding elements layout
         binding.apply {
-            // task info
+            // thingToDo info
             if (viewModel.name != null) {
-                taskName.text = viewModel.task!!.title
+                taskName.text = viewModel.name
             }
-            taskCategory.text = viewModel.category
+            taskCategory.text = viewModel.category?.title
+            taskCategory.isVisible = viewModel.category != null
             taskDescription.text = viewModel.description
             taskDescription.isVisible = viewModel.description != null
             taskStartDate.text = Task.getDateFormatted(viewModel.startDate)
@@ -88,20 +89,18 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
             taskDeadline.isVisible = viewModel.deadline != null
 
             // stats view
-            if (viewModel.task?.recurrenceInfosId == null)
+            if (viewModel.thingToDo?.mainTask?.recurrenceInfosId == null)
                 statsView.isVisible = false
 
-            tvNbCompleted.text = if (viewModel.task?.successCount != null)
-                viewModel.task?.successCount.toString()
-            else getString(R.string.no_information)
+            tvNbCompleted.text = viewModel.successCount.toString()
             tvStreak.text =
                 viewModel.streak.toString()
             tvMaxStreak.text =
-                if (viewModel.task?.maxStreak != null)
-                    viewModel.task?.maxStreak.toString()
+                if (viewModel.maxStreak != null)
+                    viewModel.maxStreak.toString()
                 else getString(R.string.no_information)
 
-            val completionRate = viewModel.task?.getHabitSuccessRate()
+            val completionRate = viewModel.thingToDo?.getHabitSuccessRate()
             tvCompletionRate.text = if (completionRate != null)
                 getString(R.string.completion_rate_value, completionRate)
             else getString(R.string.no_information)
@@ -113,7 +112,7 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
                         ?: getString(R.string.no_information)
             }
 
-            // estimated work time view when task is completed
+            // estimated work time view when thingToDo is completed
             tvEstimatedWorkTime.text =
                 TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedWorkingTime)
                     ?: getString(R.string.no_information)
@@ -122,10 +121,10 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
 
             // completion date
             val dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())
-            val completionDateFormatted = viewModel.task?.getCompletionDateFormatted()
+            val completionDateFormatted = viewModel.getCompletionDateFormatted()
             completionDate.text = getString(R.string.completion_date, completionDateFormatted)
-            completionDate.isVisible = viewModel.task?.isCompleted == true
-            //completionDate.isVisible = viewModel.task?.isCompleted == true
+            completionDate.isVisible = viewModel.isCompleted == true
+            //completionDate.isVisible = viewModel.thingToDo?.isCompleted == true
             completionDate.setOnClickListener {
                 val constraints =
                     CalendarCustomFunction.buildConstraintsForStartDate(Calendar.getInstance().run {
@@ -134,7 +133,7 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
                     })
                 val datePicker = dateTimePicker.showDatePickerMaterial(
                     constraints,
-                    viewModel.task?.completionDate
+                    viewModel.completionDate
                 )
                 datePicker.addOnPositiveButtonClickListener { newCompletionDate ->
                     viewModel.updateTaskCompletionDate(newCompletionDate)

@@ -272,7 +272,7 @@ class AddEditTaskViewModel @Inject constructor(
 
             addEditChannelEvent.send(
                 AddEditTaskEvent.NavigateBackWithResult(
-                    // TODO: change this result code for draft task
+                    // TODO: change this result code for draft thingToDo
                     if (isDraft) EDIT_TASK_RESULT_OK else EDIT_TASK_RESULT_OK
                 )
             )
@@ -295,7 +295,7 @@ class AddEditTaskViewModel @Inject constructor(
             isRecurrent = false
             //repetitionFrequency = taskRecurrenceWithDays.taskRecurrence.recurrenceId
         )
-        if (thingToDo?.mainTask?.id == null) { // is a new task ?
+        if (thingToDo?.mainTask?.id == null) { // is a new thingToDo ?
             val currentReminders = reminders.value ?: mutableListOf()
             currentReminders.add(newReminder)
             _reminders.value = currentReminders

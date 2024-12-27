@@ -120,7 +120,7 @@ data class Completion(
     val id: Long = 0
 ) : Parcelable {
     /**
-     * This function decide if a task is completed on time or not.
+     * This function decide if a thingToDo is completed on time or not.
      * It compares completionDate and dueDate or completionDate and deadline if it was define
      * @return boolean
      */
@@ -168,17 +168,17 @@ data class Task(
     val title: String,
     val priority: Int?,
     @ColumnInfo(name = "task_due_date")
-    val dueDate: Long?, // when the task must be complete (to get ahead of the deadline)
-    val startDate: Long? = null, // when the task or the project start
+    val dueDate: Long?, // when the thingToDo must be complete (to get ahead of the deadline)
+    val startDate: Long? = null, // when the thingToDo or the project start
     val deadline: Long? = null, // to have a vision of the main targetGoal (exam's date, project's end, etc.)
     val description: String? = null,
     val type: String? = null,
-    val importance: Int? = null, // task's impact on the smooth running of daily life
+    val importance: Int? = null, // thingToDo's impact on the smooth running of daily life
     val urgency: Int? = null,
     val isDraft: Boolean = false,
-    val estimatedEmotions: Int = 1, // 0, 1 or 2 to express feelings on the task to accomplish
+    val estimatedEmotions: Int = 1, // 0, 1 or 2 to express feelings on the thingToDo to accomplish
     val estimatedWorkingTime: Long? = null,
-    val skillLevel: Int? = null, // task mastery level posses
+    val skillLevel: Int? = null, // thingToDo mastery level posses
     val creationDate: Long = System.currentTimeMillis(),
     @ColumnInfo(name = "dependency_task_id")
     val dependencyId: Long? = null, // dependency on other tasks
@@ -263,8 +263,8 @@ data class TaskRecurrenceWithDays(
     val daysOfWeek: List<DaysOfWeek> // days associate
 ) : Parcelable {
     /**
-     * Update recurring task depending with task's recurrence characteristics (delay, repetition frequency, etc.)
-     * @param oldDueDate : old task due date
+     * Update recurring thingToDo depending with thingToDo's recurrence characteristics (delay, repetition frequency, etc.)
+     * @param oldDueDate : old thingToDo due date
      * @param checked : checked state for automatic update
      * @return new due date
      */
@@ -320,7 +320,7 @@ data class TaskRecurrenceWithDays(
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
             todayTimeInMillis = timeInMillis
-            // Set the new due date to the next occurrence of the task's due day
+            // Set the new due date to the next occurrence of the thingToDo's due day
             timeInMillis = oldDueDate
             do {
                 when (taskRecurrence.frequency.lowercase()) {
@@ -479,7 +479,7 @@ data class ThingToDo(
 }
 
 /**
- * Class with task completed info to analyse productivity (number of task achieved in a period of time).
+ * Class with thingToDo completed info to analyse productivity (number of thingToDo achieved in a period of time).
  */
 data class TtdAchieved(
     val completionDate: Long,
@@ -487,7 +487,7 @@ data class TtdAchieved(
 )
 
 /**
- * Class with recurring task info for max and min streak.
+ * Class with recurring thingToDo info for max and min streak.
  */
 data class TtdStreakInfo(
     val title: String?,
@@ -587,7 +587,7 @@ data class CategoryTasks(
 )
 data class Reminder(
     @ColumnInfo(name = "parent_id")
-    val parentId: Long? = null, // attach to a task but also just parent reminder of the app
+    val parentId: Long? = null, // attach to a thingToDo but also just parent reminder of the app
     val description: String? = null,
     val dueDate: Long,
     val isRecurrent: Boolean,

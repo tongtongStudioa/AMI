@@ -9,7 +9,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.datatables.RecurringTaskInterval
+import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
 import com.tongtongstudio.ami.ui.MainActivity
 import java.util.*
 
@@ -22,12 +22,12 @@ const val REMINDER_ID = "reminder_id"
 class ReminderBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        val taskName = intent?.getStringExtra(TASK_NAME_KEY) ?: "Tâche"
+        val taskName = intent?.getStringExtra(TASK_NAME_KEY) ?: "thingToDo"
         val reminderDueDate =
             intent?.getLongExtra(REMINDER_DUE_DATE, Calendar.getInstance().timeInMillis)
                 ?: Calendar.getInstance().timeInMillis
         val customReminderInterval = intent?.getParcelableArrayExtra(REMINDER_CUSTOM_INTERVAL)
-            ?.get(0) as RecurringTaskInterval?
+            ?.get(0) as TaskRecurrenceWithDays?
         val reminderId = intent?.getLongExtra(REMINDER_ID, 0) ?: 0
 
         val notificationManager =
@@ -70,7 +70,7 @@ class ReminderBroadcastReceiver : BroadcastReceiver() {
         context: Context,
         taskName: String,
         reminderDueDate: Long,
-        customReminderInterval: RecurringTaskInterval?,
+        customReminderInterval: TaskRecurrenceWithDays?,
         reminderId: Long
     ) {
         if (customReminderInterval != null) {

@@ -198,7 +198,8 @@ data class Task(
     companion object {
         /**
          * Function that calculate urgency.
-         * Delay between due date and deadline otherwise, if no deadline, urgency = 9.
+         * Delay between today date and deadline.
+         * Otherwise, if no deadline, delay between today date and due date.
          * @return Int : between 2 and 10
          */
         fun calculusUrgency(todayDateMillis: Long, dueDate: Long, deadline: Long?): Int {
@@ -437,8 +438,8 @@ data class ThingToDo(
     val category: Category?,
     @Relation(parentColumn = "task_id", entityColumn = "parent_id", entity = Reminder::class)
     val reminders: List<Reminder>,
-    @Relation(parentColumn = "task_id", entityColumn = "dependency_id", entity = Task::class)
-    val dependencies: List<ThingToDo>,
+    @Relation(parentColumn = "task_id", entityColumn = "dependency_task_id", entity = Task::class)
+    val taskDependency: ThingToDo?,
     @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = Completion::class)
     val completions: List<Completion> // Historique d’achèvement
 

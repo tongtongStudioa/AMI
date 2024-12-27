@@ -17,7 +17,7 @@
 
         <argument
             android:name="thingToDo"
-            app:argType="com.tongtongstudio.ami.data.datatables.Task"
+            app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo"
             app:nullable="true"
             android:defaultValue="@null" />
     </fragment>

@@ -50,6 +50,8 @@ import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.PATTERN_FORMAT_DATE
 import com.tongtongstudio.ami.data.datatables.RecurringTaskInterval
 import com.tongtongstudio.ami.data.datatables.Reminder
+import com.tongtongstudio.ami.data.datatables.TaskRecurrence
+import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
 import com.tongtongstudio.ami.databinding.FragmentAddEditTaskBinding
 import com.tongtongstudio.ami.receiver.REMINDER_CUSTOM_INTERVAL
 import com.tongtongstudio.ami.receiver.REMINDER_DUE_DATE
@@ -246,8 +248,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             )
             removeStartDate.setOnClickListener {
                 viewModel.startDate = null
-                viewModel.isRecurring = false
-                viewModel.recurringTaskInterval = null
+                viewModel.taskRecurrenceWithDays = null
                 updateButtonNoDataSelected(
                     btnSetStartDate,
                     removeStartDate,
@@ -363,25 +364,24 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             dropDownMenuRepeat.setOnMenuItemClickListener {
                 when (it.itemId) {
                     R.id.action_every_day -> {
-                        viewModel.isRecurring = true
-                        viewModel.recurringTaskInterval = RecurringTaskInterval(1, Period.DAYS.name)
+                        viewModel.taskRecurrence =
+                            TaskRecurrence(Period.DAYS.name,1,viewModel.startDate)
                         updateSpecificButtonText(
                             btnRepeatTask, removeRepeatedChoice,
-                            viewModel.isRecurring,
-                            viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
+                            viewModel.taskRecurrenceWithDays != null,
+                            viewModel.taskRecurrenceWithDays?.getRecurringIntervalReadable(resources),
                             getString(R.string.repeat)
                         )
                         true
                     }
 
                     R.id.action_every_week -> {
-                        viewModel.isRecurring = true
-                        viewModel.recurringTaskInterval =
-                            RecurringTaskInterval(1, Period.WEEKS.name)
+                        viewModel.taskRecurrence =
+                            TaskRecurrence(Period.WEEKS.name,1,viewModel.startDate)
                         updateSpecificButtonText(
                             btnRepeatTask, removeRepeatedChoice,
-                            viewModel.isRecurring,
-                            viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
+                            viewModel.taskRecurrenceWithDays != null,
+                            viewModel.taskRecurrenceWithDays?.getRecurringIntervalReadable(resources),
                             getString(R.string.repeat)
                         )
                         true
@@ -396,12 +396,11 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 }
             }
             removeRepeatedChoice.setOnClickListener {
-                viewModel.recurringTaskInterval = null
-                viewModel.isRecurring = false
+                viewModel.taskRecurrenceWithDays = null
                 updateSpecificButtonText(
                     btnRepeatTask, removeRepeatedChoice,
-                    viewModel.isRecurring,
-                    viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
+                    viewModel.taskRecurrenceWithDays != null,
+                    viewModel.taskRecurrenceWithDays?.getRecurringIntervalReadable(resources),
                     getString(R.string.repeat)
                 )
             }
@@ -449,10 +448,8 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         .toInt()
             }
 
-            switchDependency.isChecked = viewModel.dependency ?: false
-            switchDependency.setOnCheckedChangeListener { _, isChecked ->
-                viewModel.dependency = isChecked
-            }
+            // TODO: change add add logic to update dependency on other task
+            // TODO: add view for dependency task
         }
 
         // from dialog estimated time selection
@@ -473,11 +470,11 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             }
         }
 
+        // TODO: change recurring choice dialog return object
         // from dialog recurring selection
         setFragmentResultListener(RECURRING_REQUEST_KEY) { _, bundle ->
-            val result = bundle.getParcelable<RecurringTaskInterval>(RECURRING_RESULT_KEY)
-            viewModel.recurringTaskInterval = result
-            viewModel.isRecurring = result != null
+            val result = bundle.getParcelable<TaskRecurrenceWithDays>(RECURRING_RESULT_KEY)
+            viewModel.taskRecurrenceWithDays = result
             // update task start date if not set
             if (result != null) {
                 updateTaskRecurringStartDate(result)
@@ -485,7 +482,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             updateSpecificButtonText(
                 binding.btnRepeatTask,
                 binding.removeRepeatedChoice,
-                viewModel.isRecurring,
+                viewModel.taskRecurrenceWithDays != null,
                 result?.getRecurringIntervalReadable(resources),
                 getString(R.string.repeat)
             )
@@ -617,17 +614,17 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     }
 
 
-    private fun updateTaskRecurringStartDate(recurringTaskInterval: RecurringTaskInterval) {
+    private fun updateTaskRecurringStartDate(taskRecurrenceWithDays: TaskRecurrenceWithDays?) {
 
-        if (recurringTaskInterval.daysOfWeek == null && viewModel.dueDate == null) {
+        if (taskRecurrenceWithDays?.daysOfWeek == null && viewModel.dueDate == null) {
             viewModel.dueDate = Calendar.getInstance().apply {
                 set(Calendar.MILLISECOND, 0)
                 set(Calendar.HOUR_OF_DAY, 0)
                 set(Calendar.MINUTE, 0)
                 set(Calendar.SECOND, 0)
             }.timeInMillis
-        } else if (recurringTaskInterval.daysOfWeek != null) {
-            viewModel.dueDate = recurringTaskInterval.setStartDateSpecificDay()
+        } else if (taskRecurrenceWithDays?.daysOfWeek != null) {
+            viewModel.dueDate = taskRecurrenceWithDays.setStartDateSpecificDay()
             viewModel.startDate = viewModel.dueDate
         }
         updateDateButtonText(
@@ -657,8 +654,8 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             // update estimateTime button and recurring task interval button
             updateSpecificButtonText(
                 btnRepeatTask, removeRepeatedChoice,
-                viewModel.isRecurring,
-                viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
+                viewModel.taskRecurrenceWithDays != null,
+                viewModel.taskRecurrenceWithDays?.getRecurringIntervalReadable(resources),
                 getString(R.string.repeat)
             )
 
@@ -925,15 +922,16 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         newFragment.show(parentFragmentManager, CATEGORY_EDIT_TAG)
     }
 
+    // TODO: update this method and change to navigation component
     private fun showRepeatableCyclePicker() {
         val newFragment = RecurringChoiceDialogFragment()
         val result = Bundle().apply {
-            putInt(TIMES_KEY, viewModel.recurringTaskInterval?.times ?: 0)
-            putString(PERIOD_KEY, viewModel.recurringTaskInterval?.period ?: NO_VALUE)
-            putIntArray(
+            putInt(TIMES_KEY, viewModel.taskRecurrenceWithDays?.taskRecurrence?.interval ?: 0)
+            putString(PERIOD_KEY, viewModel.taskRecurrenceWithDays?.taskRecurrence?.frequency ?: NO_VALUE)
+            /*putParcelableArrayList(
                 DAYS_OF_THE_WEEKS_KEY,
-                viewModel.recurringTaskInterval?.daysOfWeek?.toIntArray() ?: IntArray(1)
-            )
+                viewModel.taskRecurrenceWithDays?.daysOfWeek
+            )*/
             putString(
                 DEADLINE,
                 if (viewModel.deadline != null) getStringFromLong(viewModel.deadline!!) else NO_VALUE

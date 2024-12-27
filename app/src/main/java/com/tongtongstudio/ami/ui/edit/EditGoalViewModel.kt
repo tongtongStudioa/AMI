@@ -40,10 +40,10 @@ class EditGoalViewModel @Inject constructor(
             state["description"] = value
         }
     var goal =
-        state.get<String>("targetGoal") ?: objective?.targetGoal.toString()
+        state.get<String>("targetScore") ?: objective?.targetScore.toString()
         set(value) {
             field = value
-            state["targetGoal"] = value
+            state["targetScore"] = value
         }
 
     // TODO: change
@@ -88,7 +88,7 @@ class EditGoalViewModel @Inject constructor(
         }
 
     fun addNewAssessment(result: Assessment) {
-        if (objective?.id == null) { // is a new global targetGoal ?
+        if (objective?.id == null) { // is a new global targetScore ?
             val currentAssessments = assessments.value ?: mutableListOf()
             currentAssessments.add(result)
             _assessments.value = currentAssessments
@@ -124,7 +124,7 @@ class EditGoalViewModel @Inject constructor(
         val newObjective = Assessment(
             title = goalTitle,
             description = description,
-            targetGoal = goal.toFloat(),
+            targetScore = goal.toFloat(),
             unit = unit,
             dueDate = dueDate!!,
             // TODO: update assessment type
@@ -139,7 +139,7 @@ class EditGoalViewModel @Inject constructor(
         val updatedObjective = objective!!.copy(
             title = goalTitle,
             description = description,
-            targetGoal = goal.toFloat(),
+            targetScore = goal.toFloat(),
             unit = unit,
             dueDate = dueDate!!
         )

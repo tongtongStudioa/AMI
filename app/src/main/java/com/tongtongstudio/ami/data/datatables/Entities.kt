@@ -170,7 +170,7 @@ data class Task(
     @ColumnInfo(name = "task_due_date")
     val dueDate: Long?, // when the task must be complete (to get ahead of the deadline)
     val startDate: Long? = null, // when the task or the project start
-    val deadline: Long? = null, // to have a vision of the main targetGoal (exam's date, project's end, etc.)
+    val deadline: Long? = null, // to have a vision of the main targetScore (exam's date, project's end, etc.)
     val description: String? = null,
     val type: String? = null,
     val importance: Int? = null, // task's impact on the smooth running of daily life
@@ -494,7 +494,7 @@ data class TtdStreakInfo(
 )
 
 /**
- * Describe type of objective targetGoal to help tracking progress.
+ * Describe type of objective targetScore to help tracking progress.
  */
 enum class AssessmentType { QUANTITY, DURATION, BOOLEAN }
 
@@ -515,8 +515,14 @@ enum class AssessmentType { QUANTITY, DURATION, BOOLEAN }
             parentColumns = ["assessment_id"],
             childColumns = ["parent_assessment_id"],
             onDelete = CASCADE
+        ), ForeignKey(
+            entity = TaskRecurrence::class,
+            parentColumns = ["recurrence_id"],
+            childColumns = ["recurrence_id"],
+            onDelete = SET_NULL
         )]
 )
+// TODO: create migration : add this new table with foreign keys, transfer data, suppress ancient, alter name of this one
 data class Assessment(
     // parent id nullable
     @ColumnInfo(name = "parent_task_id")
@@ -527,23 +533,21 @@ data class Assessment(
     val title: String,
     val description: String? = null,
     val comment: String? = null,
-    val targetGoal: Float,
+    val targetScore: Float,
     val unit: String,
     val type: String,
     @ColumnInfo(name = "assessment_due_date")
     val dueDate: Long,
-    val isRecurrent: Boolean = false,
-    val interval: RecurringTaskInterval? = null,
-    val rehearsalEndDate: Long? = null,
-    val score: Float? = null, // result that the user enter at the due date // maybe change name to "rating"
+    val score: Float? = null, // result that the user enter at the due date
+    val recurrenceId: Long? = null,
     val categoryId: Long? = null,
     @ColumnInfo(name = "assessment_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 ) : Parcelable {
 
     fun getPercentageRating(): Float? {
-        return if (targetGoal != 0F)
-            (score ?: 0F) / targetGoal * 100
+        return if (targetScore != 0F)
+            (score ?: 0F) / targetScore * 100
         else
             null
     }
@@ -552,6 +556,23 @@ data class Assessment(
         return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
     }
 }
+
+// TODO: add in migration : add column to Completion::class for assessment_id
+@Parcelize
+data class Goal(
+    @Embedded
+    val mainAssessment: Assessment,
+    @Relation(
+        parentColumn = "assessment_recurrence_id",
+        entityColumn = "recurrenceId",
+        entity = TaskRecurrence::class
+    )
+    val recurrence: TaskRecurrenceWithDays?,
+    @Relation(parentColumn = "parent_assessment_id", entityColumn = "assessment_id", entity = Assessment::class)
+    val subAssessments: List<Goal>,
+    @Relation(parentColumn = "assessment_id", entityColumn = "assessment_id", entity = Completion::class)
+    val completions: List<Completion>
+): Parcelable
 
 @Parcelize
 @Entity

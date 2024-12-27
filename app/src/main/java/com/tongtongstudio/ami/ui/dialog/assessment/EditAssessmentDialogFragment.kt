@@ -31,7 +31,7 @@ const val ASSESSMENT_RESULT_KEY = "assessment_result_key"
 const val USER_ASSESSMENT_TAG = "user_assessment_tag"
 const val OBJECTIVE_ID = "objective_id"
 
-// TODO: receive updated assessment and max due date of global targetGoal
+// TODO: receive updated assessment and max due date of global targetScore
 class EditAssessmentDialogFragment : DialogFragment() {
 
     private lateinit var binding: DialogEditAssessmentBinding
@@ -217,7 +217,7 @@ class EditAssessmentDialogFragment : DialogFragment() {
             parentAssessmentId = parentObjectiveId,
             title = title!!,
             description = description,
-            targetGoal = goal!!.toFloat(),
+            targetScore = goal!!.toFloat(),
             unit = unit!!.toString(),
             type = AssessmentType.QUANTITY.name,
             dueDate = dueDate!!

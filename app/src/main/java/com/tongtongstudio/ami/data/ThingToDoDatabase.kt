@@ -218,14 +218,14 @@ abstract class ThingToDoDatabase : RoomDatabase() {
         private val initialObjectives = listOf(
             Assessment(
                 title = "Run 10km",
-                targetGoal = 10F,
+                targetScore = 10F,
                 unit = "Km",
                 type = AssessmentType.QUANTITY.name,
                 dueDate = System.currentTimeMillis() + 30 * DAY_IN_MILLIS
             ),
             Assessment(
                 title = "Learn French",
-                targetGoal = 100F,
+                targetScore = 100F,
                 unit = "Hours",
                 description = "Work 100h on learning french to prepare trip in Paris !",
                 type = AssessmentType.QUANTITY.name,

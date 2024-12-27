@@ -37,7 +37,7 @@ class GoalsAdapter(private val context: Context, private val listener: GoalsList
                 itemView.transitionName = "shared_element_${data.id}"
                 tvGoalName.text = data.title
                 tvTargetScore.text =
-                    context.getString(R.string.target_goal, data.targetGoal, data.unit)
+                    context.getString(R.string.target_goal, data.targetScore, data.unit)
                 tvDeadline.text = data.getFormattedDueDate()
                 // TODO: adapt in function of type assessment view (checkbox, counter, timer)
             }

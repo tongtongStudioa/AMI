@@ -85,7 +85,7 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
             taskDeadline.isVisible = viewModel.deadline != null
 
             // stats view
-            if (!viewModel.task?.isRecurring!!)
+            if (viewModel.task?.recurrenceInfosId == null)
                 statsView.isVisible = false
 
             tvNbCompleted.text = if (viewModel.task?.successCount != null)

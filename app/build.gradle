@@ -53,6 +53,7 @@ dependencies {
 
     // Tutorial guide
     implementation 'uk.co.samuelwall:material-tap-target-prompt:3.3.2'
+    implementation 'androidx.room:room-testing:2.6.1'
 
     // Ksp dependency
     ksp "com.google.devtools.ksp:symbol-processing-api:$ksp_version"

@@ -32,9 +32,10 @@ class AddEditTaskViewModel @Inject constructor(
     private val addEditChannelEvent = Channel<AddEditTaskEvent>()
     val addEditTaskEvent = addEditChannelEvent.receiveAsFlow()
 
+    // TODO: change this object in safe args by ThingToDo object
     val thingToDo = state.get<Task>("thingToDo")
     private val _category = MutableLiveData<Category?>(null)
-    val category: LiveData<Category?> // TODO: retrieve task's category with sage args
+    val category: LiveData<Category?>
         get() = _category
     private val _reminders = MutableLiveData<MutableList<Reminder>>()
     val reminders: LiveData<MutableList<Reminder>>
@@ -114,7 +115,7 @@ class AddEditTaskViewModel @Inject constructor(
         }
 
     var recurringTaskInterval =
-        state["recurringTaskInterval"] ?: thingToDo?.repetitionFrequency
+        state["recurringTaskInterval"] ?: thingToDo?.re
         set(value) {
             field = value
             state["recurringTaskInterval"] = value
@@ -216,12 +217,12 @@ class AddEditTaskViewModel @Inject constructor(
                 priority = priority,
                 dueDate = dueDate,
                 startDate = startDate,
+                type = Nature.TASK.name,
+                isDraft = isDraft,
                 isRecurring = isRecurring,
                 repetitionFrequency = recurringTaskInterval,
-                parentTaskId = projectId,
                 categoryId = categoryId,
-                isDraft = isDraft,
-                type = Nature.TASK.name
+                parentTaskId = projectId
             )
 
         taskId = if (modeExtent) {

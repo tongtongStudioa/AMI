@@ -7,9 +7,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ViewHolder
 import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.ItemTaskBinding
 
-class SubTaskAdapter(private val listener: InteractionListener, val subTasks: List<Task>) :
+class SubTaskAdapter(private val listener: InteractionListener, val subTasks: List<ThingToDo>) :
     RecyclerView.Adapter<SubTaskAdapter.SubTaskViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubTaskViewHolder {
         val binding = ItemTaskBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -27,49 +28,49 @@ class SubTaskAdapter(private val listener: InteractionListener, val subTasks: Li
 
     inner class SubTaskViewHolder(
         private val binding: ItemTaskBinding
-    ) : ViewHolder<Task>(binding.root) {
+    ) : ViewHolder<ThingToDo>(binding.root) {
 
         init {
             binding.apply {
                 checkBoxCompleted.setOnClickListener {
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        val task = subTasks[position]
-                        listener.onTaskChecked(task, checkBoxCompleted.isChecked, position)
+                        val thingToDo = subTasks[position]
+                        listener.onTaskChecked(thingToDo.mainTask, checkBoxCompleted.isChecked, position)
                     }
                 }
                 root.setOnClickListener {
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        val task = subTasks[position]
-                        listener.onTaskClick(task, itemView)
+                        val thingToDo = subTasks[position]
+                        listener.onTaskClick(thingToDo.mainTask, itemView)
                     }
                 }
             }
         }
 
-        override fun bind(thingToDo: Task) {
+        override fun bind(thingToDo: ThingToDo) {
             binding.apply {
-                tvTaskName.text = thingToDo.title
-                checkBoxCompleted.isChecked = thingToDo.isCompleted
-                tvTaskName.paint.isStrikeThruText = thingToDo.isCompleted
+                tvTaskName.text = thingToDo.mainTask.title
+                checkBoxCompleted.isChecked = thingToDo.showCheckedState()
+                tvTaskName.paint.isStrikeThruText = thingToDo.showCheckedState()
                 tvNumberPriority.text =
                     this@SubTaskViewHolder.itemView.context.getString(
                         R.string.importance_thing_to_do,
-                        thingToDo.priority
+                        thingToDo.mainTask.priority
                     )
 
-                if (thingToDo.isLate()) {
+                /* if (thingToDo.isLate()) {
                     tvTaskName.setTextColor(
                         this@SubTaskViewHolder.itemView.context.resources.getColor(
                             R.color.design_default_color_error
                         )
                     )
-                }
+                }*/
                 tvDeadline.text =
-                    Task.getDateFormatted(thingToDo.dueDate)
-                if (thingToDo.startDate != null) {
-                    tvStartDate.text = Task.getDateFormatted(thingToDo.startDate)
+                    Task.getDateFormatted(thingToDo.mainTask.deadline)
+                if (thingToDo.mainTask.startDate != null) {
+                    tvStartDate.text = Task.getDateFormatted(thingToDo.mainTask.startDate)
                 } else tvStartDate.isVisible = false
             }
         }

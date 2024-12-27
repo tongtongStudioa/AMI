@@ -176,6 +176,5 @@ internal class TtdTest {
         }
 
         assertEquals(result.size, tasksList.size)
-
     }
 }

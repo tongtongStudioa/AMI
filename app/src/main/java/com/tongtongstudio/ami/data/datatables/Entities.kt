@@ -1,5 +1,6 @@
 package com.tongtongstudio.ami.data.datatables
 
+import android.content.res.Resources
 import android.os.Parcelable
 import android.text.format.DateUtils.DAY_IN_MILLIS
 import androidx.room.ColumnInfo
@@ -8,8 +9,11 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.ForeignKey.Companion.SET_NULL
+import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.ui.dialog.Period
 import kotlinx.parcelize.Parcelize
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -17,10 +21,121 @@ import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.abs
+import kotlin.math.pow
 
 const val PATTERN_FORMAT_DATE = "E dd/MM"
 
 enum class Nature { PROJECT, TASK }
+
+@Parcelize
+@Entity(tableName = "days_of_week_table")
+data class DaysOfWeek(
+    @PrimaryKey(autoGenerate = false) // days are fixed
+    val dayId: Int, // 1 (Monday) to 7 (Sunday)
+    val name: String // "Monday", "Tuesday", etc.
+) : Parcelable
+
+@Parcelize
+@Entity(tableName = "task_recurrence_table")
+data class TaskRecurrence(
+    val frequency: String, // e.g., "DAILY", "WEEKLY", "MONTHLY", etc.
+    val interval: Int, // e.g., 1 (every 1 day), 2 (every 2 weeks), etc.
+    @ColumnInfo(name = "start_date")
+    val startDate: Long?, // Timestamp when the recurrence starts
+    @ColumnInfo(name = "end_date")
+    val endDate: Long? = null, // Timestamp when the recurrence ends
+    @ColumnInfo(name = "is_active")
+    val isActive: Boolean = true, // Whether the recurrence is currently active
+    @ColumnInfo(name = "occurrence_limit")
+    val occurrenceLimit: Int? = null, // Number of occurrences before the recurrence stops
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "recurrence_id")
+    val recurrenceId: Long = 0
+) : Parcelable {
+
+    /**
+     * Create a new interval with user's feedback to increase or decrease last recurring interval.
+     * @param userFeedback
+     * @return TaskRecurrence
+     */
+    fun createNewInterval(userFeedback: Boolean): TaskRecurrence {
+        return if (userFeedback) increaseInterval() else decreaseInterval()
+    }
+
+    private fun increaseInterval(): TaskRecurrence {
+        // TODO: find a correct way to increase interval
+        val newInterval = interval.toDouble().pow(2).toInt()
+        return this.copy(interval = newInterval)
+    }
+
+    private fun decreaseInterval(): TaskRecurrence {
+        val newInterval = if (interval > 1) interval - 1 else interval
+        return this.copy(interval = newInterval)
+    }
+}
+
+@Entity(
+    tableName = "task_recurrence_days_cross_ref",
+    primaryKeys = ["recurrenceId", "dayId"],
+    foreignKeys = [
+        ForeignKey(
+            entity = TaskRecurrence::class,
+            parentColumns = ["recurrence_id"],
+            childColumns = ["recurrenceId"],
+            onDelete = CASCADE
+        ),
+        ForeignKey(
+            entity = DaysOfWeek::class,
+            parentColumns = ["dayId"],
+            childColumns = ["dayId"],
+            onDelete = CASCADE
+        )
+    ]
+)
+data class TaskRecurrenceDaysCrossRef(
+    val recurrenceId: Long,
+    val dayId: Int
+)
+
+@Parcelize
+@Entity(
+    tableName = "task_completion_table", foreignKeys = [
+        ForeignKey(
+            entity = Category::class,
+            parentColumns = ["task_id"],
+            childColumns = ["parent_task_id"],
+            onDelete = CASCADE
+        )
+    ]
+)
+data class Completion(
+    @ColumnInfo(name = "parent_task_id")
+    val taskId: Long,
+    val isCompleted: Boolean = false,
+    val completionDate: Long? = null,
+    val comment: String? = null,
+    val emotions: Int? = 1,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "completion_id")
+    val id: Long = 0
+) : Parcelable {
+    /**
+     * This function decide if a task is completed on time or not.
+     * It compares completionDate and dueDate or completionDate and deadline if it was define
+     * @return boolean
+     */
+    private fun hasBeenCompletedOnTime(
+        completionDate: Long,
+        dueDate: Long,
+        deadline: Long?
+    ): Boolean {
+        return completionDate < dueDate || (deadline != null && completionDate < deadline)
+    }
+
+    fun getCompletionDateFormatted(): String {
+        return DateFormat.getDateInstance().format(completionDate)
+    }
+}
 
 @Parcelize
 @Entity(
@@ -35,6 +150,18 @@ enum class Nature { PROJECT, TASK }
             parentColumns = ["task_id"],
             childColumns = ["parent_task_id"],
             onDelete = CASCADE
+        ),
+        ForeignKey(
+            entity = TaskRecurrence::class,
+            parentColumns = ["recurrence_id"],
+            childColumns = ["task_recurrence_id"],
+            onDelete = SET_NULL
+        ),
+        ForeignKey(
+            entity = Task::class,
+            parentColumns = ["task_id"],
+            childColumns = ["dependency_task_id"],
+            onDelete = SET_NULL
         )]
 )
 data class Task(
@@ -49,97 +176,23 @@ data class Task(
     val importance: Int? = null, // task's impact on the smooth running of daily life
     val urgency: Int? = null,
     val isDraft: Boolean = false,
-
-    val isCompleted: Boolean = false,
-    val completionDate: Long? = null,
-    val completedOnTime: Boolean? = null,
+    val estimatedEmotions: Int = 1, // 0, 1 or 2 to express feelings on the task to accomplish
     val estimatedWorkingTime: Long? = null,
-    val currentWorkingTime: Long? = null,
-    val isRecurring: Boolean = false,
-    val currentStreak: Int = 0,
-    val maxStreak: Int = 0,
-    val repetitionFrequency: RecurringTaskInterval? = null,
-    val totalRepetitionCount: Int = 0,
-    val timesMissed: Int = 0,
-    val successCount: Int = 0, // achievements number for recurrent tasks
-    val comment: String? = null,
-    val dependency: Boolean? = null, // dependency on other people
     val skillLevel: Int? = null, // task mastery level posses
     val creationDate: Long = System.currentTimeMillis(),
-    @ColumnInfo(name = "task_id")
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @ColumnInfo(name = "dependency_task_id")
+    val dependencyId: Long? = null, // dependency on other tasks
+    @ColumnInfo(name = "task_recurrence_id")
+    val recurrenceInfosId: Long? = null, // recurrenceInfosId
     val categoryId: Long? = null,
     @ColumnInfo(name = "parent_task_id")
     val parentTaskId: Long? = null,
+    @ColumnInfo(name = "task_id")
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
 ) : Parcelable {
-
-    /**
-     * This function update the current thing to do depend on recurring info and state state
-     * @param state state
-     * @return updated task
-     */
-    fun updateCheckedState(state: Boolean = true, newCompletionDate: Long? = null): Task {
-        val updatedTask = when {
-            // it is a recurring task
-            isRecurring && repetitionFrequency != null -> repetitionFrequency.updateRecurringTask(
-                this@Task,
-                state
-            )
-            // it is checked
-            state -> {
-                val completedDateInMillis = Calendar.getInstance().timeInMillis
-                val updatedState = this.copy(
-                    isCompleted = true,
-                    completionDate = newCompletionDate ?: completedDateInMillis
-                )
-                updatedState.copy(
-                    completedOnTime = updatedState.hasBeenCompletedOnTime()
-                )
-            }
-            // task is unchecked and it's not a recurring one
-            else -> {
-                this.copy(
-                    isCompleted = false,
-                    completionDate = null,
-                    completedOnTime = null
-                )
-            }
-        }
-        return updatedTask
-    }
-
-    fun getHabitSuccessRate(): Float? {
-        return if (totalRepetitionCount != 0)
-            (successCount.toFloat() / totalRepetitionCount) * 100
-        else null
-    }
-
-    /**
-     * This function decide if a task is completed on time or not.
-     * It compares completionDate and dueDate or completionDate and deadline if it was define
-     * @return boolean
-     */
-    private fun hasBeenCompletedOnTime(): Boolean {
-        return isCompleted && completionDate != null && dueDate != null && (completionDate < dueDate || (deadline != null && completionDate < deadline))
-    }
 
     fun getCreationDateFormatted(): String {
         return DateFormat.getDateInstance().format(creationDate)
-    }
-
-    fun isLate(): Boolean {
-        val todayDate = Calendar.getInstance().run {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            timeInMillis
-        }
-        return dueDate != null && dueDate < todayDate && isCompleted
-    }
-
-    fun getCompletionDateFormatted(): String {
-        return if (isCompleted && completionDate != null)
-            DateFormat.getDateInstance().format(completionDate)
-        else "null"
     }
 
     companion object {
@@ -148,17 +201,20 @@ data class Task(
          * Delay between due date and deadline otherwise, if no deadline, urgency = 9.
          * @return Int : between 2 and 10
          */
-        fun calculusUrgency(todayDateMillis: Long, dueDate: Long?, deadline: Long?): Int {
-            val delay = if (deadline != null && dueDate != null) abs(dueDate - deadline) else 9
+        fun calculusUrgency(todayDateMillis: Long, dueDate: Long, deadline: Long?): Int {
+            val delay =
+                if (deadline != null)
+                    abs(deadline - todayDateMillis)
+                else abs(dueDate - todayDateMillis)
             return when {
-                delay <= 1 * DAY_IN_MILLIS -> 9
-                delay <= 2 * DAY_IN_MILLIS -> 8
-                delay <= 3 * DAY_IN_MILLIS -> 7
-                delay <= 5 * DAY_IN_MILLIS -> 6
-                delay <= 7 * DAY_IN_MILLIS -> 5
-                delay <= 10 * DAY_IN_MILLIS -> 4
-                delay <= 14 * DAY_IN_MILLIS -> 3
-                delay <= 19 * DAY_IN_MILLIS -> 2
+                delay <= 2 * DAY_IN_MILLIS -> 9
+                delay <= 4 * DAY_IN_MILLIS -> 8
+                delay <= 6 * DAY_IN_MILLIS -> 7
+                delay <= 8 * DAY_IN_MILLIS -> 6
+                delay <= 10 * DAY_IN_MILLIS -> 5
+                delay <= 12 * DAY_IN_MILLIS -> 4
+                delay <= 16 * DAY_IN_MILLIS -> 3
+                delay <= 20 * DAY_IN_MILLIS -> 2
                 else -> 1
             }
         }
@@ -193,28 +249,232 @@ data class Task(
             } else null
         }
     }
-
-
 }
+
+@Parcelize
+data class TaskRecurrenceWithDays(
+    @Embedded val taskRecurrence: TaskRecurrence, // recurrence details
+    @Relation(
+        parentColumn = "recurrence_id",
+        entityColumn = "recurrenceId",
+        associateBy = Junction(TaskRecurrenceDaysCrossRef::class)
+    )
+    val daysOfWeek: List<DaysOfWeek> // days associate
+) : Parcelable {
+    /**
+     * Update recurring task depending with task's recurrence characteristics (delay, repetition frequency, etc.)
+     * @param oldDueDate : old task due date
+     * @param checked : checked state for automatic update
+     * @return new due date
+     */
+    fun findNextDueDate(oldDueDate: Long, checked: Boolean): Long {
+        val updatedStartDate = if (daysOfWeek.isNotEmpty()) {
+            findNextOccurrenceDayInWeek(oldDueDate, checked)
+        } else {
+            findNextOccurrenceDay(oldDueDate, checked)
+        }
+        val newDueDateDate = updatedStartDate.newDueDate
+        val timesSkipped = updatedStartDate.timesSkipped
+
+        return newDueDateDate
+    }
+
+    private fun findNextOccurrenceDayInWeek(oldDueDate: Long, checked: Boolean): RepeatProcess {
+        var timesSkipped = 0
+        val newStartDate = Calendar.getInstance().run {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            val todayDateInMillis = timeInMillis
+            timeInMillis = oldDueDate
+            do {
+                // manage skipped if it contains the day and it's not checked
+                if (daysOfWeek.any { it.dayId == get(Calendar.DAY_OF_WEEK) } && !checked)
+                    timesSkipped++
+
+                add(Calendar.DAY_OF_WEEK, 1)
+                val nextDay = get(Calendar.DAY_OF_WEEK)
+
+                // if we change of week so add intervalWeek if interval > 2 week (times = num of week interval)
+                if (get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY) {
+                    add(Calendar.DAY_OF_MONTH, (taskRecurrence.interval - 1) * 7)
+                }
+                val nextDueDate = timeInMillis
+                val notContainsAndBeforeToday =
+                    !(daysOfWeek.any { it.dayId == nextDay } && nextDueDate >= todayDateInMillis)
+            } while (notContainsAndBeforeToday)
+            // if list of recurrence days contains next deadline's day and it's after  today : set a new due date
+            timeInMillis
+        }
+        return RepeatProcess(newStartDate, timesSkipped)
+    }
+
+    private fun findNextOccurrenceDay(oldDueDate: Long, checked: Boolean): RepeatProcess {
+        var timesSkipped = 0
+        var todayTimeInMillis: Long
+        val newStartDate = Calendar.getInstance().run {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            todayTimeInMillis = timeInMillis
+            // Set the new due date to the next occurrence of the task's due day
+            timeInMillis = oldDueDate
+            do {
+                when (taskRecurrence.frequency.lowercase()) {
+                    Period.DAYS.name -> add(
+                        Calendar.DAY_OF_MONTH,
+                        taskRecurrence.interval * 1
+                    )
+
+                    Period.WEEKS.name -> add(
+                        Calendar.DAY_OF_MONTH,
+                        taskRecurrence.interval * 7
+                    )
+
+                    Period.MONTHS.name -> add(
+                        Calendar.MONTH,
+                        taskRecurrence.interval * 1
+                    )
+
+                    Period.YEARS.name -> add(
+                        Calendar.YEAR,
+                        taskRecurrence.interval * 1
+                    )
+
+                    else -> add(Calendar.DAY_OF_MONTH, 0)
+                }
+                if (!checked)
+                    timesSkipped++
+            } while (timeInMillis < todayTimeInMillis)
+            timeInMillis
+        }
+        return RepeatProcess(newStartDate, timesSkipped)
+    }
+
+    fun setStartDateSpecificDay(): Long {
+        return if (daysOfWeek.isNotEmpty()) {
+            val startDate = Calendar.getInstance().run {
+                while (get(Calendar.DAY_OF_WEEK) != daysOfWeek.first().dayId) {
+                    add(Calendar.DAY_OF_MONTH, 1)
+                }
+                timeInMillis
+            }
+            startDate
+        } else Calendar.getInstance().timeInMillis
+    }
+
+    fun getNextOccurrenceDay(oldDueDate: Long, validate: Boolean): Long {
+        val repeatProcess = if (daysOfWeek.isNotEmpty()) {
+            findNextOccurrenceDayInWeek(oldDueDate, validate)
+        } else {
+            findNextOccurrenceDay(oldDueDate, validate)
+        }
+        return repeatProcess.newDueDate
+    }
+
+    fun getRecurringIntervalReadable(resources: Resources): String {
+        return if (taskRecurrence.interval == 1 && daysOfWeek.isEmpty()) {
+            when (taskRecurrence.frequency.lowercase()) {
+                Period.DAYS.name -> resources.getString(R.string.each_days)
+                Period.WEEKS.name -> resources.getString(R.string.each_weeks)
+                Period.MONTHS.name -> resources.getString(R.string.each_months)
+                Period.YEARS.name -> resources.getString(R.string.each_years)
+                else -> resources.getString(R.string.each_days)
+            }
+        } else if (daysOfWeek.isNotEmpty()) {
+            // TODO: create function to retrieve E from int : Mon, Tue, Wed, Thu, Fri (Lun, Mar, Mer, Jeu, Ven, ...)
+            if (daysOfWeek.size == 1) resources.getString(
+                R.string.weekly_interval,
+                daysOfWeek[0].name
+            )
+            else "On $daysOfWeek every ${taskRecurrence.interval} weeks"
+        } else {
+            when (taskRecurrence.frequency.lowercase()) {
+                Period.DAYS.name -> resources.getString(
+                    R.string.every_x_days,
+                    taskRecurrence.interval
+                )
+
+                Period.WEEKS.name -> resources.getString(
+                    R.string.every_x_weeks,
+                    taskRecurrence.interval
+                )
+
+                Period.MONTHS.name -> resources.getString(
+                    R.string.every_x_months,
+                    taskRecurrence.interval
+                )
+
+                Period.YEARS.name -> resources.getString(
+                    R.string.every_x_years,
+                    taskRecurrence.interval
+                )
+
+                else -> resources.getString(R.string.every_x_days, taskRecurrence.interval)
+            }
+        }
+    }
+}
+
+class RepeatProcess(val newDueDate: Long, val timesSkipped: Int = 0)
+
 
 @Parcelize
 data class ThingToDo(
     @Embedded
     val mainTask: Task,
+    @Relation(
+        parentColumn = "task_recurrence_id",
+        entityColumn = "recurrence_id",
+        entity = TaskRecurrence::class
+    )
+    val recurrence: TaskRecurrenceWithDays?,
     @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = Task::class)
-    val subTasks: List<Task>,
+    val subTasks: List<ThingToDo>,
     @Relation(parentColumn = "categoryId", entityColumn = "category_id", entity = Category::class)
     val category: Category?,
     @Relation(parentColumn = "task_id", entityColumn = "parent_id", entity = Reminder::class)
-    val reminders: List<Reminder>
+    val reminders: List<Reminder>,
+    @Relation(parentColumn = "task_id", entityColumn = "dependency_id", entity = Task::class)
+    val dependencies: List<ThingToDo>,
+    @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = Completion::class)
+    val completions: List<Completion> // Historique d’achèvement
 
 ) : Parcelable {
+
+    fun showCheckedState(): Boolean {
+        return if (recurrence == null) false else completions.lastOrNull()?.isCompleted ?: false
+    }
+
     fun isProject(): Boolean {
         return mainTask.type == Nature.PROJECT.name || subTasks.isNotEmpty()
     }
 
-    fun getNbSubTasksCompleted(): Int = subTasks.count { it.isCompleted }
+    fun countCompletedSubtasks(): Int {
+        // Count direct sub tasks using last completion
+        val directCompleted = subTasks.count { subtask ->
+            subtask.completions.lastOrNull()?.isCompleted == true
+        }
+        // Add embedded completed sub tasks
+        val nestedCompleted = subTasks.sumOf { it.countCompletedSubtasks() }
+        return directCompleted + nestedCompleted
+    }
+
     fun getNbSubTasks(): Int = subTasks.size
+
+    fun getHabitSuccessRate(): Float? {
+        val totalRepetitionCount = completions.size
+        val successCount = completions.count { it.isCompleted }
+        return if (totalRepetitionCount != 0)
+            (successCount.toFloat() / totalRepetitionCount) * 100
+        else null
+    }
+
+    fun isLate(todayDateMillis: Long, dueDate: Long): Boolean {
+        return dueDate < todayDateMillis
+    }
 }
 
 /**

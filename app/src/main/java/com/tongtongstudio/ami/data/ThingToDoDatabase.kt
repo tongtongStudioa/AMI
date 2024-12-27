@@ -40,7 +40,7 @@ val MIGRATION_4_2 = object : Migration(4, 2) {
     }
 }
 
-val MIGRATION_2_3 = object : Migration(4, 2) {
+val MIGRATION_2_3 = object : Migration(2, 3) {
     override fun migrate(db: SupportSQLiteDatabase) {
         // Créer la table DaysOfWeek
         db.execSQL(

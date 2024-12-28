@@ -8,14 +8,14 @@ plugins {
 }
 
 android {
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.tongtongstudio.ami"
         minSdkVersion 21
         targetSdk 34
         versionCode 10
-        versionName '1.0.2-beta'
+        versionName '1.0.3'
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         versionNameSuffix 'alpha'
@@ -41,8 +41,7 @@ android {
         freeCompilerArgs += "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
     }
     namespace 'com.tongtongstudio.ami'
-    buildToolsVersion '34.0.0'
-    ndkVersion '27.0.12077973'
+    buildToolsVersion '35.0.0'
     /*dependenciesInfo {
         includeInApk true
         includeInBundle true
@@ -60,7 +59,7 @@ dependencies {
     // Rate me dialog dependency
     implementation 'com.github.hotchemi:android-rate:1.0.1'
 
-    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    implementation 'androidx.viewpager2:viewpager2:1.1.0'
 
     // MPAndroidChart dependency
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
@@ -88,7 +87,7 @@ dependencies {
     // Fragment
     implementation "androidx.fragment:fragment-ktx:$fragmentVersion"
     // Activity
-    implementation 'androidx.activity:activity-ktx:1.9.1'
+    implementation 'androidx.activity:activity-ktx:1.9.3'
 
     // Lifecycle + ViewModel & LiveData
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"

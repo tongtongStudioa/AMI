@@ -71,10 +71,7 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
         requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
-            if (isGranted) {
-                // Permission granted
-
-            } else showPermissionRationale()
+            if (!isGranted) showPermissionRationale()
         }
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -121,17 +118,17 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             // evaluation type 
             radioGroupUnitType.setOnCheckedChangeListener { radioGroup, i ->
                 when (radioGroup.checkedRadioButtonId) {
-                    // TODO: adapt targetGoal type
+                    // TODO: adapt targetScore type
                     rbQuantity.id -> {
                         // TODO: remove unit and show "without unit" 
                     }
 
                     rbDuration.id -> {
-                        // TODO: adapt targetGoal type
+                        // TODO: adapt targetScore type
                     }
 
                     rbBoolean.id -> {
-                        // TODO: adapt targetGoal type
+                        // TODO: adapt targetScore type
                     }
                 }
             }

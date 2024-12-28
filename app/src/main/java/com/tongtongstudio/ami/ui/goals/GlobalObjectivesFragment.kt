@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
@@ -13,6 +14,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
@@ -20,6 +22,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialElevationScale
 import com.google.android.material.transition.MaterialFadeThrough
 import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
@@ -213,7 +216,19 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                             findNavController().navigate(action)
                         }
                         is GlobalObjectivesViewModel.GoalsEvent.NavigateToDetailsGlobalGoalScreen -> {
-                            // TODO: navigate to global objective screen details
+                            val action =
+                                GlobalObjectivesFragmentDirections.actionGlobalObjectivesFragmentToGoalDetailsFragment(
+                                    event.goal
+                                )
+                            val extras =
+                                FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            findNavController().navigate(action, extras)
                         }
                         is GlobalObjectivesViewModel.GoalsEvent.ShowUndoDeleteGlobalGoalMessage -> {
                             Snackbar.make(
@@ -225,11 +240,13 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                                     viewModel.onUndoDeleteClick(event.goal)
                                 }.show()
                         }
-                        else -> {}// do nothing
                     }
                 }
             }
         }
+
+        postponeEnterTransition()
+        view.doOnPreDraw { startPostponedEnterTransition() }
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout
@@ -256,8 +273,8 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
         }
     }
 
-    override fun onGoalClick(goal: Assessment) {
-        viewModel.onGoalClick(goal)
+    override fun onGoalClick(goal: Assessment, itemView: View) {
+        viewModel.onGoalClick(goal, itemView)
     }
 
     override fun onGoalRightSwipe(goal: Assessment) {

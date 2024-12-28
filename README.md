@@ -1,16 +1,18 @@
-# AMI
-Smart todo list android app :
-- statistic about achievement
-- track time achievement of your tasks
-- convenient view to your dayly taks
-- details on your task
+# AMI : Assistant Multi-tâches Intelligent
+<h2>Un liste de tâches intélligente</h2>
+<li>
+  <ul>Statistiques d'achèvement</ul>
+  <ul>Suivi du temps de travail de la tâche</ul>
+  <ul>Vue intuitive des tâches</ul>
+  <ul>Détails sur les tâches</ul>
+  <ul>Suivi des objectifs par évaluations intermédiare</ul>
+  <ul>Catégoriser les tâches</ul>
+</li>
 
-Up coming :
-- task efficiency evaluation 
-- tasks automatic scheduler
-- more categories possible
-- calendar view of tasks
-- beautiful ui and ux :)
+<h2>Pour plus tard</h2>
+- Automatisation de la planification des tâches
+- Vue calendrier
+- Amélioration de l'interface et de l'expérience utilisateur :)
 
 
 Download on PlayStore :

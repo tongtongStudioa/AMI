@@ -193,6 +193,9 @@
         <action
             android:id="@+id/action_globalObjectivesFragment_to_editGoalFragment"
             app:destination="@id/editGoalFragment" />
+        <action
+            android:id="@+id/action_globalObjectivesFragment_to_goalDetailsFragment"
+            app:destination="@id/goalDetailsFragment" />
     </fragment>
     <dialog
         android:id="@+id/completeAssessmentDialogFragment"
@@ -220,6 +223,15 @@
         <action
             android:id="@+id/action_draftsFragment_to_projectDetailsFragment"
             app:destination="@id/projectDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/goalDetailsFragment"
+        android:name="com.tongtongstudio.ami.ui.monitoring.goal.GoalDetailsFragment"
+        android:label="@string/fragment_goal_details_title"
+        tools:layout="@layout/fragment_goal_details">
+        <argument
+            android:name="goal"
+            app:argType="com.tongtongstudio.ami.data.datatables.Assessment" />
     </fragment>
 
 </navigation>

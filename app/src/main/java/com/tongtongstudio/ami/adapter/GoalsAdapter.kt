@@ -27,16 +27,17 @@ class GoalsAdapter(private val context: Context, private val listener: GoalsList
                 val position = absoluteAdapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     val goal = goalsList[position]
-                    listener.onGoalClick(goal)
+                    listener.onGoalClick(goal, itemView)
                 }
             }
         }
 
         override fun bind(data: Assessment) {
             binding.apply {
+                itemView.transitionName = "shared_element_${data.id}"
                 tvGoalName.text = data.title
                 tvTargetScore.text =
-                    context.getString(R.string.target_goal, data.targetGoal, data.unit)
+                    context.getString(R.string.target_goal, data.targetScore, data.unit)
                 tvDeadline.text = data.getFormattedDueDate()
                 // TODO: adapt in function of type assessment view (checkbox, counter, timer)
             }

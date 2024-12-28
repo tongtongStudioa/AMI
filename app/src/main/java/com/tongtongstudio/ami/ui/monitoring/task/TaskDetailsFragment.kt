@@ -60,9 +60,6 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
         // Shared transition id
         ViewCompat.setTransitionName(binding.taskInfo, "shared_element_${viewModel.thingToDo?.mainTask?.id}")
 
-        // Postpone transition until layout is ready
-        //startPostponedEnterTransition()
-
         // show or hide app bar if fragment is in unique mode
         if (parentFragment !is ViewPagerTrackingAndStatsFragment) {
             binding.appBar.isVisible = true

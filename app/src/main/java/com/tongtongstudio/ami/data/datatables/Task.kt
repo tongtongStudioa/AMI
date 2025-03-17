@@ -1,15 +1,11 @@
 package com.tongtongstudio.ami.data.datatables
 
 import android.os.Parcelable
-import android.text.format.DateUtils.DAY_IN_MILLIS
+import android.text.format.DateUtils
 import androidx.room.ColumnInfo
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.ForeignKey.Companion.CASCADE
-import androidx.room.ForeignKey.Companion.SET_NULL
 import androidx.room.PrimaryKey
-import androidx.room.Relation
 import kotlinx.parcelize.Parcelize
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -18,10 +14,6 @@ import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.abs
 
-const val PATTERN_FORMAT_DATE = "E dd/MM"
-
-enum class Nature { PROJECT, TASK }
-
 @Parcelize
 @Entity(
     tableName = "task_table", foreignKeys = [
@@ -29,12 +21,12 @@ enum class Nature { PROJECT, TASK }
             entity = Category::class,
             parentColumns = ["category_id"],
             childColumns = ["categoryId"],
-            onDelete = SET_NULL
+            onDelete = ForeignKey.SET_NULL
         ), ForeignKey(
             entity = Task::class,
             parentColumns = ["task_id"],
             childColumns = ["parent_task_id"],
-            onDelete = CASCADE
+            onDelete = ForeignKey.CASCADE
         )]
 )
 data class Task(
@@ -151,14 +143,14 @@ data class Task(
         fun calculusUrgency(todayDateMillis: Long, dueDate: Long?, deadline: Long?): Int {
             val delay = if (deadline != null && dueDate != null) abs(dueDate - deadline) else 9
             return when {
-                delay <= 1 * DAY_IN_MILLIS -> 9
-                delay <= 2 * DAY_IN_MILLIS -> 8
-                delay <= 3 * DAY_IN_MILLIS -> 7
-                delay <= 5 * DAY_IN_MILLIS -> 6
-                delay <= 7 * DAY_IN_MILLIS -> 5
-                delay <= 10 * DAY_IN_MILLIS -> 4
-                delay <= 14 * DAY_IN_MILLIS -> 3
-                delay <= 19 * DAY_IN_MILLIS -> 2
+                delay <= 1 * DateUtils.DAY_IN_MILLIS -> 9
+                delay <= 2 * DateUtils.DAY_IN_MILLIS -> 8
+                delay <= 3 * DateUtils.DAY_IN_MILLIS -> 7
+                delay <= 5 * DateUtils.DAY_IN_MILLIS -> 6
+                delay <= 7 * DateUtils.DAY_IN_MILLIS -> 5
+                delay <= 10 * DateUtils.DAY_IN_MILLIS -> 4
+                delay <= 14 * DateUtils.DAY_IN_MILLIS -> 3
+                delay <= 19 * DateUtils.DAY_IN_MILLIS -> 2
                 else -> 1
             }
         }
@@ -196,182 +188,3 @@ data class Task(
 
 
 }
-
-@Parcelize
-data class ThingToDo(
-    @Embedded
-    val mainTask: Task,
-    @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = Task::class)
-    val subTasks: List<Task>,
-    @Relation(parentColumn = "categoryId", entityColumn = "category_id", entity = Category::class)
-    val category: Category?,
-    @Relation(parentColumn = "task_id", entityColumn = "parent_id", entity = Reminder::class)
-    val reminders: List<Reminder>
-
-) : Parcelable {
-    fun isProject(): Boolean {
-        return mainTask.type == Nature.PROJECT.name || subTasks.isNotEmpty()
-    }
-
-    fun getNbSubTasksCompleted(): Int = subTasks.count { it.isCompleted }
-    fun getNbSubTasks(): Int = subTasks.size
-}
-
-/**
- * Class with task completed info to analyse productivity (number of task achieved in a period of time).
- */
-data class TtdAchieved(
-    val completionDate: Long,
-    val completedCount: Float
-)
-
-/**
- * Class with recurring task info for max and min streak.
- */
-data class TtdStreakInfo(
-    val title: String?,
-    val streakInfo: Int?
-)
-
-/**
- * Describe type of objective targetGoal to help tracking progress.
- */
-enum class AssessmentType { QUANTITY, DURATION, BOOLEAN }
-
-/**
- * Evaluation class and entity of Room database.
- * Help to track and analyse details global objectives and their advancement.
- */
-@Parcelize
-@Entity(
-    foreignKeys = [
-        ForeignKey(
-            entity = Task::class,
-            parentColumns = ["task_id"],
-            childColumns = ["parent_task_id"],
-            onDelete = CASCADE
-        ), ForeignKey(
-            entity = Assessment::class,
-            parentColumns = ["assessment_id"],
-            childColumns = ["parent_assessment_id"],
-            onDelete = CASCADE
-        )]
-)
-data class Assessment(
-    // parent id nullable
-    @ColumnInfo(name = "parent_task_id")
-    val parentTaskId: Long? = null,
-    @ColumnInfo(name = "parent_assessment_id")
-    val parentAssessmentId: Long? = null,
-    @ColumnInfo(name = "assessment_title")
-    val title: String,
-    val description: String? = null,
-    val comment: String? = null,
-    val targetGoal: Float,
-    val unit: String,
-    val type: String,
-    @ColumnInfo(name = "assessment_due_date")
-    val dueDate: Long,
-    val isRecurrent: Boolean = false,
-    val interval: RecurringTaskInterval? = null,
-    val rehearsalEndDate: Long? = null,
-    val score: Float? = null, // result that the user enter at the due date // maybe change name to "rating"
-    val categoryId: Long? = null,
-    @ColumnInfo(name = "assessment_id")
-    @PrimaryKey(autoGenerate = true) val id: Long = 0
-) : Parcelable {
-
-    fun getPercentageRating(): Float? {
-        return if (targetGoal != 0F)
-            (score ?: 0F) / targetGoal * 100
-        else
-            null
-    }
-
-    fun getFormattedDueDate(): String {
-        return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
-    }
-}
-
-@Parcelize
-@Entity
-data class Category(
-    @ColumnInfo(name = "category_title")
-    val title: String,
-    val description: String?,
-    val color: Int? = null,
-    @ColumnInfo(name = "parent_category_id")
-    val parentCategoryId: Long? = null,
-    @ColumnInfo(name = "category_id")
-    @PrimaryKey(autoGenerate = true) val id: Long = 0
-) : Parcelable
-
-data class TimeWorkedDistribution(val title: String?, val totalTimeWorked: Long?)
-
-data class CategoryTasks(
-    @Embedded
-    val category: Category,
-    @Relation(entity = Task::class, parentColumn = "category_id", entityColumn = "categoryId")
-    val tasks: List<Task>
-)
-
-@Parcelize
-@Entity(
-    foreignKeys = [ForeignKey(
-        entity = Task::class,
-        parentColumns = ["task_id"],
-        childColumns = ["parent_id"],
-        onDelete = CASCADE
-    )]
-)
-data class Reminder(
-    @ColumnInfo(name = "parent_id")
-    val parentId: Long? = null, // attach to a task but also just parent reminder of the app
-    val description: String? = null,
-    val dueDate: Long,
-    val isRecurrent: Boolean,
-    val repetitionFrequency: RecurringTaskInterval? = null,
-    @ColumnInfo(name = "reminder_id")
-    @PrimaryKey(autoGenerate = true) val id: Long = 0
-) : Parcelable {
-
-    fun isPassed(): Boolean {
-        return dueDate < Calendar.getInstance().timeInMillis
-    }
-
-    fun getDueDateFormatted(): String {
-        return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(dueDate)
-    }
-
-    fun getTimeFormatted(): String {
-        return SimpleDateFormat("HH:mm", Locale.getDefault()).format(dueDate)
-    }
-}
-
-@Entity
-data class WorkSession(
-    val parentTaskId: Long,
-    val duration: Long,
-    val comment: String?,
-    val date: Long = System.currentTimeMillis(),
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "work_session_id") val id: Long = 0
-)
-
-@Entity
-data class Unit(
-    val name: String,
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "unit_id") val id: Long = 0
-)
-
-@Entity
-data class PomodoroSession(
-    val name: String,
-    val workingDuration: Long = 30 * 60 * 1000,
-    val restDuration: Long = 15 * 60 * 1000,
-    val workSessionsCount: Int = 4,
-    val specialMsg: String?,
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "work_session_id") val id: Long = 0
-)

@@ -3,7 +3,6 @@ package com.tongtongstudio.ami.data
 import android.text.format.DateUtils.DAY_IN_MILLIS
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tongtongstudio.ami.data.dao.AssessmentDao
 import com.tongtongstudio.ami.data.dao.CategoryDao
@@ -28,130 +27,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
-
-val MIGRATION_4_2 = object : Migration(4, 2) {
-    override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("ALTER TABLE task_table ADD COLUMN isDraft INTEGER NOT NULL DEFAULT 0")
-        db.execSQL("ALTER TABLE task_table ALTER COLUMN importance INTEGER DEFAULT NULL")
-        db.execSQL("ALTER TABLE task_table ALTER COLUMN priority INTEGER")
-        db.execSQL("ALTER TABLE task_table ALTER COLUMN dueDate LONG")
-    }
-}
-
-val MIGRATION_2_3 = object : Migration(2, 3) {
-    override fun migrate(db: SupportSQLiteDatabase) {
-        // Créer la table DaysOfWeek
-        db.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS days_of_week_table (
-                dayId INTEGER PRIMARY KEY NOT NULL,
-                name TEXT NOT NULL
-            )
-            """
-        )
-
-        // Pré-remplir les jours de la semaine
-        db.execSQL(
-            """
-            INSERT INTO days_of_week_table (dayId, name)
-            VALUES (1, 'Monday'), (2, 'Tuesday'), (3, 'Wednesday'),
-                   (4, 'Thursday'), (5, 'Friday'), (6, 'Saturday'), (7, 'Sunday')
-            """
-        )
-
-        db.execSQL(
-            """
-            CREATE TABLE task_recurrence_table (
-                frequency TEXT NOT NULL,
-                interval INTEGER NOT NULL,
-                start_date INTEGER,
-                end_date INTEGER,
-                is_active INTEGER NOT NULL DEFAULT 1,
-                occurrence_limit INTEGER,
-                recurrence_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL
-                )
-            """.trimIndent()
-        )
-
-        // Créer la table TaskRecurrenceDaysCrossRef
-        db.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS task_recurrence_days_cross_ref (
-                recurrenceId INTEGER NOT NULL,
-                dayId INTEGER NOT NULL,
-                PRIMARY KEY (recurrenceId, dayId),
-                FOREIGN KEY (recurrenceId) REFERENCES recurrence_task_table(recurrence_id) ON DELETE CASCADE,
-                FOREIGN KEY (dayId) REFERENCES days_of_week_table(dayId) ON DELETE CASCADE
-            )
-            """
-        )
-
-        // Créer la table TaskCompletion
-        db.execSQL(
-            """
-            CREATE TABLE IF NOT EXISTS task_completion_table (
-                parent_task_id INTEGER NOT NULL,
-                completionDate INTEGER NOT NULL,
-                isCompleted INTEGER NOT NULL,
-                comment TEXT,
-                emotions INTEGER,
-                completion_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                FOREIGN KEY (parent_task_id) REFERENCES task_table(task_id) ON DELETE CASCADE
-            )
-            """
-        )
-
-        db.execSQL(
-            """
-            CREATE TABLE tasks_new (
-                title TEXT NOT NULL,
-                priority INTEGER,
-                task_due_date INTEGER,
-                startDate INTEGER,
-                deadline INTEGER,
-                description TEXT,
-                type TEXT,
-                importance INTEGER,
-                urgency INTEGER,
-                isDraft INTEGER NOT NULL DEFAULT 0,
-                estimatedEmotions INTEGER NOT NULL DEFAULT 1,
-                estimatedWorkingTime INTEGER,
-                skillLevel INTEGER,
-                creationDate INTEGER NOT NULL,
-                dependency_task_id INTEGER,
-                recurrence_infos_id INTEGER,
-                categoryId INTEGER,
-                parent_task_id INTEGER,
-                task_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                FOREIGN KEY(dependency_task_id) REFERENCES task_table(task_id) ON DELETE SET NULL,
-                FOREIGN KEY(categoryId) REFERENCES category_table(category_id) ON DELETE SET NULL,
-                FOREIGN KEY(parent_task_id) REFERENCES task_table(task_id) ON DELETE CASCADE,
-                FOREIGN KEY(task_recurrence_id) REFERENCES task_recurrence_table(recurrence_id) ON DELETE SET NULL
-            )
-                """.trimIndent()
-        )
-        db.execSQL(
-            """
-            INSERT INTO task_table_new (
-                title, priority, task_due_date, startDate, deadline, description, type,
-                importance, urgency, isDraft, estimatedEmotions,estimatedWorkingTime, skillLevel,
-                creationDate, dependency_task_id, task_recurrence_id,
-                categoryId, parent_task_id, task_id
-            )
-            SELECT title, priority, task_due_date, startDate, deadline, description, type,
-                importance, urgency, isDraft, 1 AS estimatedEmotions, estimatedWorkingTime, skillLevel,
-                creationDate, dependency_task_id, task_recurrence_id, categoryId, parent_task_id, task_id
-            FROM task_table
-            """.trimIndent()
-        )
-
-        // Supprimer l'ancienne table task_table
-        db.execSQL("DROP TABLE task_table")
-
-        // Renommer la nouvelle table
-        db.execSQL("ALTER TABLE task_table_new RENAME TO task_table")
-    }
-}
 
 @Database(
     entities = [

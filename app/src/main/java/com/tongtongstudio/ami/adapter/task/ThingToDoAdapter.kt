@@ -100,7 +100,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                 root.setOnClickListener {
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        val task = taskList[position].mainTask
+                        val task = taskList[position]
                         listener.onTaskClick(task, itemView)
                     }
                 }
@@ -207,11 +207,12 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                     R.string.importance_thing_to_do,
                     data.mainTask.priority
                 )
-                tvNbSubTasks.text = this@TaskComposedViewHolder.itemView.context.getString(
+                // TODO: show count completed subtasks
+                /*tvNbSubTasks.text = this@TaskComposedViewHolder.itemView.context.getString(
                     R.string.nb_sub_tasks_project,
                     data.countCompletedSubtasks(),
                     data.getNbSubTasks()
-                )
+                )*/
                 rvSubTasks.apply {
                     layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
                     adapter = ThingToDoAdapter(listener)
@@ -234,7 +235,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
 
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 
-                        val subTask: ThingToDo =
+                        val subTask: Task =
                             taskList[bindingAdapterPosition].subTasks[viewHolder.bindingAdapterPosition]
                         if (direction == ItemTouchHelper.RIGHT) {
                             listener.onSubTaskRightSwipe(subTask)

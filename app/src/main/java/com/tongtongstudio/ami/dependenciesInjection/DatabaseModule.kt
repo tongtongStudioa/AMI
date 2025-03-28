@@ -2,8 +2,7 @@ package com.tongtongstudio.ami.dependenciesInjection
 
 import android.app.Application
 import androidx.room.Room
-import com.tongtongstudio.ami.data.MIGRATION_2_3
-import com.tongtongstudio.ami.data.MIGRATION_4_2
+import com.tongtongstudio.ami.data.MIGRATIONS_3_4
 import com.tongtongstudio.ami.data.ThingToDoDatabase
 import dagger.Module
 import dagger.Provides
@@ -23,8 +22,7 @@ object DatabaseModule {
         app: Application,
         callback: ThingToDoDatabase.Callback
     ) = Room.databaseBuilder(app, ThingToDoDatabase::class.java, "thing_to_do_database")
-        .addMigrations(MIGRATION_4_2)
-        .addMigrations(MIGRATION_2_3)
+        .addMigrations(MIGRATIONS_3_4)
         .fallbackToDestructiveMigration()
         .addCallback(callback)
         .build()

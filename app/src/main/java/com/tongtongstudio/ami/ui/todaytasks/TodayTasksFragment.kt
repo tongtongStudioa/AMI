@@ -367,7 +367,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM).format(viewModel.startOfToday)
     }
 
-    override fun onTaskChecked(thingToDo: ThingToDo, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
         if (isChecked) {
             soundPlayer.playSuccessSound()
@@ -387,11 +387,11 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         sharedViewModel.addThingToDo()
     }
 
-    override fun onSubTaskRightSwipe(thingToDo: ThingToDo) {
+    override fun onSubTaskRightSwipe(thingToDo: Task) {
         sharedViewModel.deleteSubTask(thingToDo)
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
+    override fun onSubTaskLeftSwipe(thingToDo: Task) {
         sharedViewModel.updateSubTask(thingToDo)
     }
 

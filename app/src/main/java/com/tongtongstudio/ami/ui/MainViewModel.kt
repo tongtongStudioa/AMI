@@ -56,25 +56,29 @@ class MainViewModel @Inject constructor(
         preferencesManager.updateLayoutMode(layoutMode)
     }
 
-    fun onCheckBoxChanged(thingToDo: ThingToDo, checked: Boolean) = viewModelScope.launch {
-        val updatedTask = thingToDo.updateCheckedState(checked)
+    fun onCheckBoxChanged(thingToDo: Task, checked: Boolean) = viewModelScope.launch {
+        TODO("Not yet implemented")
+        /*val updatedTask = thingToDo.updateCheckedState(checked)
         repository.updateTask(updatedTask)
-        updateParentTask(thingToDo.mainTask.parentTaskId)
+        updateParentTask(thingToDo.mainTask.parentTaskId)*/
     }
 
     fun updateParentTask(parentTaskId: Long?) = viewModelScope.launch {
-        if (parentTaskId != null) {
-            val taskWithSubTasks: ThingToDo = repository.getComposedTask(parentTaskId)
+        TODO("Not yet implemented")
+        /*if (parentTaskId != null) {
+            val taskWithSubTasks: ThingToDo = repository.getParentTask(parentTaskId)
             val isCompleted =
                 taskWithSubTasks.getNbSubTasks() == taskWithSubTasks.countCompletedSubtasks()
             val updatedParentTask = taskWithSubTasks.updateCheckedState(isCompleted)
             repository.updateTask(updatedParentTask)
-        }
+        }*/
     }
 
     fun deleteTask(thingToDo: ThingToDo, context: Context) = viewModelScope.launch {
-        thingToDo.reminders.forEach { reminder ->
-            cancelReminder(context, reminder.id)
+        repository.getTaskReminders(thingToDo.mainTask.id)?.collect { reminders ->
+            reminders.forEach { reminder ->
+                cancelReminder(context, reminder.id)
+            }
         }
         repository.deleteTask(thingToDo.mainTask)
         if (thingToDo.mainTask.parentTaskId != null) {
@@ -114,13 +118,14 @@ class MainViewModel @Inject constructor(
         mainEventChannel.send(SharedEvent.ShowConfirmationMessage(result))
     }
 
-    fun updateSubTask(subTask: ThingToDo) = viewModelScope.launch {
-        mainEventChannel.send(SharedEvent.NavigateToEditScreen(subTask))
+    fun updateSubTask(subTask: Task) = viewModelScope.launch {
+        TODO("Not yet implemented")
+        //mainEventChannel.send(SharedEvent.NavigateToEditScreen(subTask))
     }
 
-    fun deleteSubTask(subTask: ThingToDo) = viewModelScope.launch {
-        repository.deleteTask(subTask.mainTask)
-        mainEventChannel.send(SharedEvent.ShowUndoDeleteTaskMessage(subTask.mainTask))
+    fun deleteSubTask(subTask: Task) = viewModelScope.launch {
+        repository.deleteTask(subTask)
+        mainEventChannel.send(SharedEvent.ShowUndoDeleteTaskMessage(subTask))
     }
 
     fun navigateToTaskInfoScreen(thingToDo: ThingToDo, sharedView: View) = viewModelScope.launch {
@@ -150,10 +155,11 @@ class MainViewModel @Inject constructor(
     }
 
     fun updateRecurringTasksMissed(missedThingToDo: List<ThingToDo>) = viewModelScope.launch {
-        for (thingToDo in missedThingToDo) {
+        TODO("Not yet implemented")
+        /*for (thingToDo in missedThingToDo) {
             val updatedTask = thingToDo.updateCheckedState(false)
             repository.updateTask(updatedTask)
-        }
+        }*/
     }
 
     fun updateTasksUrgency() = viewModelScope.launch {

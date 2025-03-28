@@ -433,15 +433,13 @@ data class ThingToDo(
     )
     val recurrence: TaskRecurrenceWithDays?,
     @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = Task::class)
-    val subTasks: List<ThingToDo>,
+    val subTasks: List<Task>,
     @Relation(parentColumn = "categoryId", entityColumn = "category_id", entity = Category::class)
     val category: Category?,
-    @Relation(parentColumn = "task_id", entityColumn = "parent_id", entity = Reminder::class)
-    val reminders: List<Reminder>,
     @Relation(parentColumn = "task_id", entityColumn = "dependency_task_id", entity = Task::class)
-    val taskDependency: ThingToDo?,
+    val taskDependency: Task?,
     @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = Completion::class)
-    val completions: List<Completion> // Historique d’achèvement
+    val completions: List<Completion> // Achievement historic
 
 ) : Parcelable {
 
@@ -453,7 +451,7 @@ data class ThingToDo(
         return mainTask.type == Nature.PROJECT.name || subTasks.isNotEmpty()
     }
 
-    fun countCompletedSubtasks(): Int {
+    /*fun countCompletedSubtasks(): Int {
         // Count direct sub tasks using last completion
         val directCompleted = subTasks.count { subtask ->
             subtask.completions.lastOrNull()?.isCompleted == true
@@ -461,7 +459,7 @@ data class ThingToDo(
         // Add embedded completed sub tasks
         val nestedCompleted = subTasks.sumOf { it.countCompletedSubtasks() }
         return directCompleted + nestedCompleted
-    }
+    }*/
 
     fun getNbSubTasks(): Int = subTasks.size
 
@@ -612,7 +610,7 @@ data class Reminder(
     val description: String? = null,
     val dueDate: Long,
     val isRecurrent: Boolean,
-    val repetitionFrequency: RecurringTaskInterval? = null,
+    val repetitionFrequency: Long? = null,
     @ColumnInfo(name = "reminder_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0
 ) : Parcelable {

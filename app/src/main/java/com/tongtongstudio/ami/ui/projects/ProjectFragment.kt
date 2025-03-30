@@ -13,8 +13,10 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
@@ -108,81 +110,94 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-            sharedViewModel.mainEvent.collect { event ->
-                when (event) {
-                    is MainViewModel.SharedEvent.NavigateToEditScreen -> {
-                        val action =
-                            ProjectFragmentDirections.actionProjectFragmentToAddEditTaskFragment(
-                                getString(R.string.fragment_title_edit_thing_to_do),
-                                event.thingToDo
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                sharedViewModel.mainEvent.collect { event ->
+                    when (event) {
+                        is MainViewModel.SharedEvent.NavigateToEditScreen -> {
+                            val action =
+                                ProjectFragmentDirections.actionProjectFragmentToAddEditTaskFragment(
+                                    getString(R.string.fragment_title_edit_thing_to_do),
+                                    event.thingToDo
 
-                            )
-                        exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
-                            duration = resources.getInteger(R.integer.middle_duration).toLong()
+                                )
+                            exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition =
+                                MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+                                    duration =
+                                        resources.getInteger(R.integer.middle_duration).toLong()
+                                }
+                            findNavController().navigate(action)
                         }
-                        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
-                            duration = resources.getInteger(R.integer.middle_duration).toLong()
+
+                        is MainViewModel.SharedEvent.NavigateToAddScreen -> {
+                            val action =
+                                ProjectFragmentDirections.actionProjectFragmentToAddEditTaskFragment(
+                                    getString(R.string.fragment_title_add_thing_to_do),
+                                    null
+                                )
+                            exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition =
+                                MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+                                    duration =
+                                        resources.getInteger(R.integer.middle_duration).toLong()
+                                }
+                            findNavController().navigate(action)
                         }
-                        findNavController().navigate(action)
-                    }
-                    is MainViewModel.SharedEvent.NavigateToAddScreen -> {
-                        val action =
-                            ProjectFragmentDirections.actionProjectFragmentToAddEditTaskFragment(
-                                getString(R.string.fragment_title_add_thing_to_do),
-                                null
-                            )
-                        exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
-                            duration = resources.getInteger(R.integer.middle_duration).toLong()
+
+                        is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
+                            val msg = when (event.result) {
+                                ADD_TASK_RESULT_OK -> getString(R.string.task_added)
+                                ADD_DRAFT_TASK_OK -> getString(R.string.draft_task_created)
+                                else -> getString(R.string.task_updated)
+                            }
+                            Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
                         }
-                        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
-                            duration = resources.getInteger(R.integer.middle_duration).toLong()
+
+                        is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
+                            val action =
+                                ProjectFragmentDirections.actionProjectFragmentToTabPageTrackingStats(
+                                    event.task
+                                )
+                            findNavController().navigate(action)
                         }
-                        findNavController().navigate(action)
-                    }
-                    is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
-                        val msg = when (event.result) {
-                            ADD_TASK_RESULT_OK -> getString(R.string.task_added)
-                            ADD_DRAFT_TASK_OK -> getString(R.string.draft_task_created)
-                            else -> getString(R.string.task_updated)
+
+                        is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {
+                            Snackbar.make(
+                                requireView(),
+                                getString(R.string.msg_thing_to_do_deleted),
+                                Snackbar.LENGTH_LONG
+                            )
+                                .setAction(getString(R.string.msg_action_undo)) {
+                                    sharedViewModel.onUndoDeleteClick(event.thingToDo)
+                                }.show()
                         }
-                        Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
-                    }
-                    is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
-                        val action =
-                            ProjectFragmentDirections.actionProjectFragmentToTabPageTrackingStats(
-                                event.task
-                            )
-                        findNavController().navigate(action)
-                    }
-                    is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {
-                        Snackbar.make(
-                            requireView(),
-                            getString(R.string.msg_thing_to_do_deleted),
-                            Snackbar.LENGTH_LONG
-                        )
-                            .setAction(getString(R.string.msg_action_undo)) {
-                                sharedViewModel.onUndoDeleteClick(event.thingToDo)
-                            }.show()
-                    }
-                    is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
-                        val action =
-                            ProjectFragmentDirections.actionProjectFragmentToLocalProjectStatsFragment2(
-                                event.composedTaskData
-                            )
-                        findNavController().navigate(action)
-                    }
-                    is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
-                        val action =
-                            ProjectFragmentDirections.actionProjectFragmentToTabPageTrackingStats(
-                                event.task
-                            )
-                        findNavController().navigate(action)
-                    }
-                    else -> {
-                        // do nothing
-                    }
-                }.exhaustive
+
+                        is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
+                            val action =
+                                ProjectFragmentDirections.actionProjectFragmentToLocalProjectStatsFragment2(
+                                    event.composedTaskData
+                                )
+                            findNavController().navigate(action)
+                        }
+
+                        is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
+                            val action =
+                                ProjectFragmentDirections.actionProjectFragmentToTabPageTrackingStats(
+                                    event.task
+                                )
+                            findNavController().navigate(action)
+                        }
+
+                        else -> {
+                            // do nothing
+                        }
+                    }.exhaustive
+                }
             }
         }
 

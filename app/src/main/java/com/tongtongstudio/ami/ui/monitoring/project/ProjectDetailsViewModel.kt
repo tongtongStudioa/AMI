@@ -2,6 +2,7 @@ package com.tongtongstudio.ami.ui.monitoring.project
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.datatables.Task
@@ -26,7 +27,8 @@ class ProjectDetailsViewModel @Inject constructor(
     private val projectData = state.get<ThingToDo>("project")
     val projectName = projectData?.mainTask?.title
     val description = projectData?.mainTask?.description
-    val subTasks = projectData?.subTasks ?: listOf<Task>()
+    val subTasks = repository.getSubTasks(projectData!!.mainTask.id).asLiveData()
     val workTime = projectData?.mainTask?.currentWorkingTime ?: 0
     val estimatedTime = projectData?.mainTask?.estimatedWorkingTime
+
 }

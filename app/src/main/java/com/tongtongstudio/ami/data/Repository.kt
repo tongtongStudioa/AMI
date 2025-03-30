@@ -294,4 +294,8 @@ class Repository @Inject constructor(
         }
     }
 
+    fun getSubTasks(parentTaskId: Long): Flow<List<Task>> {
+        return taskDao.getSubTasks(parentTaskId)
+    }
+
 }

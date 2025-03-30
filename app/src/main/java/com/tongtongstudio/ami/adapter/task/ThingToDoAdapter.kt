@@ -212,9 +212,11 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                     data.getNbSubTasksCompleted(),
                     data.getNbSubTasks()
                 )
+                val subTaskAdapter = SubTaskAdapter(listener)
+                subTaskAdapter.swapData(data.subTasks)
                 rvSubTasks.apply {
                     layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-                    adapter = SubTaskAdapter(listener, data.subTasks)
+                    adapter = subTaskAdapter
                 }
                 tvCategory.text = data.category?.title
                 tvCategory.isVisible = data.category != null

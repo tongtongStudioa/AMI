@@ -111,10 +111,10 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
             binding.apply {
                 ViewCompat.setTransitionName(binding.root, "shared_element_${data.mainTask.id}")
                 tvTaskName.text = data.mainTask.title
-                checkBoxCompleted.isChecked = data.showCheckedState()
+                checkBoxCompleted.isChecked = data.mainTask.isCompleted
                 checkBoxCompleted.isVisible = !data.mainTask.isDraft
-                tvTaskName.paint.isStrikeThruText = data.showCheckedState()
-                tvCategory.text = data.category?.title ?: "Problem"
+                tvTaskName.paint.isStrikeThruText = data.mainTask.isCompleted
+                tvCategory.text = data.category?.title ?: "null"
                 tvCategory.isVisible = data.category != null
                 tvNumberPriority.text =
                     this@TaskViewHolder.itemView.context.getString(
@@ -124,7 +124,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                 tvNumberPriority.isVisible = data.mainTask.priority != null
                 tvDeadline.isVisible = data.mainTask.dueDate != null
                 divider.isVisible = data.mainTask.dueDate != null || data.mainTask.priority != null
-                /*if (data.isLate()) {
+                /*if (data.dueDate < todayDate && !data.isCompleted) {
                     tvTaskName.setTextColor(
                         ContextCompat.getColor(
                             this@TaskViewHolder.itemView.context,
@@ -196,7 +196,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
         ) {
             binding.apply {
                 tvProjectName.text = data.mainTask.title
-                tvProjectName.paint.isStrikeThruText = data.showCheckedState()
+                tvProjectName.paint.isStrikeThruText = data.mainTask.isCompleted
                 tvDeadline.text = Task.getDateFormatted(data.mainTask.dueDate)
                 tvDeadline.isVisible =
                     Task.getDateFormatted(data.mainTask.dueDate) != null
@@ -209,12 +209,14 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                 )
                 tvNbSubTasks.text = this@TaskComposedViewHolder.itemView.context.getString(
                     R.string.nb_sub_tasks_project,
-                    data.countCompletedSubtasks(),
+                    data.getNbSubTasksCompleted(),
                     data.getNbSubTasks()
                 )
+                val subTaskAdapter = SubTaskAdapter(listener)
+                subTaskAdapter.swapData(data.subTasks)
                 rvSubTasks.apply {
                     layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-                    adapter = ThingToDoAdapter(listener)
+                    adapter = subTaskAdapter
                 }
                 tvCategory.text = data.category?.title
                 tvCategory.isVisible = data.category != null
@@ -234,7 +236,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
 
                     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
 
-                        val subTask: ThingToDo =
+                        val subTask: Task =
                             taskList[bindingAdapterPosition].subTasks[viewHolder.bindingAdapterPosition]
                         if (direction == ItemTouchHelper.RIGHT) {
                             listener.onSubTaskRightSwipe(subTask)

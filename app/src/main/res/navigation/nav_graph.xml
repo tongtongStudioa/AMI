@@ -131,6 +131,12 @@
         <argument
             android:name="@string/thing_to_do"
             app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo" />
+        <action
+            android:id="@+id/action_projectDetailsFragment_to_addEditTaskFragment"
+            app:destination="@id/addEditTaskFragment" />
+        <action
+            android:id="@+id/action_projectDetailsFragment_to_viewPagerTrackingAndStatsFragment"
+            app:destination="@id/viewPagerTrackingAndStatsFragment" />
     </fragment>
     <dialog
         tools:layout="@layout/dialog_custom_time_picker"

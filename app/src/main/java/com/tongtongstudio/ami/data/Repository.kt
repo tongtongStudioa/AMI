@@ -289,10 +289,14 @@ class Repository @Inject constructor(
         TODO("Not yet implemented")
         val taskList = taskDao.getTasksNotCompeted().first()
         for (task in taskList) {
-            val urgency = Task.calculusUrgency(todayDate, task.dueDate!!, task.deadline)
+            val urgency = Task.calculusUrgency(todayDate, task.dueDate, task.deadline)
             val priority = Task.calculatingPriority(task.priority, task.importance, task.urgency)
             taskDao.update(task.copy(urgency = urgency, priority = priority))
         }
+    }
+
+    fun getSubTasks(parentTaskId: Long): Flow<List<Task>> {
+        return taskDao.getSubTasks(parentTaskId)
     }
 
     fun getTaskMaxStreak(id: Long): Int {

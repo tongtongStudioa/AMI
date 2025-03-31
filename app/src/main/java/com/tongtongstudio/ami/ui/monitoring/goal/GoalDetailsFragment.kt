@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.transition.MaterialContainerTransform
 import com.tongtongstudio.ami.R
@@ -53,7 +54,7 @@ class GoalDetailsFragment : Fragment(R.layout.fragment_goal_details) {
             tvGoal.text = viewModel.goal?.targetScore.toString()
             val evaluationsAdapter = EditAttributesAdapter(object : AttributeListener<Assessment> {
                 override fun onItemClicked(attribute: Assessment) {
-                    TODO("Not yet implemented")
+                    //TODO("Not yet implemented")
                 }
 
                 override fun onRemoveCrossClick(attribute: Assessment) {
@@ -77,6 +78,10 @@ class GoalDetailsFragment : Fragment(R.layout.fragment_goal_details) {
         val mainActivity = activity as MainActivity
         // imperative to see option menu and navigation icon (hamburger)
         mainActivity.setSupportActionBar(binding.toolbar)
+        // retrieve app bar configuration : see MainActivity.class
+        val appBarConfiguration = mainActivity.appBarConfiguration
+        // to set hamburger menu work and open drawer layout
+        binding.toolbar.setupWithNavController(findNavController(), appBarConfiguration)
         binding.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp(mainActivity.appBarConfiguration)
         }

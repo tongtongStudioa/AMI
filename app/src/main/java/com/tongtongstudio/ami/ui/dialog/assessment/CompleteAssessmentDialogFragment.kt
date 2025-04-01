@@ -116,7 +116,7 @@ class CompleteAssessmentDialogFragment : DialogFragment() {
 
             // evaluation target targetScore
             tvTargetGoal.text =
-                getString(R.string.target_goal, assessment.targetScore, assessment.unit)
+                getString(R.string.target_goal, assessment.targetGoal, assessment.unit)
         }
     }
 }

@@ -11,9 +11,6 @@ import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.Reminder
 import com.tongtongstudio.ami.data.datatables.Task
-import com.tongtongstudio.ami.data.datatables.TaskRecurrence
-import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
-import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.ui.ADD_DRAFT_TASK_OK
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.EDIT_TASK_RESULT_OK
@@ -31,127 +28,142 @@ class AddEditTaskViewModel @Inject constructor(
     private val state: SavedStateHandle
 ) : ViewModel() {
 
+
     private val addEditChannelEvent = Channel<AddEditTaskEvent>()
     val addEditTaskEvent = addEditChannelEvent.receiveAsFlow()
 
-    val thingToDo = state.get<ThingToDo>("thingToDo")
-    private val _category = MutableLiveData<Category?>(thingToDo?.category)
+    // TODO: change this object in safe args by ThingToDo object
+    val thingToDo = state.get<Task>("thingToDo")
+    private val _category = MutableLiveData<Category?>(null)
     val category: LiveData<Category?>
         get() = _category
-    private val _reminders = MutableLiveData<MutableList<Reminder>>((thingToDo?.reminders)?.toMutableList())
+    private val _reminders = MutableLiveData<MutableList<Reminder>>()
     val reminders: LiveData<MutableList<Reminder>>
         get() = _reminders
 
 
-    val createdDateFormatted = thingToDo?.mainTask?.getCreationDateFormatted()
+    init {
+        viewModelScope.launch {
+            repository.getTaskReminders(thingToDo?.id)?.collect { reminders ->
+                _reminders.value = reminders
+            }
+        }
+        getCategory()
+    }
+
+    private fun getCategory() = viewModelScope.launch {
+        if (thingToDo?.categoryId != null)
+            _category.value = repository.getCategoryById(thingToDo.categoryId)
+    }
+
+    val createdDateFormatted = thingToDo?.getCreationDateFormatted()
 
     var title =
-        state.get<String>("thingToDoName") ?: thingToDo?.mainTask?.title ?: ""
+        state.get<String>("thingToDoName") ?: thingToDo?.title ?: ""
         set(value) {
             field = value
             state["thingToDoName"] = value
         }
 
     var priority: Int? =
-        state.get<Int>("thingToDoPriority") ?: thingToDo?.mainTask?.priority
+        state.get<Int>("thingToDoPriority") ?: thingToDo?.priority
         set(value) {
             field = value
             state["thingToDoPriority"] = value
         }
 
     var categoryId: Long? =
-        state["ThingToDoCategory"] ?: thingToDo?.mainTask?.categoryId
+        state["ThingToDoCategory"] ?: thingToDo?.categoryId
         set(value) {
             field = value
             state["ThingToDoCategory"] = value
         }
 
     var description: String? =
-        state["thingToDoDescription"] ?: thingToDo?.mainTask?.description
+        state["thingToDoDescription"] ?: thingToDo?.description
         set(value) {
             field = value
             state["thingToDoDescription"] = value
         }
 
     var estimatedTime: Long? =
-        state["estimatedWorkingTime"] ?: thingToDo?.mainTask?.estimatedWorkingTime
+        state["estimatedWorkingTime"] ?: thingToDo?.estimatedWorkingTime
         set(value) {
             field = value
             state["estimatedWorkingTime"] = value
         }
 
     var startDate =
-        state.get<Long>("thingToDoStartDate") ?: thingToDo?.mainTask?.startDate
+        state.get<Long>("thingToDoStartDate") ?: thingToDo?.startDate
         set(value) {
             field = value
             state["thingToDoStartDate"] = value
         }
 
     var dueDate =
-        state.get<Long>("dueDate") ?: thingToDo?.mainTask?.dueDate
+        state.get<Long>("dueDate") ?: thingToDo?.dueDate
         set(value) {
             field = value
             state["dueDate"] = value
         }
 
     var deadline =
-        state["thingToDoDeadline"] ?: thingToDo?.mainTask?.deadline
+        state["thingToDoDeadline"] ?: thingToDo?.deadline
         set(value) {
             field = value
             state["thingToDoDeadline"] = value
         }
 
-    var taskRecurrenceWithDays: TaskRecurrenceWithDays? =
-        state["taskRecurrenceWithDays"] ?: thingToDo?.recurrence
+    var recurringTaskInterval =
+        state["recurringTaskInterval"] ?: thingToDo?.repetitionFrequency
         set(value) {
             field = value
-            state["taskRecurrenceWithDays"] = value
+            state["recurringTaskInterval"] = value
         }
 
-    var taskRecurrence: TaskRecurrence? =
-        state["taskRecurrence"] ?: thingToDo?.recurrence?.taskRecurrence
+    var isRecurring = state.get<Boolean>("isRecurring") ?: thingToDo?.isRecurring ?: false
         set(value) {
             field = value
-            state["taskRecurrence"] = value
+            state["isRecurring"] = value
         }
 
     var ttdNature =
-        state.get<String>("thingToDoNature") ?: thingToDo?.mainTask?.type ?: Nature.TASK.name
+        state.get<String>("thingToDoNature") ?: thingToDo?.type ?: Nature.TASK.name
         set(value) {
             field = value
             state["thingToDoNature"] = value
         }
 
-    var taskDependency =
-        state["dependencies"] ?: thingToDo?.taskDependency
+    var dependency =
+        state["dependency"] ?: thingToDo?.dependency
         set(value) {
             field = value
-            state["dependencies"] = value
+            state["dependency"] = value
         }
 
     var skillLevel =
-        state["level"] ?: thingToDo?.mainTask?.skillLevel
+        state["level"] ?: thingToDo?.skillLevel
         set(value) {
             field = value
             state["level"] = value
         }
 
     var importance =
-        state["importance"] ?: thingToDo?.mainTask?.importance
+        state["importance"] ?: thingToDo?.importance
         set(value) {
             field = value
             state["importance"] = value
         }
 
     var urgency =
-        state["urgency"] ?: thingToDo?.mainTask?.urgency
+        state["urgency"] ?: thingToDo?.urgency
         set(value) {
             field = value
             state["urgency"] = value
         }
 
     var projectId: Long? =
-        state["parentId"] ?: thingToDo?.mainTask?.parentTaskId
+        state["parentId"] ?: thingToDo?.parentTaskId
         set(value) {
             field = value
             state["parentId"] = value
@@ -159,7 +171,7 @@ class AddEditTaskViewModel @Inject constructor(
 
     fun onSaveClick(modeExtent: Boolean) {
         thingToDo?.let {
-            updateThingToDo(it.mainTask, modeExtent)
+            updateThingToDo(it, modeExtent)
         } ?: saveThingToDo(modeExtent)
     }
 
@@ -199,7 +211,6 @@ class AddEditTaskViewModel @Inject constructor(
     private fun saveThingToDo(modeExtent: Boolean) = viewModelScope.launch {
         val taskId: Long
         val isDraft = dueDate == null || priority == null
-        // TODO: add new fields : recurrenceId and emotions and dependencies !
         val newThingToDo =
             Task(
                 title = title,
@@ -208,12 +219,14 @@ class AddEditTaskViewModel @Inject constructor(
                 startDate = startDate,
                 type = Nature.TASK.name,
                 isDraft = isDraft,
+                isRecurring = isRecurring,
+                repetitionFrequency = recurringTaskInterval,
                 categoryId = categoryId,
                 parentTaskId = projectId
             )
 
         taskId = if (modeExtent) {
-            urgency = if (isDraft) 1 else Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
+            urgency = Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate, deadline)
             val newThingToDoExtent = newThingToDo.copy(
                 priority = Task.calculatingPriority(priority, importance, urgency),
                 deadline = deadline,
@@ -221,7 +234,7 @@ class AddEditTaskViewModel @Inject constructor(
                 importance = importance,
                 urgency = urgency,
                 estimatedWorkingTime = estimatedTime,
-                dependencyId = taskDependency?.mainTask?.id,
+                dependency = dependency,
                 skillLevel = skillLevel,
                 type = ttdNature
             )
@@ -240,14 +253,14 @@ class AddEditTaskViewModel @Inject constructor(
 
     private fun updateThingToDo(thingToDo: Task, modeExtent: Boolean) =
         viewModelScope.launch {
-            val isDraft = dueDate == null || priority == null
-            // TODO: add new fields : recurrenceId and emotions and dependencies !
             val updatedThingToDo =
                 thingToDo.copy(
                     title = title,
                     priority = priority,
                     dueDate = dueDate,
                     startDate = startDate,
+                    isRecurring = isRecurring,
+                    repetitionFrequency = recurringTaskInterval,
                     parentTaskId = projectId,
                     categoryId = categoryId,
                     isDraft = dueDate == null || priority == null,
@@ -255,7 +268,7 @@ class AddEditTaskViewModel @Inject constructor(
                 )
             if (modeExtent) {
                 urgency =
-                    if (isDraft) 1 else Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate!!, deadline)
+                    Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate, deadline)
                 val updatedThingToDoExtent = updatedThingToDo.copy(
                     priority = Task.calculatingPriority(priority, importance, urgency),
                     deadline = deadline,
@@ -263,7 +276,7 @@ class AddEditTaskViewModel @Inject constructor(
                     importance = importance,
                     urgency = urgency,
                     estimatedWorkingTime = estimatedTime,
-                    dependencyId = taskDependency?.mainTask?.id,
+                    dependency = dependency,
                     skillLevel = skillLevel,
                     type = ttdNature
                 )
@@ -272,8 +285,7 @@ class AddEditTaskViewModel @Inject constructor(
 
             addEditChannelEvent.send(
                 AddEditTaskEvent.NavigateBackWithResult(
-                    // TODO: change this result code for draft thingToDo
-                    if (isDraft) EDIT_TASK_RESULT_OK else EDIT_TASK_RESULT_OK
+                    EDIT_TASK_RESULT_OK
                 )
             )
         }
@@ -291,15 +303,14 @@ class AddEditTaskViewModel @Inject constructor(
     fun addNewReminder(reminderTriggerTime: Long) {
         val newReminder = Reminder(
             dueDate = reminderTriggerTime,
-            // TODO: change this with another migration
-            isRecurrent = false
-            //repetitionFrequency = taskRecurrenceWithDays.taskRecurrence.recurrenceId
+            isRecurrent = isRecurring,
+            repetitionFrequency = recurringTaskInterval
         )
-        if (thingToDo?.mainTask?.id == null) { // is a new thingToDo ?
+        if (thingToDo?.id == null) { // is a new task ?
             val currentReminders = reminders.value ?: mutableListOf()
             currentReminders.add(newReminder)
             _reminders.value = currentReminders
-        } else insertNewReminder(newReminder.copy(parentId = thingToDo.mainTask.id))
+        } else insertNewReminder(newReminder.copy(parentId = thingToDo.id))
     }
 
     fun removeReminder(attribute: Reminder) = viewModelScope.launch {

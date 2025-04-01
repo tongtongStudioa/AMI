@@ -2,9 +2,10 @@ package com.tongtongstudio.ami.data.datatables
 
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.tongtongstudio.ami.data.MIGRATION_2_3
+import com.tongtongstudio.ami.data.Migrations.MIGRATION_2_3
 import com.tongtongstudio.ami.data.ThingToDoDatabase
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertTrue

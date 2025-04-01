@@ -1,5 +1,6 @@
 package com.tongtongstudio.ami.ui.habits
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
@@ -50,6 +51,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         }
         super.onCreate(savedInstanceState)
     }
+    @SuppressLint("UnsafeRepeatOnLifecycleDetector")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -81,7 +83,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
                 override fun actionLeftSwiped(thingToDo: ThingToDo) {
                     //update thingToDo
-                    sharedViewModel.updateTask(thingToDo)
+                    sharedViewModel.updateTask(thingToDo.mainTask)
                 }
             }
             ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
@@ -221,7 +223,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         }
     }
 
-    override fun onTaskChecked(thingToDo: ThingToDo, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
@@ -229,7 +231,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
-    override fun onTaskClick(thingToDo: ThingToDo, itemView: View) {
+    override fun onTaskClick(thingToDo: Task, itemView: View) {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 
@@ -239,11 +241,11 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         sharedViewModel.addThingToDo()
     }
 
-    override fun onSubTaskRightSwipe(thingToDo: ThingToDo) {
+    override fun onSubTaskRightSwipe(thingToDo: Task) {
         TODO("Not yet implemented")
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
+    override fun onSubTaskLeftSwipe(thingToDo: Task) {
         TODO("Not yet implemented")
     }
 }

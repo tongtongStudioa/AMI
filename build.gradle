@@ -9,24 +9,24 @@ buildscript {
 
         // App dependencies
         appCompatVersion = '1.7.0'
-        constraintLayoutVersion = '2.2.0'
+        constraintLayoutVersion = '2.2.1'
         coroutinesVersion = '1.10.1'
-        dataStoreVersion = '1.1.1'
+        dataStoreVersion = '1.1.4'
         espressoVersion = '3.6.1'
-        fragmentVersion = '1.8.5'
+        fragmentVersion = '1.8.6'
         gradleVersion = '8.7.3'
         hiltAndroidXVersion = '1.0.0'
-        hiltVersion = '2.54'
+        hiltVersion = '2.56.1'
         junitVersion = '4.13.2'
-        kotlinVersion = '2.1.0'
-        ktxVersion = '1.13.0'
+        kotlinVersion = '2.1.20'
+        ktxVersion = '1.15.0'
         lifecycleVersion = '2.8.7'
         materialVersion = '1.12.0'
-        navigationVersion = '2.8.5'
+        navigationVersion = '2.8.9'
         roomVersion = '2.6.1'
         testExtJunitVersion = '1.2.1'
         multidex_version = '2.0.1'
-        ksp_version = '2.1.0-1.0.29'
+        ksp_version = '2.1.20-1.0.32'
     }
 
     repositories {
@@ -40,6 +40,8 @@ buildscript {
         classpath "com.android.tools.build:gradle:$gradleVersion"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigationVersion"
+        classpath "androidx.room:room-gradle-plugin:$roomVersion"
+        classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:$ksp_version"
         //classpath "com.google.dagger:hilt-android-gradle-plugin:$hiltVersion"
     }
 }

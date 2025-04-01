@@ -51,14 +51,14 @@ class GoalDetailsFragment : Fragment(R.layout.fragment_goal_details) {
             goalDueDate.text = if (viewModel.goal?.dueDate != null)
                 DateFormat.getDateInstance().format(viewModel.goal?.dueDate)
             else getString(R.string.no_information)
-            tvGoal.text = viewModel.goal?.targetScore.toString()
+            tvGoal.text = viewModel.goal?.targetGoal.toString()
             val evaluationsAdapter = EditAttributesAdapter(object : AttributeListener<Assessment> {
                 override fun onItemClicked(attribute: Assessment) {
                     //TODO("Not yet implemented")
                 }
 
                 override fun onRemoveCrossClick(attribute: Assessment) {
-                    TODO("Not yet implemented")
+                    //TODO("Not yet implemented")
                 }
 
             }) { binding, assessment ->

@@ -101,7 +101,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
 
                 override fun actionLeftSwiped(thingToDo: ThingToDo) {
                     //update thingToDo
-                    sharedViewModel.updateTask(thingToDo)
+                    sharedViewModel.updateTask(thingToDo.mainTask)
                 }
             }
             ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
@@ -282,7 +282,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
         }
     }
 
-    override fun onTaskChecked(thingToDo: ThingToDo, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
@@ -290,7 +290,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
-    override fun onTaskClick(thingToDo: ThingToDo, itemView: View) {
+    override fun onTaskClick(thingToDo: Task, itemView: View) {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 
@@ -299,11 +299,11 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
         sharedViewModel.addThingToDo()
     }
 
-    override fun onSubTaskRightSwipe(thingToDo: ThingToDo) {
+    override fun onSubTaskRightSwipe(thingToDo: Task) {
         //TODO("Not yet implemented")
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
+    override fun onSubTaskLeftSwipe(thingToDo: Task) {
         //TODO("Not yet implemented")
     }
 }

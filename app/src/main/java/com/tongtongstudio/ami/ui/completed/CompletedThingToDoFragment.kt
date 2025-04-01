@@ -174,7 +174,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         binding.toolbar.subtitle = getString(R.string.completed_tasks_subtitle)
     }
 
-    override fun onTaskChecked(thingToDo: ThingToDo, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
@@ -182,7 +182,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
-    override fun onTaskClick(thingToDo: ThingToDo, itemView: View) {
+    override fun onTaskClick(thingToDo: Task, itemView: View) {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 
@@ -190,11 +190,11 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         // do nothing
     }
 
-    override fun onSubTaskRightSwipe(thingToDo: ThingToDo) {
+    override fun onSubTaskRightSwipe(thingToDo: Task) {
         sharedViewModel.deleteSubTask(thingToDo)
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
+    override fun onSubTaskLeftSwipe(thingToDo: Task) {
         sharedViewModel.updateSubTask(thingToDo)
     }
 

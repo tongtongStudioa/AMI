@@ -4,10 +4,21 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-parcelize'
     id 'androidx.navigation.safeargs.kotlin'
-    id 'com.google.devtools.ksp' version "$ksp_version"
+    id 'com.google.devtools.ksp'
+    id 'androidx.room'
 }
 
 android {
+    room {
+        schemaDirectory "C:/db_app_ami_schemas"
+    }
+
+    /*sourceSets {
+        // Adds exported schema location as test app assets.
+        //getByName("androidTest").assets.srcDir("$projectDir/schemas")
+        androidTest.assets.srcDirs += files("C:/db_app_ami_schemas".toString())
+    }*/
+
     compileSdk 35
 
     defaultConfig {
@@ -19,6 +30,12 @@ android {
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         versionNameSuffix 'alpha'
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/db_schemas".toString()]
+            }
+        }
     }
 
     buildTypes {
@@ -42,10 +59,7 @@ android {
     }
     namespace 'com.tongtongstudio.ami'
     buildToolsVersion '35.0.0'
-    /*dependenciesInfo {
-        includeInApk true
-        includeInBundle true
-    }*/
+
 }
 
 dependencies {
@@ -53,6 +67,7 @@ dependencies {
     // Tutorial guide
     implementation 'uk.co.samuelwall:material-tap-target-prompt:3.3.2'
     implementation 'androidx.room:room-testing:2.6.1'
+    implementation 'androidx.databinding:databinding-adapters:8.9.1'
 
     // Ksp dependency
     ksp "com.google.devtools.ksp:symbol-processing-api:$ksp_version"
@@ -101,6 +116,8 @@ dependencies {
     implementation "androidx.room:room-runtime:$roomVersion"
     ksp "androidx.room:room-compiler:$roomVersion"
     implementation "androidx.room:room-ktx:$roomVersion"
+    // Test helpers
+    androidTestImplementation "androidx.room:room-testing:$roomVersion"
 
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"

@@ -78,7 +78,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
 
             override fun actionLeftSwiped(thingToDo: ThingToDo) {
                 //update thingToDo
-                sharedViewModel.updateTask(thingToDo)
+                sharedViewModel.updateTask(thingToDo.mainTask)
             }
         }
         ItemTouchHelper(callback).attachToRecyclerView(binding.draftRecyclerView)
@@ -159,7 +159,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
         }
     }
 
-    override fun onTaskChecked(thingToDo: ThingToDo, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
         // do nothing
     }
 
@@ -167,7 +167,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
-    override fun onTaskClick(thingToDo: ThingToDo, itemView: View) {
+    override fun onTaskClick(thingToDo: Task, itemView: View) {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 
@@ -176,11 +176,11 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
         sharedViewModel.addThingToDo()
     }
 
-    override fun onSubTaskRightSwipe(thingToDo: ThingToDo) {
+    override fun onSubTaskRightSwipe(thingToDo: Task) {
         sharedViewModel.deleteSubTask(thingToDo)
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
+    override fun onSubTaskLeftSwipe(thingToDo: Task) {
         sharedViewModel.updateSubTask(thingToDo)
     }
 

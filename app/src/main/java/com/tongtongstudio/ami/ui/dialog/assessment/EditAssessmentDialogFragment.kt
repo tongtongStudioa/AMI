@@ -217,7 +217,7 @@ class EditAssessmentDialogFragment : DialogFragment() {
             parentAssessmentId = parentObjectiveId,
             title = title!!,
             description = description,
-            targetScore = goal!!.toFloat(),
+            targetGoal = goal!!.toFloat(),
             unit = unit!!.toString(),
             type = AssessmentType.QUANTITY.name,
             dueDate = dueDate!!

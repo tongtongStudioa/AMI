@@ -109,7 +109,7 @@ internal class TtdTest {
     @Test
     fun getAchievementRate_allTasks_correctRate() = runBlocking {
 
-        val resultingRate = taskDao.getTotalAchievementRate()
+        val resultingRate = taskDao.getAchievementRate()
 
         // actually rate must be 50.0 (%)
         assertEquals(50.0F, resultingRate)

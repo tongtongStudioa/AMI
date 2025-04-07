@@ -112,10 +112,10 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
             binding.apply {
                 ViewCompat.setTransitionName(binding.root, "shared_element_${data.mainTask.id}")
                 tvTaskName.text = data.mainTask.title
-                checkBoxCompleted.isChecked = data.mainTask.isCompleted
+                checkBoxCompleted.isChecked = data.showCheckedState()
                 checkBoxCompleted.isVisible = !data.mainTask.isDraft
-                tvTaskName.paint.isStrikeThruText = data.mainTask.isCompleted
-                tvCategory.text = data.category?.title ?: "null"
+                tvTaskName.paint.isStrikeThruText = data.showCheckedState()
+                tvCategory.text = data.category?.title ?: "Problem"
                 tvCategory.isVisible = data.category != null
                 tvNumberPriority.text =
                     this@TaskViewHolder.itemView.context.getString(
@@ -125,7 +125,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                 tvNumberPriority.isVisible = data.mainTask.priority != null
                 tvDeadline.isVisible = data.mainTask.dueDate != null
                 divider.isVisible = data.mainTask.dueDate != null || data.mainTask.priority != null
-                /*if (data.dueDate < todayDate && !data.isCompleted) {
+                /*if (data.isLate()) {
                     tvTaskName.setTextColor(
                         ContextCompat.getColor(
                             this@TaskViewHolder.itemView.context,
@@ -198,7 +198,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
         ) {
             binding.apply {
                 tvProjectName.text = data.mainTask.title
-                tvProjectName.paint.isStrikeThruText = data.mainTask.isCompleted
+                tvProjectName.paint.isStrikeThruText = data.showCheckedState()
                 tvDeadline.text = Task.getDateFormatted(data.mainTask.dueDate)
                 tvDeadline.isVisible =
                     Task.getDateFormatted(data.mainTask.dueDate) != null
@@ -209,11 +209,12 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                     R.string.importance_thing_to_do,
                     data.mainTask.priority
                 )
-                tvNbSubTasks.text = this@TaskComposedViewHolder.itemView.context.getString(
+                // TODO: show count completed subtasks
+                /*tvNbSubTasks.text = this@TaskComposedViewHolder.itemView.context.getString(
                     R.string.nb_sub_tasks_project,
-                    data.getNbSubTasksCompleted(),
+                    data.countCompletedSubtasks(),
                     data.getNbSubTasks()
-                )
+                )*/
                 val subTaskAdapter = SubTaskAdapter(listener)
                 subTaskAdapter.swapData(data.subTasks)
                 rvSubTasks.apply {

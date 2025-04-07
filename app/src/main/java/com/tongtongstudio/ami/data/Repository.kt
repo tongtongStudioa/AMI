@@ -160,11 +160,11 @@ class Repository @Inject constructor(
     }
 
     fun getTasksAchievementRate(categoryId: Long? = null): Flow<Float> {
-        return if (categoryId != null) taskDao.getCategoryTasksAchievementRate(categoryId) else taskDao.getTotalAchievementRate()
+        return if (categoryId != null) taskDao.getAchievementRateByCategory(categoryId) else taskDao.getAchievementRate()
     }
 
     fun getProjectsAchievementRate(categoryId: Long? = null): Flow<Float> {
-        return if (categoryId != null) taskDao.getCategoryProjectsAchievementRate(categoryId) else taskDao.getAllProjectsAchievementRate()
+        return if (categoryId != null) taskDao.getProjectsAchievementRateByCategory(categoryId) else taskDao.getProjectsAchievementRate()
     }
 
     fun getCompletedProjectsCount(categoryId: Long? = null): Flow<Int> {
@@ -179,7 +179,7 @@ class Repository @Inject constructor(
         endDate: Long
     ): Flow<List<TtdAchieved?>?> {
         return if (categoryId != null)
-            taskDao.getCompletedCategoryTasksByPeriod(categoryId, startDate, endDate)
+            taskDao.getCompletedTasksByPeriodAndCategory(categoryId, startDate, endDate)
         else taskDao.getCompletedTasksByPeriod(startDate, endDate)
     }
 
@@ -193,7 +193,7 @@ class Repository @Inject constructor(
         startDate: Long,
         endDate: Long
     ): Flow<List<TtdAchieved?>?> {
-        return if (categoryId != null) taskDao.getCompletedCategoryTasksByPeriod(
+        return if (categoryId != null) taskDao.getCompletedTasksByPeriodAndCategory(
             categoryId,
             startDate,
             endDate
@@ -211,7 +211,7 @@ class Repository @Inject constructor(
     }
 
     private fun getTimeWorkedByTask(categoryId: Long): Flow<List<TimeWorkedDistribution>> {
-        return taskDao.getRateTimeWorkedPerTask(categoryId)
+        return taskDao.getTimeWorkedPerTask(categoryId)
     }
 
     fun getAccuracyRateEstimation(
@@ -256,7 +256,7 @@ class Repository @Inject constructor(
     }
 
     suspend fun getComposedTask(parentTaskId: Long): ThingToDo {
-        return taskDao.getComposedTask(parentTaskId)
+        return taskDao.getParentTask(parentTaskId)
     }
 
     fun getGlobalGoals(): Flow<List<Assessment>> {
@@ -286,8 +286,8 @@ class Repository @Inject constructor(
     }
 
     suspend fun updateTasksUrgency(todayDate: Long) {
-        //TODO("Not yet implemented")
-        val taskList = taskDao.getTasksNotCompeted().first()
+        TODO("Not yet implemented")
+        val taskList = taskDao.getTasksNotCompleted().first()
         for (task in taskList) {
             val urgency = Task.calculusUrgency(todayDate, task.dueDate, task.deadline)
             val priority = Task.calculatingPriority(task.priority, task.importance, task.urgency)

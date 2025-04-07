@@ -27,7 +27,6 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialElevationScale
 import com.google.android.material.transition.MaterialFadeThrough
@@ -43,22 +42,16 @@ import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.notification.SoundPlayer
 import com.tongtongstudio.ami.ui.ADD_DRAFT_TASK_OK
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
-import com.tongtongstudio.ami.ui.KEY_APP_BAR
-import com.tongtongstudio.ami.ui.KEY_DIALOG_SHOWN
-import com.tongtongstudio.ami.ui.KEY_TUTORIAL_FAB_ADD_TASK
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.ui.PREF_TUTORIAL
 import com.tongtongstudio.ami.ui.todaytasks.TodayTasksFragmentDirections.Companion.actionTodayTasksFragmentToAddEditTaskFragment
-import com.tongtongstudio.ami.ui.todaytasks.TodayTasksFragmentDirections.Companion.actionTodayTasksFragmentToTabPageTrackingStats
-import com.tongtongstudio.ami.util.AppTutorial
-import com.tongtongstudio.ami.util.TutorialStep
+import com.tongtongstudio.ami.util.TutorialTrigger
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import kotlin.properties.Delegates
 
 
 @AndroidEntryPoint
@@ -72,14 +65,15 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     private var menuProvider: MenuProvider? = null
 
     private lateinit var sharedPreferences: SharedPreferences
-    private var isWelcomeDialogShown by Delegates.notNull<Boolean>()
-    private lateinit var tutorial: AppTutorial
+    private var tutorialTrigger: TutorialTrigger? = null
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        tutorialTrigger = context as? TutorialTrigger
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         sharedPreferences =
             requireActivity().getSharedPreferences(PREF_TUTORIAL, Context.MODE_PRIVATE)
-        isWelcomeDialogShown = sharedPreferences.getBoolean(KEY_DIALOG_SHOWN, false)
-        tutorial = AppTutorial(requireActivity(), sharedPreferences)
         enterTransition = MaterialFadeThrough().apply {
             duration = resources.getInteger(R.integer.middle_duration).toLong()
         }
@@ -106,25 +100,6 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         mainTaskAdapter = ThingToDoAdapter(this)
         soundPlayer = SoundPlayer(requireContext())
 
-        val listTutorialStep = listOf(
-            TutorialStep(
-                KEY_APP_BAR, binding.toolbar.rootView,
-                getString(R.string.primary_text_tuto_step1_frag1),
-                getString(R.string.secondary_text_tuto_step1_frag1)
-            ),
-            TutorialStep(
-                KEY_TUTORIAL_FAB_ADD_TASK, binding.fabAddTask,
-                getString(R.string.primary_text_tuto_step2_frag1),
-                getString(R.string.secondary_text_tuto_step2_frag1)
-            ),
-        )
-
-        if (!isWelcomeDialogShown) {
-            showWelcomeDialog(requireContext()) {
-                tutorial.startTutorialSequence(listTutorialStep)
-            }
-            sharedPreferences.edit().putBoolean(KEY_DIALOG_SHOWN, true).apply()
-        }
 
         // implement UI
         binding.apply {
@@ -145,12 +120,12 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 requireContext()
             ) {
                 override fun actionOnRightSwiped(thingToDo: ThingToDo) {
-                    // delete thingToDo
+                    // delete task
                     sharedViewModel.deleteTask(thingToDo, requireContext())
                 }
 
                 override fun actionLeftSwiped(thingToDo: ThingToDo) {
-                    //update thingToDo
+                    //update task
                     sharedViewModel.updateTask(thingToDo.mainTask)
                 }
             }
@@ -183,9 +158,9 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                     when (event) {
                         is MainViewModel.SharedEvent.NavigateToEditScreen -> {
                             val action =
-                                actionTodayTasksFragmentToAddEditTaskFragment(
+                                TodayTasksFragmentDirections.actionTodayTasksFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
-                                    event.thingToDo
+                                    event.task
                                 )
                             findNavController().navigate(action)
                         }
@@ -228,7 +203,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                         }
                         is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
                             val action =
-                                actionTodayTasksFragmentToTabPageTrackingStats(
+                                TodayTasksFragmentDirections.actionTodayTasksFragmentToTabPageTrackingStats(
                                     event.task
                                 )
                             val extras =
@@ -244,7 +219,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                         is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
                             val action =
                                 TodayTasksFragmentDirections.actionTodayTasksFragmentToLocalProjectStatsFragment2(
-                                    event.composedTaskData
+                                    event.project
                                 )
                             findNavController().navigate(action)
                         }
@@ -328,16 +303,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
 
-    private fun showWelcomeDialog(context: Context, onPositiveClick: () -> Unit) {
-        val dialog = MaterialAlertDialogBuilder(context)
-            .setTitle(getString(R.string.welcome_title_msg))
-            .setMessage(getString(R.string.welcom_msg))
-            .setPositiveButton(getString(R.string.start_the_tutorial)) { _, _ -> onPositiveClick() }
-            .setNegativeButton(getString(R.string.skip), null)
-            .create()
-        dialog.show()
+        tutorialTrigger?.triggerTutorialFor(this)
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout
@@ -374,16 +341,16 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         }
     }
 
-    override fun onComposedTaskClick(thingToDo: ThingToDo) {
+    override fun onProjectClick(thingToDo: ThingToDo) {
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
     override fun onTaskClick(thingToDo: Task, itemView: View) {
-        sharedViewModel.navigateToTaskInfoScreen(thingToDo, itemView)
+        sharedViewModel.navigateToTaskDetailsAndTrackScreen(thingToDo, itemView)
     }
 
-    override fun onProjectAddClick(composedTask: ThingToDo) {
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
+    override fun onProjectAddClick(thingToDo: ThingToDo) {
+        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.mainTask.id))
         sharedViewModel.addThingToDo()
     }
 

@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.tongtongstudio.ami.data.datatables.Assessment
+import com.tongtongstudio.ami.data.datatables.Task
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -28,4 +29,10 @@ interface AssessmentDao {
 
     @Query("SELECT * FROM Assessment WHERE parent_assessment_id is NULL ORDER BY assessment_due_date")
     fun getGlobalGoals(): Flow<List<Assessment>>
+
+    @Query("SELECT * FROM assessment")
+    fun getAllAssessments(): Flow<List<Assessment>>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAssessments(assessments: List<Assessment>)
 }

@@ -2,6 +2,7 @@ package com.tongtongstudio.ami.data.dao
 
 import androidx.room.*
 import com.tongtongstudio.ami.data.datatables.Reminder
+import com.tongtongstudio.ami.data.datatables.Task
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -20,4 +21,10 @@ interface ReminderDao {
 
     @Delete
     suspend fun delete(reminder: Reminder)
+
+    @Query("SELECT * FROM reminder")
+    fun getAllReminders(): Flow<List<Reminder>>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertReminders(reminders: List<Reminder>)
 }

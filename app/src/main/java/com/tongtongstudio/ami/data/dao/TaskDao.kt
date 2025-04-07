@@ -266,7 +266,7 @@ interface TaskDao {
 
     /**
      * Get accuracy rate of estimated work time for all tasks completed.
-     * If the current working time is equal to estimated time +- errorPercent so the thingToDo's time work is well estimated.
+     * If the current working time is equal to estimated time +- errorPercent so the task's time work is well estimated.
      */
     @Query(
         "SELECT " +
@@ -404,7 +404,7 @@ interface TaskDao {
     suspend fun insert(task: Task): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertTasks(listSubTasks: List<Task>)
+    suspend fun insertTasks(tasks: List<Task>)
 
     @Update
     suspend fun update(task: Task)
@@ -453,4 +453,6 @@ interface TaskDao {
     @Query("SELECT * FROM task_table WHERE isCompleted = 0")
     fun getTasksNotCompeted(): Flow<List<Task>>
 
+    @Query("SELECT * FROM task_table")
+    fun getAllTasks() : Flow<List<Task>>
 }

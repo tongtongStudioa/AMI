@@ -1,5 +1,6 @@
 package com.tongtongstudio.ami.data.datatables
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
@@ -16,13 +17,13 @@ import androidx.room.ForeignKey.Companion.CASCADE
         ),
         ForeignKey(
             entity = DaysOfWeek::class,
-            parentColumns = ["dayId"],
+            parentColumns = ["day_id"],
             childColumns = ["dayId"],
             onDelete = CASCADE
         )
     ]
 )
 data class TaskRecurrenceDaysCrossRef(
-    val recurrenceId: Long,
-    val dayId: Int
+    @ColumnInfo(name = "recurrenceId") val recurrenceId: Long,
+    @ColumnInfo(name = "dayId") val dayId: Int
 )

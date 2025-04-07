@@ -3,6 +3,7 @@ package com.tongtongstudio.ami.data.dao
 import androidx.room.*
 import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.CategoryTasks
+import com.tongtongstudio.ami.data.datatables.Task
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -32,4 +33,10 @@ interface CategoryDao {
 
     @Delete
     suspend fun delete(category: Category)
+
+    @Query("SELECT * FROM category")
+    fun getAllCategories(): Flow<List<Category>>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertCategories(categories: List<Category>)
 }

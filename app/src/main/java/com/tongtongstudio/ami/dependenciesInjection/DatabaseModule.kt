@@ -2,8 +2,8 @@ package com.tongtongstudio.ami.dependenciesInjection
 
 import android.app.Application
 import androidx.room.Room
-import com.tongtongstudio.ami.data.Migrations.MIGRATION_2_3
-import com.tongtongstudio.ami.data.Migrations.MIGRATION_4_2
+import com.tongtongstudio.ami.data.MIGRATION_2_3
+import com.tongtongstudio.ami.data.MIGRATION_4_2
 import com.tongtongstudio.ami.data.ThingToDoDatabase
 import dagger.Module
 import dagger.Provides

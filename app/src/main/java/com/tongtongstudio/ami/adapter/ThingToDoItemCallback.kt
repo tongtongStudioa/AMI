@@ -45,11 +45,11 @@ abstract class ThingToDoItemCallback(
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
         val thingToDo = adapter.getTaskList()[viewHolder.absoluteAdapterPosition]
         if (direction == ItemTouchHelper.RIGHT) {
-            // delete thingToDo
+            // delete task
             adapter.notifyItemRemoved(viewHolder.absoluteAdapterPosition)
             actionOnRightSwiped(thingToDo)
         } else if (direction == ItemTouchHelper.LEFT) {
-            // edit thingToDo
+            // edit task
             adapter.notifyItemChanged(viewHolder.absoluteAdapterPosition)
             actionLeftSwiped(thingToDo)
         }

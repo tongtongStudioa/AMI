@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.WorkSession
 import kotlinx.coroutines.flow.Flow
 
@@ -26,4 +27,10 @@ interface WorkSessionDao {
 
     @Query("SELECT SUM(duration) FROM worksession WHERE parentTaskId = :taskId")
     fun getTaskTimeWorked(taskId: Long): Flow<Long>
+
+    @Query("SELECT * FROM worksession")
+    fun getAllWorkSessions(): Flow<List<WorkSession>>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertWorkSessions(workSessions: List<WorkSession>)
 }

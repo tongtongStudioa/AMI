@@ -75,8 +75,8 @@ data class TaskRecurrenceWithDays(
     val daysOfWeek: List<DaysOfWeek> // days associate
 ) : Parcelable {
     /**
-     * Update recurring thingToDo depending with thingToDo's recurrence characteristics (delay, repetition frequency, etc.)
-     * @param oldDueDate : old thingToDo due date
+     * Update recurring task depending with task's recurrence characteristics (delay, repetition frequency, etc.)
+     * @param oldDueDate : old task due date
      * @param checked : checked state for automatic update
      * @return new due date
      */
@@ -132,7 +132,7 @@ data class TaskRecurrenceWithDays(
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
             todayTimeInMillis = timeInMillis
-            // Set the new due date to the next occurrence of the thingToDo's due day
+            // Set the new due date to the next occurrence of the task's due day
             timeInMillis = oldDueDate
             do {
                 when (taskRecurrence.frequency.lowercase()) {

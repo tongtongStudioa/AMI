@@ -111,7 +111,7 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
                             val action =
                                 ProjectDetailsFragmentDirections.actionProjectDetailsFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
-                                    event.thingToDo
+                                    event.task
 
                                 )
                             exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
@@ -223,16 +223,16 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
         }
     }
 
-    override fun onComposedTaskClick(thingToDo: ThingToDo) {
+    override fun onProjectClick(thingToDo: ThingToDo) {
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
     override fun onTaskClick(thingToDo: Task, itemView: View) {
-        sharedViewModel.navigateToTaskInfoScreen(thingToDo, itemView)
+        sharedViewModel.navigateToTaskDetailsAndTrackScreen(thingToDo, itemView)
     }
 
-    override fun onProjectAddClick(composedTask: ThingToDo) {
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
+    override fun onProjectAddClick(thingToDo: ThingToDo) {
+        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.mainTask.id))
         sharedViewModel.addThingToDo()
     }
 

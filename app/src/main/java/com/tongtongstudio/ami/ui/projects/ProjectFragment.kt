@@ -80,12 +80,12 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                 requireContext()
             ) {
                 override fun actionOnRightSwiped(thingToDo: ThingToDo) {
-                    // delete thingToDo
+                    // delete task
                     sharedViewModel.deleteTask(thingToDo, requireContext())
                 }
 
                 override fun actionLeftSwiped(thingToDo: ThingToDo) {
-                    //update thingToDo
+                    //update task
                     sharedViewModel.updateTask(thingToDo.mainTask)
                 }
             }
@@ -118,7 +118,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                             val action =
                                 ProjectFragmentDirections.actionProjectFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
-                                    event.thingToDo
+                                    event.task
 
                                 )
                             exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
@@ -158,14 +158,6 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                             Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
                         }
 
-                        is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
-                            val action =
-                                ProjectFragmentDirections.actionProjectFragmentToTabPageTrackingStats(
-                                    event.task
-                                )
-                            findNavController().navigate(action)
-                        }
-
                         is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {
                             Snackbar.make(
                                 requireView(),
@@ -180,7 +172,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                         is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
                             val action =
                                 ProjectFragmentDirections.actionProjectFragmentToLocalProjectStatsFragment2(
-                                    event.composedTaskData
+                                    event.project
                                 )
                             findNavController().navigate(action)
                         }
@@ -277,7 +269,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
-    override fun onComposedTaskClick(thingToDo: ThingToDo) {
+    override fun onProjectClick(thingToDo: ThingToDo) {
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
@@ -285,9 +277,9 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 
-    override fun onProjectAddClick(composedTask: ThingToDo) {
-        // TODO: create another event for sub thingToDo add action which take composed thingToDo as argument
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
+    override fun onProjectAddClick(thingToDo: ThingToDo) {
+        // TODO: create another event for sub task add action which take composed task as argument
+        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.mainTask.id))
         sharedViewModel.addThingToDo()
     }
 

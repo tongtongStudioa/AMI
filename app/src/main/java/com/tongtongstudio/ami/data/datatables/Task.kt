@@ -43,34 +43,58 @@ data class Task(
     val priority: Int?,
     @ColumnInfo(name = "task_due_date")
     val dueDate: Long?, // when the task must be complete (to get ahead of the deadline)
+    @ColumnInfo(defaultValue = "NULL")
     val startDate: Long? = null, // when the task or the project start
+    @ColumnInfo(defaultValue = "NULL")
     val deadline: Long? = null, // to have a vision of the main targetGoal (exam's date, project's end, etc.)
+    @ColumnInfo(defaultValue = "NULL")
     val description: String? = null,
+    @ColumnInfo(defaultValue = "NULL")
     val type: String? = null,
+    @ColumnInfo(defaultValue = "NULL")
     val importance: Int? = null, // task's impact on the smooth running of daily life
+    @ColumnInfo(defaultValue = "NULL")
     val urgency: Int? = null,
+    @ColumnInfo(defaultValue = "0")
     val isDraft: Boolean = false,
 
+    @ColumnInfo(defaultValue = "0")
     val isCompleted: Boolean = false,
+    @ColumnInfo(defaultValue = "NULL")
     val completionDate: Long? = null,
+    @ColumnInfo(defaultValue = "NULL")
     val completedOnTime: Boolean? = null,
+    @ColumnInfo(defaultValue = "NULL")
     val estimatedWorkingTime: Long? = null,
+    @ColumnInfo(defaultValue = "NULL")
     val currentWorkingTime: Long? = null,
+    @ColumnInfo(defaultValue = "0")
     val isRecurring: Boolean = false,
+    @ColumnInfo(defaultValue = "0")
     val currentStreak: Int = 0,
+    @ColumnInfo(defaultValue = "0")
     val maxStreak: Int = 0,
+    @ColumnInfo(defaultValue = "NULL")
     val repetitionFrequency: RecurringTaskInterval? = null,
+    @ColumnInfo(defaultValue = "0")
     val totalRepetitionCount: Int = 0,
+    @ColumnInfo(defaultValue = "0")
     val timesMissed: Int = 0,
+    @ColumnInfo(defaultValue = "0")
     val successCount: Int = 0, // achievements number for recurrent tasks
+    @ColumnInfo(defaultValue = "NULL")
     val comment: String? = null,
+    @ColumnInfo(defaultValue = "NULL")
     val dependency: Boolean? = null, // dependency on other people
+    @ColumnInfo(defaultValue = "NULL")
     val skillLevel: Int? = null, // task mastery level posses
+    @ColumnInfo(defaultValue = "(strftime('%s', 'now') * 1000)")
     val creationDate: Long = System.currentTimeMillis(),
     @ColumnInfo(name = "task_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @ColumnInfo(defaultValue = "NULL")
     val categoryId: Long? = null,
-    @ColumnInfo(name = "parent_task_id")
+    @ColumnInfo(name = "parent_task_id", defaultValue = "NULL")
     val parentTaskId: Long? = null,
 ) : Parcelable {
 

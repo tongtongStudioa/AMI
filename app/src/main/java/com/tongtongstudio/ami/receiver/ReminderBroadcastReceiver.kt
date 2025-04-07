@@ -22,7 +22,7 @@ const val REMINDER_ID = "reminder_id"
 class ReminderBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        val taskName = intent?.getStringExtra(TASK_NAME_KEY) ?: "thingToDo"
+        val taskName = intent?.getStringExtra(TASK_NAME_KEY) ?: "task"
         val reminderDueDate =
             intent?.getLongExtra(REMINDER_DUE_DATE, Calendar.getInstance().timeInMillis)
                 ?: Calendar.getInstance().timeInMillis

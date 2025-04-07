@@ -1,10 +1,11 @@
 package com.tongtongstudio.ami.data
 
 import android.text.format.DateUtils.DAY_IN_MILLIS
-import androidx.databinding.adapters.Converters
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tongtongstudio.ami.data.dao.AssessmentDao
 import com.tongtongstudio.ami.data.dao.CategoryDao
@@ -14,11 +15,15 @@ import com.tongtongstudio.ami.data.dao.WorkSessionDao
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.AssessmentType
 import com.tongtongstudio.ami.data.datatables.Category
+import com.tongtongstudio.ami.data.datatables.DaysOfWeek
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.PomodoroSession
 import com.tongtongstudio.ami.data.datatables.RecurringConverters
 import com.tongtongstudio.ami.data.datatables.Reminder
 import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.TaskCompletion
+import com.tongtongstudio.ami.data.datatables.TaskRecurrence
+import com.tongtongstudio.ami.data.datatables.TaskRecurrenceDaysCrossRef
 import com.tongtongstudio.ami.data.datatables.Unit
 import com.tongtongstudio.ami.data.datatables.WorkSession
 import com.tongtongstudio.ami.dependenciesInjection.ApplicationScope
@@ -27,15 +32,263 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Provider
 
+val MIGRATION_4_2 = object : Migration(4, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // 2. SQLite does not support ALTER COLUMN, so we recreate the table
+        db.execSQL(
+            "CREATE TABLE task_table_new (" +
+                    "title TEXT NOT NULL, " +
+                    "priority INTEGER, " +  // Keep priority as INTEGER
+                    "task_due_date INTEGER, " + // Ensure type consistency
+                    "startDate INTEGER DEFAULT NULL, " +
+                    "deadline INTEGER DEFAULT NULL, " +
+                    "description TEXT DEFAULT NULL, " +
+                    "type TEXT DEFAULT NULL, " +
+                    "importance INTEGER DEFAULT NULL, " +  // Ensure importance is INTEGER
+                    "urgency INTEGER DEFAULT NULL, " +
+                    "isDraft INTEGER NOT NULL DEFAULT 0, " +
+                    "isCompleted INTEGER NOT NULL DEFAULT 0, " +
+                    "completionDate INTEGER DEFAULT NULL, " +
+                    "completedOnTime INTEGER DEFAULT NULL, " +
+                    "estimatedWorkingTime INTEGER DEFAULT NULL, " +
+                    "currentWorkingTime INTEGER DEFAULT NULL, " +
+                    "isRecurring INTEGER NOT NULL DEFAULT 0, " +
+                    "currentStreak INTEGER NOT NULL DEFAULT 0, " +
+                    "maxStreak INTEGER NOT NULL DEFAULT 0, " +
+                    "repetitionFrequency TEXT DEFAULT NULL, " +
+                    "totalRepetitionCount INTEGER NOT NULL DEFAULT 0, " +
+                    "timesMissed INTEGER NOT NULL DEFAULT 0, " +
+                    "successCount INTEGER NOT NULL DEFAULT 0, " +
+                    "comment TEXT DEFAULT NULL, " +
+                    "dependency INTEGER DEFAULT NULL, " +
+                    "skillLevel INTEGER DEFAULT NULL, " +
+                    "creationDate INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000), " +
+                    "task_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "categoryId INTEGER DEFAULT NULL, " +
+                    "parent_task_id INTEGER DEFAULT NULL, " +
+                    "FOREIGN KEY(categoryId) REFERENCES Category(category_id) ON DELETE SET NULL, " +
+                    "FOREIGN KEY(parent_task_id) REFERENCES task_table(task_id) ON DELETE CASCADE)"
+        )
+
+        // 3. Copy data from old table to new table
+        db.execSQL(
+            "INSERT INTO task_table_new (" +
+                    "title, priority, task_due_date, startDate, deadline, description, " +
+                    "type, importance, urgency, isCompleted, completionDate, completedOnTime, estimatedWorkingTime, " +
+                    "currentWorkingTime, isRecurring, currentStreak, maxStreak, repetitionFrequency, totalRepetitionCount, " +
+                    "timesMissed, successCount, comment, dependency, skillLevel, creationDate, task_id, categoryId, parent_task_id" +
+                    ") SELECT " +
+                    "title, priority, task_due_date, startDate, deadline, description, " +
+                    "type, importance, urgency, isCompleted, completionDate, completedOnTime, estimatedWorkingTime, " +
+                    "currentWorkingTime, isRecurring, currentStreak, maxStreak, repetitionFrequency, totalRepetitionCount, " +
+                    "timesMissed, successCount, comment, dependency, skillLevel, creationDate, task_id, categoryId, parent_task_id " +
+                    "FROM task_table"
+        )
+
+        // 4. Remove old table and rename the new one
+        db.execSQL("DROP TABLE task_table")
+        db.execSQL("ALTER TABLE task_table_new RENAME TO task_table")
+
+        /*db.execSQL("ALTER TABLE task_table ADD COLUMN isDraft INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE task_table ALTER COLUMN importance INTEGER DEFAULT NULL")
+        db.execSQL("ALTER TABLE task_table ALTER COLUMN priority INTEGER")
+        db.execSQL("ALTER TABLE task_table ALTER COLUMN dueDate LONG")*/
+    }
+}
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Créer la table DaysOfWeek
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS days_of_week_table (
+                day_id INTEGER PRIMARY KEY NOT NULL,
+                name TEXT NOT NULL
+            )
+            """
+        )
+
+        // Pré-remplir les jours de la semaine
+        db.execSQL(
+            """
+            INSERT INTO days_of_week_table (day_id, name)
+            VALUES (2, 'Monday'), (3, 'Tuesday'), (4, 'Wednesday'),
+                   (5, 'Thursday'), (6, 'Friday'), (7, 'Saturday'), (1, 'Sunday')
+            """
+        )
+
+        db.execSQL(
+            """
+            CREATE TABLE task_recurrence_table (
+                frequency TEXT NOT NULL,
+                interval INTEGER NOT NULL,
+                start_date INTEGER,
+                end_date INTEGER,
+                is_active INTEGER NOT NULL DEFAULT 1,
+                occurrence_limit INTEGER,
+                recurrence_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL
+                )
+            """.trimIndent()
+        )
+
+        // Créer la table TaskRecurrenceDaysCrossRef
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS task_recurrence_days_cross_ref (
+                recurrenceId INTEGER NOT NULL,
+                dayId INTEGER NOT NULL,
+                PRIMARY KEY (recurrenceId, dayId),
+                FOREIGN KEY (recurrenceId) REFERENCES task_recurrence_table(recurrence_id) ON DELETE CASCADE,
+                FOREIGN KEY (dayId) REFERENCES days_of_week_table(day_id) ON DELETE CASCADE
+            )
+            """
+        )
+
+        // Créer la table TaskCompletion //DEFAULT (strftime('%s', 'now') * 1000)
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS task_completion_table (
+                parent_task_id INTEGER NOT NULL,
+                isCompleted INTEGER NOT NULL,
+                completionDate INTEGER NOT NULL,
+                comment TEXT,
+                emotions INTEGER,
+                completion_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                FOREIGN KEY (parent_task_id) REFERENCES task_table(task_id) ON DELETE CASCADE
+            )
+            """
+        )
+        insertTaskCompletions(db)
+    }
+
+    fun insertTaskCompletions(db: SupportSQLiteDatabase) {
+        // Extract completion data from task_table (assuming completion info was stored there)
+        val cursor = db.query("SELECT task_id, completionDate FROM task_table WHERE completionDate IS NOT NULL")
+        while (cursor.moveToNext()) {
+            val taskId = cursor.getLong(0)
+            val completionDate = cursor.getLong(1)
+
+            // Insert into task_completions table
+            db.execSQL(
+                "INSERT INTO task_completion_table (parent_task_id, isCompleted, completionDate) VALUES ($taskId,1, $completionDate)"
+            )
+        }
+        cursor.close()
+    }
+}
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE new_task_table (
+                title TEXT NOT NULL,
+                priority INTEGER,
+                task_due_date INTEGER,
+                startDate INTEGER,
+                deadline INTEGER,
+                description TEXT,
+                type TEXT,
+                importance INTEGER,
+                urgency INTEGER,
+                isDraft INTEGER NOT NULL DEFAULT 0,
+                estimatedEmotions INTEGER NOT NULL DEFAULT 1,
+                estimatedWorkingTime INTEGER,
+                skillLevel INTEGER,
+                creationDate INTEGER NOT NULL,
+                dependency_task_id INTEGER,
+                task_recurrence_id INTEGER,
+                categoryId INTEGER,
+                parent_task_id INTEGER,
+                task_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                FOREIGN KEY(dependency_task_id) REFERENCES task_table(task_id) ON DELETE SET NULL,
+                FOREIGN KEY(categoryId) REFERENCES category_table(category_id) ON DELETE SET NULL,
+                FOREIGN KEY(parent_task_id) REFERENCES task_table(task_id) ON DELETE CASCADE,
+                FOREIGN KEY(task_recurrence_id) REFERENCES task_recurrence_table(recurrence_id) ON DELETE SET NULL
+            )
+                """.trimIndent()
+        )
+        db.execSQL(
+            """
+            INSERT INTO new_task_table (
+                title, priority, task_due_date, startDate, deadline, description, type,
+                importance, urgency, isDraft,estimatedWorkingTime, skillLevel,
+                creationDate, categoryId, parent_task_id, task_id
+            )
+            SELECT title, priority, task_due_date, startDate, deadline, description, type,
+                importance, urgency, isDraft, estimatedWorkingTime, skillLevel,
+                creationDate, categoryId, parent_task_id, task_id
+            FROM task_table
+            """.trimIndent()
+        )
+
+        // Insert recurrence infos from old_task_table infos into new_task_table
+        insertTaskRecurrences(db)
+
+        // Supprimer l'ancienne table task_table
+        db.execSQL("DROP TABLE task_table")
+
+        // Renommer la nouvelle table
+        db.execSQL("ALTER TABLE task_table_new RENAME TO task_table")
+    }
+
+    fun insertTaskRecurrences(db: SupportSQLiteDatabase) {
+        // Récupérer toutes les tâches qui ont une récurrence
+        val cursor = db.query("SELECT task_id, task_due_date, repetitionFrequency FROM task_table WHERE recurrence IS NOT NULL")
+
+        while (cursor.moveToNext()) {
+            val taskId = cursor.getLong(cursor.getColumnIndexOrThrow("task_id"))
+            val startDate = cursor.getLong(cursor.getColumnIndexOrThrow("task_due_date"))
+            val recurrenceString = cursor.getString(cursor.getColumnIndexOrThrow("repetitionFrequency"))
+
+            // Vérifier si le format est correct avant de continuer
+            val recurrenceParts = recurrenceString.split("/")
+            if (recurrenceParts.size < 3) continue
+
+            val interval = recurrenceParts[0].toIntOrNull() ?: continue
+            val frequency = recurrenceParts[1] // "DAILY", "WEEKLY", etc.
+            val daysOfWeek = recurrenceParts[2].split(",").mapNotNull { it.toIntOrNull() } // Liste de jours
+
+            // Insérer dans TaskRecurrence
+            db.execSQL(
+                "INSERT INTO task_recurrence_table (frequency, interval, start_date, is_active) " +
+                        "VALUES (?, ?, ?, 1)",
+                arrayOf(frequency, interval, startDate)
+            )
+
+            // Récupérer l'ID de la nouvelle recurrence
+            val recurrenceCursor = db.query("SELECT last_insert_rowid()")
+            recurrenceCursor.moveToFirst()
+            val recurrenceId = recurrenceCursor.getLong(0)
+            recurrenceCursor.close()
+
+            // Associer les jours de la semaine à la récurrence
+            for (dayId in daysOfWeek) {
+                db.execSQL(
+                    "INSERT INTO task_recurrence_days_cross_ref (recurrenceId, dayId) VALUES (?, ?)",
+                    arrayOf(recurrenceId, dayId)
+                )
+            }
+            // Update new_task_table
+            db.execSQL("UPDATE new_task_table SET task_recurrence_id = $recurrenceId WHERE task_id = $taskId")
+        }
+        cursor.close()
+    }
+
+}
+
 @Database(
     entities = [
         Task::class,
         Assessment::class,
         Reminder::class,
         Category::class, Unit::class,
-        WorkSession::class, PomodoroSession::class],
-    version = 2, exportSchema = false
-)
+        WorkSession::class,
+        PomodoroSession::class,
+        TaskRecurrence::class, TaskRecurrenceDaysCrossRef::class,
+        DaysOfWeek::class, TaskCompletion::class],
+    version = 3,  exportSchema = true
+)//autoMigrations = [AutoMigration(4,2), AutoMigration(2,3)],
 @TypeConverters(RecurringConverters::class)
 abstract class ThingToDoDatabase : RoomDatabase() {
 
@@ -58,22 +311,6 @@ abstract class ThingToDoDatabase : RoomDatabase() {
 
             applicationScope.launch {
                 insertInitialTasks(taskDao, categoryDao, assessmentDao)
-                /*val category1 = Category(
-                    "Personnel",
-                    "a sample categories for all kind of task in personal life",
-                )
-                val category2 = Category("Job", null)
-                val category3 = Category("Housework", null)
-                categoryDao.insertMultipleCategories(listOf(category1, category2, category3))
-
-                // test
-                val sampleTsk = Task("Simple task", 2, System.currentTimeMillis())
-                ttdDao.insert(sampleTsk)
-                val composedTask = Task("Composed Task", 3, System.currentTimeMillis())
-                val parentId = ttdDao.insert(composedTask)
-                val subTask =
-                    Task("Sub task", 1, System.currentTimeMillis(), parentTaskId = parentId)
-                ttdDao.insert(subTask)*/
             }
         }
 

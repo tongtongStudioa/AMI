@@ -110,7 +110,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                         is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
                             val action =
                                 CompletedThingToDoFragmentDirections.actionCompletedThingToDoFragmentToLocalProjectStatsFragment2(
-                                    event.composedTaskData
+                                    event.project
                                 )
                             findNavController().navigate(action)
                         }
@@ -178,7 +178,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
-    override fun onComposedTaskClick(thingToDo: ThingToDo) {
+    override fun onProjectClick(thingToDo: ThingToDo) {
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
@@ -186,7 +186,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 
-    override fun onProjectAddClick(composedTask: ThingToDo) {
+    override fun onProjectAddClick(thingToDo: ThingToDo) {
         // do nothing
     }
 

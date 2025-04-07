@@ -54,6 +54,10 @@
         <menu>
             <group>
                 <item
+                    android:id="@+id/settingsFragment"
+                    android:title="@string/settings"
+                    android:icon="@drawable/baseline_settings_24" />
+                <item
                     android:id="@+id/about_item"
                     android:icon="@drawable/baseline_info_24"
                     android:title="@string/about_project" />

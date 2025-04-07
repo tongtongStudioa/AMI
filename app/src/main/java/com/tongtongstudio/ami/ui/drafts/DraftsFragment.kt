@@ -72,12 +72,12 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
             requireContext()
         ) {
             override fun actionOnRightSwiped(thingToDo: ThingToDo) {
-                // delete thingToDo
+                // delete task
                 sharedViewModel.deleteTask(thingToDo, requireContext())
             }
 
             override fun actionLeftSwiped(thingToDo: ThingToDo) {
-                //update thingToDo
+                //update task
                 sharedViewModel.updateTask(thingToDo.mainTask)
             }
         }
@@ -96,7 +96,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
                             val action =
                                 DraftsFragmentDirections.actionDraftsFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
-                                    event.thingToDo
+                                    event.task
                                 )
                             findNavController().navigate(action)
                         }
@@ -147,7 +147,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
                         is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
                             val action =
                                 DraftsFragmentDirections.actionDraftsFragmentToProjectDetailsFragment(
-                                    event.composedTaskData
+                                    event.project
                                 )
                             findNavController().navigate(action)
                         }
@@ -163,7 +163,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
         // do nothing
     }
 
-    override fun onComposedTaskClick(thingToDo: ThingToDo) {
+    override fun onProjectClick(thingToDo: ThingToDo) {
         sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
     }
 
@@ -171,8 +171,8 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 
-    override fun onProjectAddClick(composedTask: ThingToDo) {
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to composedTask.mainTask.id))
+    override fun onProjectAddClick(thingToDo: ThingToDo) {
+        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.mainTask.id))
         sharedViewModel.addThingToDo()
     }
 

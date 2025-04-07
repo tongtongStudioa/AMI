@@ -123,7 +123,7 @@ class MainViewModel @Inject constructor(
         mainEventChannel.send(SharedEvent.ShowUndoDeleteTaskMessage(subTask))
     }
 
-    fun navigateToTaskInfoScreen(thingToDo: Task, sharedView: View) = viewModelScope.launch {
+    fun navigateToTaskDetailsAndTrackScreen(thingToDo: Task, sharedView: View) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToTaskViewPager(thingToDo, sharedView))
     }
 
@@ -162,11 +162,11 @@ class MainViewModel @Inject constructor(
     }
 
     sealed class SharedEvent {
-        data class NavigateToEditScreen(val thingToDo: Task) : SharedEvent()
+        data class NavigateToEditScreen(val task: Task) : SharedEvent()
         data object NavigateToAddScreen : SharedEvent()
 
         /**
-         * Event to navigate to view pager which display stats and time tracker for a specific thingToDo
+         * Event to navigate to view pager which display stats and time tracker for a specific task
          */
         data class NavigateToTaskViewPager(val task: Task, val sharedView: View) :
             SharedEvent()
@@ -174,7 +174,7 @@ class MainViewModel @Inject constructor(
         data class NavigateToTaskDetailsScreen(val task: Task, val sharedView: View) :
             SharedEvent()
 
-        data class NavigateToLocalProjectStatsScreen(val composedTaskData: ThingToDo) :
+        data class NavigateToLocalProjectStatsScreen(val project: ThingToDo) :
             SharedEvent()
 
         data class ShowConfirmationMessage(val result: Int) : SharedEvent()

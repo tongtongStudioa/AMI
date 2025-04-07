@@ -10,14 +10,14 @@ plugins {
 
 android {
     room {
-        schemaDirectory "C:/db_app_ami_schemas"
+        schemaDirectory "$projectDir/db_schemas"
     }
 
-    /*sourceSets {
+    sourceSets {
         // Adds exported schema location as test app assets.
         //getByName("androidTest").assets.srcDir("$projectDir/schemas")
-        androidTest.assets.srcDirs += files("C:/db_app_ami_schemas".toString())
-    }*/
+        androidTest.assets.srcDirs += files("$projectDir/db_schemas".toString())
+    }
 
     compileSdk 35
 
@@ -63,6 +63,9 @@ android {
 }
 
 dependencies {
+
+    // Gson pour la sérialisation JSON
+    implementation "com.google.code.gson:gson:2.11.0"
 
     // Tutorial guide
     implementation 'uk.co.samuelwall:material-tap-target-prompt:3.3.2'

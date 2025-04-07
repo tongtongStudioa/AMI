@@ -2,6 +2,7 @@ package com.tongtongstudio.ami.ui
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -18,38 +20,43 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.tongtongstudio.ami.NavigationGraphDirections
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.receiver.ASSESSMENT_ID
+import com.tongtongstudio.ami.util.AppTutorial
+import com.tongtongstudio.ami.util.TutorialTrigger
 import dagger.hilt.android.AndroidEntryPoint
 import hotchemi.android.rate.AppRate
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TutorialTrigger {
 
     private lateinit var navController: NavController
     private lateinit var drawerLayout: DrawerLayout
     lateinit var appBarConfiguration: AppBarConfiguration
     lateinit var toolbar: Toolbar
+    private val prefs by lazy { getSharedPreferences("tutorial_prefs", Context.MODE_PRIVATE) }
+    private lateinit var appTutorial: AppTutorial
 
     val viewModel: MainViewModel by viewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appTutorial = AppTutorial(this, this, prefs)
         setContentView(R.layout.activity_main)
 
 
         AppRate.with(this)
-            .setInstallDays(10) // default 10, 0 means install day.
-            .setLaunchTimes(3) // default 10
+            .setInstallDays(10) // 0 means install day.
+            .setLaunchTimes(3) //
             .setRemindInterval(10) // default 1
             .setShowLaterButton(true) // default true
             .monitor()
-
         // Show a dialog if meets conditions
         AppRate.showRateDialogIfMeetsConditions(this)
 
@@ -104,6 +111,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        showWelcomeDialog(this)
+
         // Check at the opening of the app
         viewModel.lookForMissedRecurringTasks()
         viewModel.updateTasksUrgency()
@@ -114,13 +123,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun showWelcomeDialog(context: Context) {
+        if (prefs.getBoolean(KEY_DIALOG_SHOWN, false)) return
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setTitle(getString(R.string.welcome_title_msg))
+            .setMessage(getString(R.string.welcom_msg))
+            .setPositiveButton(getString(R.string.start_the_tutorial)) { _, _ ->
+                appTutorial.handleWelcomeResult(accepted = true)
+            }
+            .setNegativeButton(getString(R.string.skip)) { _, _ ->
+                appTutorial.handleWelcomeResult(accepted = false)
+            }
+            .setCancelable(false)
+            .create()
+        dialog.show()
+    }
+
     // Check if app has been open with assessment notification
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent != null) {
-            if (intent.hasExtra(ASSESSMENT_ID)) {
-                showCompleteAssessmentDialog(intent)
-            }
+        if (intent.hasExtra(ASSESSMENT_ID)) {
+            showCompleteAssessmentDialog(intent)
         }
     }
 
@@ -180,6 +203,11 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(Intent.ACTION_VIEW)
         intent.data = Uri.parse(url)
         startActivity(intent)
+    }
+
+    override fun triggerTutorialFor(fragment: Fragment) {
+        val fragName = fragment::class.java.simpleName
+        appTutorial.maybeShowTutorialFor(fragName, fragment)
     }
 
     /*override fun onRequestPermissionsResult(

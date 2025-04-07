@@ -13,18 +13,18 @@ import java.text.DateFormat
 @Entity(
     tableName = "task_completion_table", foreignKeys = [
         ForeignKey(
-            entity = Category::class,
+            entity = Task::class,
             parentColumns = ["task_id"],
             childColumns = ["parent_task_id"],
             onDelete = CASCADE
         )
     ]
 )
-data class Completion(
+data class TaskCompletion(
     @ColumnInfo(name = "parent_task_id")
     val taskId: Long,
     val isCompleted: Boolean = false,
-    val completionDate: Long? = null,
+    val completionDate: Long = System.currentTimeMillis(),
     val comment: String? = null,
     val emotions: Int? = 1,
     @PrimaryKey(autoGenerate = true)

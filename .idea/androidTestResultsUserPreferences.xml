@@ -59,6 +59,32 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-1163504626">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Fairphone FP4" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-752175895">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Fairphone FP4" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-494558062">
           <value>
             <AndroidTestResultsTableState>
@@ -116,30 +142,14 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
-        <entry key="123892456">
+        <entry key="960504523">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">
                 <map>
                   <entry key="Duration" value="90" />
-                  <entry key="Fairphone" value="120" />
-                  <entry key="Fairphone&#10; FP4" value="120" />
+                  <entry key="Fairphone FP4" value="120" />
                   <entry key="Tests" value="360" />
-                  <entry key="a321737e" value="120" />
-                </map>
-              </option>
-            </AndroidTestResultsTableState>
-          </value>
-        </entry>
-        <entry key="1428885409">
-          <value>
-            <AndroidTestResultsTableState>
-              <option name="preferredColumnWidths">
-                <map>
-                  <entry key="Duration" value="90" />
-                  <entry key="Fairphone&#10; FP4" value="120" />
-                  <entry key="Tests" value="360" />
-                  <entry key="a321737e" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>

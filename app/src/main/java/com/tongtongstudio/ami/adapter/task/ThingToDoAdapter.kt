@@ -7,6 +7,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.TransitionManager
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ItemTouchHelperAdapter
 import com.tongtongstudio.ami.adapter.ViewHolder
@@ -151,15 +152,15 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                 mainCardView.setOnClickListener {
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        val composedTask = taskList[position]
-                        listener.onComposedTaskClick(composedTask)
+                        val project = taskList[position]
+                        listener.onProjectClick(project)
                     }
                 }
                 btnAddSubTask.setOnClickListener {
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        val composedTask = taskList[position]
-                        listener.onProjectAddClick(composedTask)
+                        val project = taskList[position]
+                        listener.onProjectAddClick(project)
                     }
                 }
                 subCardView.setOnClickListener {
@@ -188,6 +189,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
         private fun expandView() {
             expanded = true
             binding.btnExpandCollapse.setImageResource(R.drawable.ic_baseline_expand_less_24)
+            TransitionManager.beginDelayedTransition(binding.projectCardView)
             binding.rvSubTasks.isVisible = expanded
         }
 

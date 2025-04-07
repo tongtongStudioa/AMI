@@ -286,7 +286,7 @@ class Repository @Inject constructor(
     }
 
     suspend fun updateTasksUrgency(todayDate: Long) {
-        TODO("Not yet implemented")
+        //TODO("Not yet implemented")
         val taskList = taskDao.getTasksNotCompeted().first()
         for (task in taskList) {
             val urgency = Task.calculusUrgency(todayDate, task.dueDate, task.deadline)

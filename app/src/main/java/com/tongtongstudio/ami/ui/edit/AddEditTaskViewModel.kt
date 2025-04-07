@@ -33,7 +33,7 @@ class AddEditTaskViewModel @Inject constructor(
     val addEditTaskEvent = addEditChannelEvent.receiveAsFlow()
 
     // TODO: change this object in safe args by ThingToDo object
-    val thingToDo = state.get<Task>("thingToDo")
+    val thingToDo = state.get<Task>("task")
     private val _category = MutableLiveData<Category?>(null)
     val category: LiveData<Category?>
         get() = _category

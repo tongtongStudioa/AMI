@@ -2,6 +2,7 @@ package com.tongtongstudio.ami.adapter.task
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.tongtongstudio.ami.R
@@ -60,6 +61,7 @@ class SubTaskAdapter(private val listener: InteractionListener) :
 
         override fun bind(data: Task) {
             binding.apply {
+                ViewCompat.setTransitionName(binding.root, "shared_element_${data.id}")
                 tvTaskName.text = data.title
                 checkBoxCompleted.isChecked = data.isCompleted
                 tvTaskName.paint.isStrikeThruText = data.isCompleted

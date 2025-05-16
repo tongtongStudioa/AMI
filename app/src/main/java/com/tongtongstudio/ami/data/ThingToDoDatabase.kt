@@ -307,7 +307,7 @@ abstract class ThingToDoDatabase : RoomDatabase() {
 
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
-            configureSQLitePragmas(db)
+            //configureSQLitePragmas(db)
             val taskDao = database.get().taskDao()
             val categoryDao = database.get().categoryDao()
             val assessmentDao = database.get().assessmentDao()

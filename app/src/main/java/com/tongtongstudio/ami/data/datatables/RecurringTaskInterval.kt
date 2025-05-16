@@ -83,7 +83,7 @@ class RecurringTaskInterval(
      * @param checked : state
      * @return updated task
      */
-    fun updateRecurringTask(ttd: Task, checked: Boolean): Task {
+    /*fun updateRecurringTask(ttd: Task, checked: Boolean): Task {
         val oldStartDate = ttd.dueDate!!
         val updatedStartDate = if (daysOfWeek != null) {
             findNextOccurrenceDayInWeek(oldStartDate, checked)
@@ -116,7 +116,7 @@ class RecurringTaskInterval(
             totalRepetitionCount = newCountRepetition
         )
         return updatedTask
-    }
+    }*/
 
     private fun findNextOccurrenceDayInWeek(oldDueDate: Long, checked: Boolean): RepeatProcess {
         var timesSkipped = 0

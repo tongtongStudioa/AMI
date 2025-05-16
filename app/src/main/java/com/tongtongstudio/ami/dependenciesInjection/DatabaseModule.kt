@@ -2,7 +2,9 @@ package com.tongtongstudio.ami.dependenciesInjection
 
 import android.app.Application
 import androidx.room.Room
+import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import com.tongtongstudio.ami.data.MIGRATION_2_3
+import com.tongtongstudio.ami.data.MIGRATION_3_5
 import com.tongtongstudio.ami.data.MIGRATION_4_2
 import com.tongtongstudio.ami.data.ThingToDoDatabase
 import dagger.Module
@@ -25,6 +27,8 @@ object DatabaseModule {
     ) = Room.databaseBuilder(app, ThingToDoDatabase::class.java, "thing_to_do_database")
         .addMigrations(MIGRATION_4_2)
         .addMigrations(MIGRATION_2_3)
+        .addMigrations(MIGRATION_3_5)
+        .openHelperFactory(FrameworkSQLiteOpenHelperFactory())
         .addCallback(callback)
         .build()
 

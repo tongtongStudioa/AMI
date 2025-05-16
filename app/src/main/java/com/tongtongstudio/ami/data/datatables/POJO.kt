@@ -14,24 +14,51 @@ const val PATTERN_FORMAT_DATE = "E dd/MM"
 
 enum class Nature { PROJECT, TASK }
 
+enum class STATUS { NOT_STARTED, IN_PROGRESS, FINISHED, ABANDONED}
+
 @Parcelize
 data class ThingToDo(
     @Embedded
     val mainTask: Task,
-    @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = Task::class)
+    @Relation(
+        parentColumn = "task_id",
+        entityColumn = "parent_task_id",
+        entity = Task::class)
     val subTasks: List<Task>,
-    @Relation(parentColumn = "categoryId", entityColumn = "category_id", entity = Category::class)
-    val category: Category?,
-    @Relation(parentColumn = "task_id", entityColumn = "parent_id", entity = Reminder::class)
-    val reminders: List<Reminder>
+    val category: String?,
+    val taskDependency: String?,
+    @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = TaskCompletion::class)
+    val completions: List<TaskCompletion> // Achievement historic
 
 ) : Parcelable {
+
+    fun showCheckedState(): Boolean {
+        return if (mainTask.recurrenceInfosId == null) false else completions.lastOrNull()?.isCompleted ?: false
+    }
+
     fun isProject(): Boolean {
         return mainTask.type == Nature.PROJECT.name || subTasks.isNotEmpty()
     }
 
-    fun getNbSubTasksCompleted(): Int = subTasks.count { it.isCompleted }
-    fun getNbSubTasks(): Int = subTasks.size
+    /*fun countCompletedSubtasks(): Int {
+        // Count direct sub tasks using last completion
+        val directCompleted = subTasks.count { subtask ->
+            subtask.completions.lastOrNull()?.isCompleted == true
+        }
+        // Add embedded completed sub tasks
+        val nestedCompleted = subTasks.sumOf { it.countCompletedSubtasks() }
+        return directCompleted + nestedCompleted
+    }*/
+
+    fun countDirectSubTasks(): Int = subTasks.size
+
+    fun getHabitSuccessRate(): Float? {
+        val totalRepetitionCount = completions.size
+        val successCount = completions.count { it.isCompleted }
+        return if (totalRepetitionCount != 0)
+            (successCount.toFloat() / totalRepetitionCount) * 100
+        else null
+    }
 }
 
 /**
@@ -46,8 +73,8 @@ data class TtdAchieved(
  * Class with recurring task info for max and min streak.
  */
 data class TtdStreakInfo(
-    val title: String?,
-    val streakInfo: Int?
+    val title: String,
+    val streak: Int,
 )
 
 /**
@@ -60,7 +87,7 @@ data class TimeWorkedDistribution(val title: String?, val totalTimeWorked: Long?
 data class CategoryTasks(
     @Embedded
     val category: Category,
-    @Relation(entity = Task::class, parentColumn = "category_id", entityColumn = "categoryId")
+    @Relation(entity = Task::class, parentColumn = "category_id", entityColumn = "category_id")
     val tasks: List<Task>
 )
 
@@ -73,7 +100,8 @@ data class TaskRecurrenceWithDays(
         associateBy = Junction(TaskRecurrenceDaysCrossRef::class)
     )
     val daysOfWeek: List<DaysOfWeek> // days associate
-) : Parcelable {
+) : Parcelable
+{
     /**
      * Update recurring task depending with task's recurrence characteristics (delay, repetition frequency, etc.)
      * @param oldDueDate : old task due date
@@ -233,3 +261,6 @@ data class TaskRecurrenceWithDays(
 
 class RepeatProcess(val newDueDate: Long, val timesSkipped: Int = 0)
 
+data class IndicatorRateByPeriod(val period: String, val rate: Float)
+
+data class CountSinceLastCompletion(val lastCompletionDate: String, val missedCount: Int)

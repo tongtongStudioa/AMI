@@ -440,7 +440,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 )
             }
 
-            // skill level and dependency
+            // skill level and dependencyId
             if (viewModel.skillLevel != null)
                 inputLayoutUserLevel.editText?.setText(viewModel.skillLevel.toString())
             inputLayoutUserLevel.editText?.addTextChangedListener { text ->
@@ -449,9 +449,9 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         .toInt()
             }
 
-            switchDependency.isChecked = viewModel.dependency ?: false
+            switchDependency.isChecked = viewModel.dependencyId ?: false
             switchDependency.setOnCheckedChangeListener { _, isChecked ->
-                viewModel.dependency = isChecked
+                viewModel.dependencyId = isChecked
             }
         }
 

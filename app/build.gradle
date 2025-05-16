@@ -69,7 +69,6 @@ dependencies {
 
     // Tutorial guide
     implementation 'uk.co.samuelwall:material-tap-target-prompt:3.3.2'
-    implementation 'androidx.room:room-testing:2.6.1'
     implementation 'androidx.databinding:databinding-adapters:8.9.1'
 
     // Ksp dependency
@@ -82,7 +81,7 @@ dependencies {
     // MPAndroidChart dependency
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // notification FLAG_IMMUTABLE on Android12
-    implementation 'androidx.work:work-runtime-ktx:2.9.0'
+    implementation 'androidx.work:work-runtime-ktx:2.10.0'
 
     // custom swipe view
     implementation 'it.xabaras.android:recyclerview-swipedecorator:1.4'
@@ -94,7 +93,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "com.google.android.material:material:$materialVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
-    implementation 'androidx.lifecycle:lifecycle-service:2.8.4'
+    implementation 'androidx.lifecycle:lifecycle-service:2.8.7'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation "junit:junit:$junitVersion"
     testImplementation 'junit:junit:4.13.2'
@@ -105,7 +104,7 @@ dependencies {
     // Fragment
     implementation "androidx.fragment:fragment-ktx:$fragmentVersion"
     // Activity
-    implementation 'androidx.activity:activity-ktx:1.9.3'
+    implementation 'androidx.activity:activity-ktx:1.10.1'
 
     // Lifecycle + ViewModel & LiveData
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
@@ -119,6 +118,8 @@ dependencies {
     implementation "androidx.room:room-runtime:$roomVersion"
     ksp "androidx.room:room-compiler:$roomVersion"
     implementation "androidx.room:room-ktx:$roomVersion"
+    implementation "androidx.sqlite:sqlite-ktx:2.5.0"
+    implementation "androidx.sqlite:sqlite-framework:2.5.0"
     // Test helpers
     androidTestImplementation "androidx.room:room-testing:$roomVersion"
 

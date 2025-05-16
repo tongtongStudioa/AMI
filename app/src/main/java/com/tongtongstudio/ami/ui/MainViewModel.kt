@@ -18,6 +18,8 @@ import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.receiver.ReminderBroadcastReceiver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -57,24 +59,27 @@ class MainViewModel @Inject constructor(
     }
 
     fun onCheckBoxChanged(thingToDo: Task, checked: Boolean) = viewModelScope.launch {
-        val updatedTask = thingToDo.updateCheckedState(checked)
-        repository.updateTask(updatedTask)
-        updateParentTask(thingToDo.parentTaskId)
+        TODO("Not yet implemented !")
+        //val updatedTask = thingToDo.updateCheckedState(checked)
+        //repository.updateTask(updatedTask)
+        //updateParentTask(thingToDo.parentTaskId)
     }
 
     fun updateParentTask(parentTaskId: Long?) = viewModelScope.launch {
+        TODO("Not yet implemented")
         if (parentTaskId != null) {
             val thingToDo: ThingToDo = repository.getComposedTask(parentTaskId)
-            val isCompleted =
-                thingToDo.getNbSubTasks() == thingToDo.getNbSubTasksCompleted()
-            val updatedParentTask = thingToDo.mainTask.updateCheckedState(isCompleted)
-            repository.updateTask(updatedParentTask)
+            //val isCompleted = thingToDo.countDirectSubTasks() == thingToDo.getNbSubTasksCompleted()
+            //val updatedParentTask = thingToDo.mainTask.updateCheckedState(isCompleted)
+            //repository.updateTask(updatedParentTask)
         }
     }
 
     fun deleteTask(thingToDo: ThingToDo, context: Context) = viewModelScope.launch {
-        thingToDo.reminders.forEach { reminder ->
-            cancelReminder(context, reminder.id)
+        val reminders = repository.getTaskReminders(thingToDo.mainTask.id)?.collect() { reminders ->
+            reminders.forEach {
+                cancelReminder(context, it.id)
+            }
         }
         repository.deleteTask(thingToDo.mainTask)
         if (thingToDo.mainTask.parentTaskId != null) {
@@ -150,9 +155,10 @@ class MainViewModel @Inject constructor(
     }
 
     fun updateRecurringTasksMissed(missedThingToDo: List<ThingToDo>) = viewModelScope.launch {
+        // TODO: Update state of missed recurring task
         for (thingToDo in missedThingToDo) {
-            val updatedTask = thingToDo.mainTask.updateCheckedState(false)
-            repository.updateTask(updatedTask)
+            //val updatedTask = thingToDo.mainTask.updateCheckedState(false)
+            //repository.updateTask(updatedTask)
         }
     }
 

@@ -8,6 +8,8 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.tongtongstudio.ami.data.SortOrder
+import com.tongtongstudio.ami.data.datatables.CountSinceLastCompletion
+import com.tongtongstudio.ami.data.datatables.IndicatorRateByPeriod
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.data.datatables.TimeWorkedDistribution
@@ -158,7 +160,7 @@ interface TaskDao {
         "SELECT * FROM task_table t " +
                 "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE parent_task_id = :parentId " +
+                "WHERE t.parent_task_id = :parentId " +
                 "ORDER BY isCompleted DESC, priority ASC, estimatedWorkingTime ASC, skillLevel ASC, urgency DESC, importance DESC, is_active ASC"
     )
     fun getSubTasks(parentId: Long): Flow<List<Task>>
@@ -191,14 +193,14 @@ interface TaskDao {
     fun getCompletedTasksCount(): Flow<Int>
 
 
-    @Query("SELECT COUNT(*) FROM task_table WHERE categoryId = :categoryId ")
+    @Query("SELECT COUNT(*) FROM task_table WHERE category_id = :categoryId ")
     fun getCategoryCompletedTasksCount(categoryId: Long): Flow<Int>
 
     @Query(
         "SELECT COUNT(*) FROM task_table t " +
                 "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE parent_task_id IS NULL AND isCompleted AND type = 'PROJECT'"
+                "WHERE t.parent_task_id IS NULL AND isCompleted AND type = 'PROJECT'"
     )
     fun getCompletedProjectsCount(): Flow<Int>
 
@@ -206,7 +208,7 @@ interface TaskDao {
         "SELECT COUNT(*) FROM task_table t " +
                 "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE parent_task_id IS NULL AND isCompleted AND type = 'PROJECT' AND categoryId = :categoryId "
+                "WHERE t.parent_task_id IS NULL AND isCompleted AND type = 'PROJECT' AND category_id = :categoryId "
     )
     fun getCategoryCompletedProjectsCount(categoryId: Long): Flow<Int>
 
@@ -240,7 +242,7 @@ interface TaskDao {
         "SELECT round(1.0 * COUNT(CASE WHEN isCompleted THEN 1 END) / COUNT(*) * 100,1)  FROM task_table t " +
                 "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE categoryId = :categoryId"
+                "WHERE category_id = :categoryId"
     )
     fun getAchievementRateByCategory(categoryId: Long): Flow<Float>
 
@@ -249,7 +251,7 @@ interface TaskDao {
                 "FROM task_table t " +
                 "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE parent_task_id IS NULL AND type = 'PROJECT'"
+                "WHERE t.parent_task_id IS NULL AND type = 'PROJECT'"
     )
     fun getProjectsAchievementRate(): Flow<Float>
 
@@ -258,7 +260,7 @@ interface TaskDao {
                 "FROM task_table t " +
                 "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE parent_task_id IS NULL AND isCompleted AND type = 'PROJECT' AND categoryId = :categoryId"
+                "WHERE t.parent_task_id IS NULL AND isCompleted AND type = 'PROJECT' AND category_id = :categoryId"
     )
     fun getProjectsAchievementRateByCategory(categoryId: Long): Flow<Float>
 
@@ -273,7 +275,7 @@ interface TaskDao {
                 "FROM task_table t " +
                 "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE categoryId = :categoryId AND completionDate BETWEEN :startDate AND :endDate AND isCompleted " +
+                "WHERE category_id = :categoryId AND completionDate BETWEEN :startDate AND :endDate AND isCompleted " +
                 "GROUP BY completionDate/ 86400000"
     )
     fun getCompletedTasksByPeriodAndCategory(
@@ -309,14 +311,14 @@ interface TaskDao {
     @Query(
         "SELECT SUM(duration) FROM task_table t " +
                 "LEFT JOIN worksession AS ws ON t.task_id = ws.parentTaskId " +
-                "WHERE categoryId = :categoryId AND type != 'PROJECT'"
+                "WHERE category_id = :categoryId AND type != 'PROJECT'"
     )
     fun getSumCategoryTimeWorked(categoryId: Long): Flow<Long>
 
     @Query(
         "SELECT title, SUM(duration) as totalTimeWorked FROM task_table t " +
                 "LEFT JOIN worksession AS ws ON t.task_id = ws.parentTaskId " +
-                "WHERE categoryId = :categoryId AND type != 'PROJECT' " +
+                "WHERE category_id = :categoryId AND type != 'PROJECT' " +
                 "GROUP BY t.task_id"
     )
     fun getTimeWorkedPerTask(categoryId: Long): Flow<List<TimeWorkedDistribution>>
@@ -327,10 +329,10 @@ interface TaskDao {
     @Query(
         "SELECT category_title as title, SUM(duration) as totalTimeWorked " +
                 "FROM task_table t " +
-                "LEFT JOIN category ON t.categoryId = category_id " +
+                "LEFT JOIN category c ON t.category_id = c.category_id " +
                 "LEFT JOIN worksession AS ws ON t.task_id = ws.parentTaskId " +
                 "WHERE type != 'PROJECT'" +
-                "GROUP BY category_id"
+                "GROUP BY t.category_id"
     )
     fun getTimeWorkedPerCategory(): Flow<List<TimeWorkedDistribution>>
 
@@ -376,7 +378,7 @@ last_completion AS (
 accuracy_check AS (
     -- Comparaison avec le temps estimé
     SELECT 
-        tt.categoryId,
+        tt.category_id,
         tt.estimatedWorkingTime,
         ta.avg_work_time,
         CASE 
@@ -434,7 +436,7 @@ last_completion AS (
 accuracy_check AS (
     -- Comparaison avec le temps estimé
     SELECT 
-        tt.categoryId,
+        tt.category_id,
         tt.estimatedWorkingTime,
         ta.avg_work_time,
         CASE 
@@ -449,9 +451,9 @@ accuracy_check AS (
 accuracy_over_time AS (
     SELECT
         strftime('%Y-%m', last_completion_date / 1000, 'unixepoch') AS period,
-        COUNT(CASE WHEN well_estimated = 1 THEN 1 END) * 100.0 / COUNT(*)  AS estimation_accuracy
+        COUNT(CASE WHEN well_estimated = 1 THEN 1 END) * 100.0 / COUNT(*)  AS rate -- estimation_accuracy
     FROM accuracy_check
-	WHERE estimatedWorkingTime IS NOT NULL
+	WHERE estimatedWorkingTime IS NOT NULL AND last_completion_date BETWEEN :startDate AND :endDate
     GROUP BY period
 )
 -- Calcul du taux de précision par periode
@@ -463,7 +465,7 @@ ORDER BY period ASC
         startDate: Long,
         endDate: Long,
         errorPercent: Float
-    ): Flow<List<Float>>
+    ): Flow<List<IndicatorRateByPeriod>>
 
     @Query(
         """WITH task_work_time AS (
@@ -502,7 +504,7 @@ last_completion AS (
 accuracy_check AS (
     -- Comparaison avec le temps estimé
     SELECT 
-        tt.categoryId,
+        tt.category_id,
         tt.estimatedWorkingTime,
         ta.avg_work_time,
         CASE 
@@ -518,7 +520,7 @@ accuracy_check AS (
 SELECT 
     COUNT(CASE WHEN well_estimated = 1 THEN 1 END) * 100.0 / COUNT(*) AS estimation_accuracy
 FROM accuracy_check
-WHERE estimatedWorkingTime IS NOT NULL AND categoryId = :categoryId
+WHERE estimatedWorkingTime IS NOT NULL AND category_id = :categoryId
     """
     )
     fun getCategoryAccuracyRateOfEstimatedWorkTime(
@@ -563,7 +565,7 @@ last_completion AS (
 accuracy_check AS (
     -- Comparaison avec le temps estimé
     SELECT 
-        tt.categoryId,
+        tt.category_id,
         tt.estimatedWorkingTime,
         ta.avg_work_time,
         CASE 
@@ -578,9 +580,9 @@ accuracy_check AS (
 accuracy_over_time AS (
     SELECT
         strftime('%Y-%m', last_completion_date / 1000, 'unixepoch') AS period,
-        COUNT(CASE WHEN well_estimated = 1 THEN 1 END) * 100.0 / COUNT(*)  AS estimation_accuracy
+        COUNT(CASE WHEN well_estimated = 1 THEN 1 END) * 100.0 / COUNT(*)  AS rate --estimation_accuracy
     FROM accuracy_check
-	WHERE estimatedWorkingTime IS NOT NULL AND categoryId = :categoryId
+	WHERE estimatedWorkingTime IS NOT NULL AND category_id = :categoryId AND last_completion_date BETWEEN :startDate AND :endDate
     GROUP BY period
 )
 -- Calcul du taux de précision par catégorie et par periode
@@ -589,12 +591,12 @@ ORDER BY period ASC
     """
     )
     //COUNT(*) AS nb_tasks,
-    fun getCategoryAccuracyRateOfEstimatedWorkTimeByPeriod( // todo : update return type to return also date period
+    fun getCategoryAccuracyRateOfEstimatedWorkTimeByPeriod(
         categoryId: Long,
         startDate: Long,
         endDate: Long,
         errorPercent: Float
-    ): Flow<List<Float?>>
+    ): Flow<List<IndicatorRateByPeriod>>
 
     @Query(
         "SELECT round(100.0 * COUNT(CASE WHEN completionDate <= task_due_date THEN 1 END) / COUNT(*),1) " +
@@ -619,7 +621,7 @@ ORDER BY period ASC
         "SELECT round(100.0 * COUNT(CASE WHEN completionDate <= task_due_date THEN 1 END) / COUNT(*),1) " +
                 "FROM task_table t " +
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
-                "WHERE isCompleted AND categoryId = :categoryId"
+                "WHERE isCompleted AND category_id = :categoryId"
     )
     fun getOnTimeCompletionCategoryTasksRate(categoryId: Long): Flow<Float?>
 
@@ -627,7 +629,7 @@ ORDER BY period ASC
         "SELECT round(100.0 * COUNT(CASE WHEN completionDate <= task_due_date THEN 1 END) / COUNT(*),1) " +
                 "FROM task_table t " +
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
-                "WHERE isCompleted AND categoryId = :categoryId AND task_due_date BETWEEN :startDate AND :endDate " +
+                "WHERE isCompleted AND category_id = :categoryId AND task_due_date BETWEEN :startDate AND :endDate " +
                 "GROUP BY task_due_date /8640000"
     )
     fun getOnTimeCompletionTasksRateByCategoryAndPeriod(
@@ -639,15 +641,14 @@ ORDER BY period ASC
     @Query(
         """WITH ranked_completions AS (
         SELECT
-                c.parent_task_id,
-        completionDate,
-        LAG(completionDate) OVER (PARTITION BY c.parent_task_id ORDER BY completionDate) AS prev_completion,
-        CASE
-                WHEN LAG(completionDate)  IS NULL
-                OR completionDate - LAG(completionDate) > 86400000
-    THEN 1
-    ELSE 0
-    END AS new_streak
+            c.parent_task_id,
+            completionDate,
+            LAG(completionDate) OVER (PARTITION BY c.parent_task_id ORDER BY completionDate) AS prev_completion,
+            CASE WHEN LAG(completionDate) OVER (PARTITION BY c.parent_task_id ORDER BY completionDate) IS NULL
+                OR completionDate - LAG(completionDate) OVER (PARTITION BY c.parent_task_id ORDER BY completionDate) > 86400000
+                THEN 1
+                ELSE 0
+            END AS new_streak
     FROM task_completion_table c
     LEFT JOIN task_table t ON t.task_id = c.parent_task_id
     LEFT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_id
@@ -669,8 +670,8 @@ ORDER BY period ASC
     GROUP BY parent_task_id, streak_id
     )
     SELECT
-    t.title,
-    MAX(streak_length) AS longest_completion_streak
+        t.title,
+        MAX(streak_length) AS streak
     FROM streak_counts s 
     LEFT JOIN task_table t ON t.task_id = s.parent_task_id 
     GROUP BY t.task_id"""
@@ -685,11 +686,11 @@ ORDER BY period ASC
         LAG(completionDate) OVER(ORDER BY completionDate) AS prev_completion,
         CASE 
             WHEN LAG(completionDate) OVER (PARTITION BY c.parent_task_id ORDER BY completionDate) IS NULL 
-                 OR completionDate - LAG(completionDate) OVER (PARTITION BY c.parent_task_id ORDER BY completionDate) &gt; 86400000
+                 OR completionDate - LAG(completionDate) OVER (PARTITION BY c.parent_task_id ORDER BY completionDate) > 86400000
             THEN 1
             ELSE 0
         END AS new_streak
-    FROM completion c
+    FROM task_completion_table c
 	LEFT JOIN task_table t ON t.task_id = c.parent_task_id
 	LEFT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_id
     WHERE isCompleted = 1 AND is_active
@@ -711,11 +712,10 @@ ORDER BY period ASC
     )
     SELECT 
         t.title,
-        MAX(streak_length) AS longest_completion_streak,
-        t.description
+        MAX(streak_length) AS streak
     FROM streak_counts s
     LEFT JOIN task_table t ON t.task_id = s.parent_task_id
-    WHERE categoryId = :categoryId LIMIT 1"""
+    WHERE category_id = :categoryId LIMIT 1"""
     )
     fun getMaxStreakCategoryTask(categoryId: Long): Flow<TtdStreakInfo>
 
@@ -727,10 +727,58 @@ ORDER BY period ASC
             isCompleted,
             LAG(isCompleted) OVER (PARTITION BY c.parent_task_id ORDER BY completion_id) AS prev_status,
             CASE 
-                WHEN LAG(isCompleted) OVER (PARTITION BY c.parent_task_id ORDER BY completion_id) &lt;&gt; isCompleted THEN 1
+                WHEN LAG(isCompleted) OVER (PARTITION BY c.parent_task_id ORDER BY completion_id) == isCompleted THEN 1
                 ELSE 0
             END AS new_streak
-        FROM completion c
+        FROM task_completion_table c
+        LEFT JOIN task_table t ON t.task_id = c.parent_task_id
+        RIGHT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_id
+    ),
+    streak_groups AS (
+        SELECT 
+            parent_task_id,
+            completion_id,
+            isCompleted,
+            SUM(new_streak) OVER (PARTITION BY parent_task_id ORDER BY completion_id) AS streak_id
+        FROM ranked_completions
+    ),
+    last_streak AS (
+        SELECT 
+            parent_task_id,
+            MAX(completion_id) AS last_completion_id
+        FROM streak_groups
+        GROUP BY parent_task_id
+    ),
+    current_streak AS (
+        SELECT 
+            s.parent_task_id,
+            s.isCompleted ,
+            COUNT(*) AS streak_length
+        FROM streak_groups s
+        JOIN last_streak l ON s.parent_task_id = l.parent_task_id 
+        WHERE s.streak_id = (SELECT streak_id FROM streak_groups WHERE completion_id = l.last_completion_id)
+        GROUP BY s.parent_task_id, s.isCompleted
+    )
+    SELECT 
+        title,
+        MAX(streak_length) as streak
+    FROM current_streak cs
+    LEFT JOIN task_table t ON t.task_id = cs.parent_task_id
+    """)
+    fun getCurrentMaxStreakTask(): Flow<TtdStreakInfo>
+
+    @Query(
+        """WITH ranked_completions AS (
+        SELECT 
+            c.parent_task_id,
+            completion_id,
+            isCompleted,
+            LAG(isCompleted) OVER (PARTITION BY c.parent_task_id ORDER BY completion_id) AS prev_status,
+            CASE 
+                WHEN LAG(isCompleted) OVER (PARTITION BY c.parent_task_id ORDER BY completion_id) == isCompleted THEN 1
+                ELSE 0
+            END AS new_streak
+        FROM task_completion_table c
         LEFT JOIN task_table t ON t.task_id = c.parent_task_id
         RIGHT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_id
     ),
@@ -761,17 +809,11 @@ ORDER BY period ASC
     )
     SELECT 
         title,
-        current_status,
-        MAX(streak_length),
-        description
+        MAX(streak_length) as streak
     FROM current_streak cs
     LEFT JOIN task_table t ON t.task_id = cs.parent_task_id
-    WHERE current_status = 1
-    """
-    )
-    fun getCurrentMaxStreakTask(): Flow<TtdStreakInfo>
-
-    @Query("SELECT title, MAX(currentStreak) as streakInfo FROM task_table WHERE isRecurring AND categoryId = :categoryId LIMIT 1")
+    WHERE category_id = :categoryId
+    """)
     fun getCurrentMaxStreakCategoryTask(categoryId: Long): Flow<TtdStreakInfo>
 
     @Query(
@@ -787,7 +829,7 @@ ORDER BY period ASC
                 "FROM task_table t " +
                 "LEFT JOIN task_completion_table c ON t.task_id = c.parent_task_id " +
                 "RIGHT JOIN task_recurrence_table tr ON t.task_recurrence_id = tr.recurrence_id " +
-                "WHERE categoryId = :categoryId "
+                "WHERE category_id = :categoryId "
     )
     fun getCategoryHabitCompletionRate(categoryId: Long): Flow<Float?>
 
@@ -801,20 +843,21 @@ ORDER BY period ASC
                 "FROM task_completion_table c " +
                 "LEFT JOIN task_table t ON t.task_id = c.parent_task_id " +
                 "RIGHT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_id " +
-                "WHERE isCompleted = 1" +
+                "WHERE isCompleted = 1 " +
                 "GROUP BY c.parent_task_id" +
                 ") " +
                 "SELECT t.title, " +
-                "strftime('%d-%m', datetime(ROUND(lc.last_completed_date / 1000), 'unixepoch')) as last_completed_date," +
-                "COUNT(*) AS missed_completions_since_last " +
+                "strftime('%d-%m', datetime(ROUND(lc.last_completed_date / 1000), 'unixepoch')) as lastCompletionDate," +
+                "COUNT(*) AS missedCount " +
                 "FROM task_table t " +
                 "LEFT JOIN task_completion_table c ON t.task_id = c.parent_task_id " +
                 "JOIN task_recurrence_table tr ON t.task_recurrence_id = tr.recurrence_id " +
                 "LEFT JOIN last_completion lc ON t.task_id = lc.parent_task_id " +
-                "WHERE (c.completionDate > lc.last_completed_date OR lc.last_completed_date IS NULL) AND isCompleted = 0" +
+                "WHERE (c.completionDate > lc.last_completed_date OR lc.last_completed_date IS NULL) AND isCompleted = 0 AND task_id = :taskId " +
                 "GROUP BY t.task_id;"
     )
-    fun getMissedSinceLast(taskId: Long): Flow<Float?>
+    fun getMissedSinceLast(taskId: Long): Flow<CountSinceLastCompletion>
+
     // ************ Base Method *************** //
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -840,7 +883,7 @@ ORDER BY period ASC
         "SELECT * FROM task_table t " +
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
                 "WHERE (isCompleted != :hideCompleted OR isCompleted == 0) " +
-                "AND parent_task_id IS NULL " +
+                "AND t.parent_task_id IS NULL " +
                 "AND type = 'PROJECT' " +
                 "ORDER BY isCompleted ASC, task_due_date/8640000 ASC, estimatedWorkingTime ASC, priority DESC, skillLevel ASC, urgency DESC, importance DESC"
     )

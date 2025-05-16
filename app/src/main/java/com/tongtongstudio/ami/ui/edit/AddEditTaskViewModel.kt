@@ -11,6 +11,7 @@ import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.Reminder
 import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.ui.ADD_DRAFT_TASK_OK
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.EDIT_TASK_RESULT_OK
@@ -33,7 +34,7 @@ class AddEditTaskViewModel @Inject constructor(
     val addEditTaskEvent = addEditChannelEvent.receiveAsFlow()
 
     // TODO: change this object in safe args by ThingToDo object
-    val thingToDo = state.get<Task>("task")
+    val thingToDo = state.get<ThingToDo>("thingToDo")
     private val _category = MutableLiveData<Category?>(null)
     val category: LiveData<Category?>
         get() = _category
@@ -44,7 +45,7 @@ class AddEditTaskViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.getTaskReminders(thingToDo?.id)?.collect { reminders ->
+            repository.getTaskReminders(thingToDo?.mainTask?.id)?.collect { reminders ->
                 _reminders.value = reminders
             }
         }
@@ -52,118 +53,118 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     private fun getCategory() = viewModelScope.launch {
-        if (thingToDo?.categoryId != null)
-            _category.value = repository.getCategoryById(thingToDo.categoryId)
+        if (thingToDo?.mainTask?.categoryId != null)
+            _category.value = repository.getCategoryById(thingToDo.mainTask?.categoryId)
     }
 
-    val createdDateFormatted = thingToDo?.getCreationDateFormatted()
+    val createdDateFormatted = thingToDo?.mainTask?.getCreationDateFormatted()
 
     var title =
-        state.get<String>("thingToDoName") ?: thingToDo?.title ?: ""
+        state.get<String>("thingToDoName") ?: thingToDo?.mainTask?.title ?: ""
         set(value) {
             field = value
             state["thingToDoName"] = value
         }
 
     var priority: Int? =
-        state.get<Int>("thingToDoPriority") ?: thingToDo?.priority
+        state.get<Int>("thingToDoPriority") ?: thingToDo?.mainTask?.priority
         set(value) {
             field = value
             state["thingToDoPriority"] = value
         }
 
     var categoryId: Long? =
-        state["ThingToDoCategory"] ?: thingToDo?.categoryId
+        state["ThingToDoCategory"] ?: thingToDo?.mainTask?.categoryId
         set(value) {
             field = value
             state["ThingToDoCategory"] = value
         }
 
     var description: String? =
-        state["thingToDoDescription"] ?: thingToDo?.description
+        state["thingToDoDescription"] ?: thingToDo?.mainTask?.description
         set(value) {
             field = value
             state["thingToDoDescription"] = value
         }
 
     var estimatedTime: Long? =
-        state["estimatedWorkingTime"] ?: thingToDo?.estimatedWorkingTime
+        state["estimatedWorkingTime"] ?: thingToDo?.mainTask?.estimatedWorkingTime
         set(value) {
             field = value
             state["estimatedWorkingTime"] = value
         }
 
     var startDate =
-        state.get<Long>("thingToDoStartDate") ?: thingToDo?.startDate
+        state.get<Long>("thingToDoStartDate") ?: thingToDo?.mainTask?.startDate
         set(value) {
             field = value
             state["thingToDoStartDate"] = value
         }
 
     var dueDate =
-        state.get<Long>("dueDate") ?: thingToDo?.dueDate
+        state.get<Long?>("dueDate") ?: thingToDo?.mainTask?.dueDate
         set(value) {
             field = value
             state["dueDate"] = value
         }
 
     var deadline =
-        state["thingToDoDeadline"] ?: thingToDo?.deadline
+        state["thingToDoDeadline"] ?: thingToDo?.mainTask?.deadline
         set(value) {
             field = value
             state["thingToDoDeadline"] = value
         }
 
     var recurringTaskInterval =
-        state["recurringTaskInterval"] ?: thingToDo?.repetitionFrequency
+        state["recurringTaskInterval"] ?: thingToDo
         set(value) {
             field = value
             state["recurringTaskInterval"] = value
         }
 
-    var isRecurring = state.get<Boolean>("isRecurring") ?: thingToDo?.isRecurring ?: false
+    var isRecurring = state.get<Boolean>("isRecurring") ?: (thingToDo?.mainTask?.recurrenceInfosId != null)
         set(value) {
             field = value
             state["isRecurring"] = value
         }
 
     var ttdNature =
-        state.get<String>("thingToDoNature") ?: thingToDo?.type ?: Nature.TASK.name
+        state.get<String>("thingToDoNature") ?: thingToDo?.mainTask?.type ?: Nature.TASK.name
         set(value) {
             field = value
             state["thingToDoNature"] = value
         }
 
-    var dependency =
-        state["dependency"] ?: thingToDo?.dependency
+    var dependencyId =
+        state["dependencyId"] ?: thingToDo?.mainTask?.dependencyId
         set(value) {
             field = value
-            state["dependency"] = value
+            state["dependencyId"] = value
         }
 
     var skillLevel =
-        state["level"] ?: thingToDo?.skillLevel
+        state["level"] ?: thingToDo?.mainTask?.skillLevel
         set(value) {
             field = value
             state["level"] = value
         }
 
     var importance =
-        state["importance"] ?: thingToDo?.importance
+        state["importance"] ?: thingToDo?.mainTask?.importance
         set(value) {
             field = value
             state["importance"] = value
         }
 
     var urgency =
-        state["urgency"] ?: thingToDo?.urgency
+        state["urgency"] ?: thingToDo?.mainTask?.urgency
         set(value) {
             field = value
             state["urgency"] = value
         }
 
     var projectId: Long? =
-        state["parentId"] ?: thingToDo?.parentTaskId
+        state["parentId"] ?: thingToDo?.mainTask?.parentTaskId
         set(value) {
             field = value
             state["parentId"] = value
@@ -234,7 +235,7 @@ class AddEditTaskViewModel @Inject constructor(
                 importance = importance,
                 urgency = urgency,
                 estimatedWorkingTime = estimatedTime,
-                dependency = dependency,
+                dependency = dependencyId,
                 skillLevel = skillLevel,
                 type = ttdNature
             )
@@ -276,7 +277,7 @@ class AddEditTaskViewModel @Inject constructor(
                     importance = importance,
                     urgency = urgency,
                     estimatedWorkingTime = estimatedTime,
-                    dependency = dependency,
+                    dependency = dependencyId,
                     skillLevel = skillLevel,
                     type = ttdNature
                 )

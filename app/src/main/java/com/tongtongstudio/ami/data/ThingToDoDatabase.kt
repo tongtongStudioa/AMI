@@ -1,7 +1,7 @@
 package com.tongtongstudio.ami.data
 
 import android.text.format.DateUtils.DAY_IN_MILLIS
-import androidx.room.AutoMigration
+import android.util.Log
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -29,6 +29,7 @@ import com.tongtongstudio.ami.data.datatables.WorkSession
 import com.tongtongstudio.ami.dependenciesInjection.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.sql.SQLException
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -60,7 +61,7 @@ val MIGRATION_4_2 = object : Migration(4, 2) {
                     "timesMissed INTEGER NOT NULL DEFAULT 0, " +
                     "successCount INTEGER NOT NULL DEFAULT 0, " +
                     "comment TEXT DEFAULT NULL, " +
-                    "dependency INTEGER DEFAULT NULL, " +
+                    "dependencyId INTEGER DEFAULT NULL, " +
                     "skillLevel INTEGER DEFAULT NULL, " +
                     "creationDate INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000), " +
                     "task_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
@@ -76,12 +77,12 @@ val MIGRATION_4_2 = object : Migration(4, 2) {
                     "title, priority, task_due_date, startDate, deadline, description, " +
                     "type, importance, urgency, isCompleted, completionDate, completedOnTime, estimatedWorkingTime, " +
                     "currentWorkingTime, isRecurring, currentStreak, maxStreak, repetitionFrequency, totalRepetitionCount, " +
-                    "timesMissed, successCount, comment, dependency, skillLevel, creationDate, task_id, categoryId, parent_task_id" +
+                    "timesMissed, successCount, comment, dependencyId, skillLevel, creationDate, task_id, categoryId, parent_task_id" +
                     ") SELECT " +
                     "title, priority, task_due_date, startDate, deadline, description, " +
                     "type, importance, urgency, isCompleted, completionDate, completedOnTime, estimatedWorkingTime, " +
                     "currentWorkingTime, isRecurring, currentStreak, maxStreak, repetitionFrequency, totalRepetitionCount, " +
-                    "timesMissed, successCount, comment, dependency, skillLevel, creationDate, task_id, categoryId, parent_task_id " +
+                    "timesMissed, successCount, comment, dependencyId, skillLevel, creationDate, task_id, categoryId, parent_task_id " +
                     "FROM task_table"
         )
 
@@ -177,7 +178,7 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
     }
 }
 
-val MIGRATION_3_4 = object : Migration(3, 4) {
+val MIGRATION_3_5 = object : Migration(3, 5) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL(
             """
@@ -189,6 +190,7 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
                 deadline INTEGER,
                 description TEXT,
                 type TEXT,
+                status TEXT DEFAULT "not_started",
                 importance INTEGER,
                 urgency INTEGER,
                 isDraft INTEGER NOT NULL DEFAULT 0,
@@ -198,13 +200,13 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
                 creationDate INTEGER NOT NULL,
                 dependency_task_id INTEGER,
                 task_recurrence_id INTEGER,
-                categoryId INTEGER,
+                category_id INTEGER,
                 parent_task_id INTEGER,
                 task_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                FOREIGN KEY(dependency_task_id) REFERENCES task_table(task_id) ON DELETE SET NULL,
-                FOREIGN KEY(categoryId) REFERENCES category_table(category_id) ON DELETE SET NULL,
+                FOREIGN KEY(categoryId) REFERENCES Category(category_id) ON DELETE SET NULL,
                 FOREIGN KEY(parent_task_id) REFERENCES task_table(task_id) ON DELETE CASCADE,
-                FOREIGN KEY(task_recurrence_id) REFERENCES task_recurrence_table(recurrence_id) ON DELETE SET NULL
+                FOREIGN KEY(task_recurrence_id) REFERENCES task_recurrence_table(recurrence_id) ON DELETE SET NULL,                
+                FOREIGN KEY(dependency_task_id) REFERENCES task_table(task_id) ON DELETE SET NULL
             )
                 """.trimIndent()
         )
@@ -213,11 +215,11 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
             INSERT INTO new_task_table (
                 title, priority, task_due_date, startDate, deadline, description, type,
                 importance, urgency, isDraft,estimatedWorkingTime, skillLevel,
-                creationDate, categoryId, parent_task_id, task_id
+                creationDate, category_id, parent_task_id, task_id
             )
             SELECT title, priority, task_due_date, startDate, deadline, description, type,
                 importance, urgency, isDraft, estimatedWorkingTime, skillLevel,
-                creationDate, categoryId, parent_task_id, task_id
+                creationDate, category_id, parent_task_id, task_id
             FROM task_table
             """.trimIndent()
         )
@@ -235,7 +237,7 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
     fun insertTaskRecurrences(db: SupportSQLiteDatabase) {
         // Récupérer toutes les tâches qui ont une récurrence
         val cursor = db.query("SELECT task_id, task_due_date, repetitionFrequency FROM task_table WHERE recurrence IS NOT NULL")
-
+        // TODO: Verify repetitionFrequency is not null
         while (cursor.moveToNext()) {
             val taskId = cursor.getLong(cursor.getColumnIndexOrThrow("task_id"))
             val startDate = cursor.getLong(cursor.getColumnIndexOrThrow("task_due_date"))
@@ -287,7 +289,7 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         PomodoroSession::class,
         TaskRecurrence::class, TaskRecurrenceDaysCrossRef::class,
         DaysOfWeek::class, TaskCompletion::class],
-    version = 3,  exportSchema = true
+    version = 5,  exportSchema = true
 )//autoMigrations = [AutoMigration(4,2), AutoMigration(2,3)],
 @TypeConverters(RecurringConverters::class)
 abstract class ThingToDoDatabase : RoomDatabase() {
@@ -305,12 +307,24 @@ abstract class ThingToDoDatabase : RoomDatabase() {
 
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
+            configureSQLitePragmas(db)
             val taskDao = database.get().taskDao()
             val categoryDao = database.get().categoryDao()
             val assessmentDao = database.get().assessmentDao()
 
             applicationScope.launch {
                 insertInitialTasks(taskDao, categoryDao, assessmentDao)
+            }
+        }
+
+        private fun configureSQLitePragmas(db: SupportSQLiteDatabase) {
+            try {
+                db.execSQL("PRAGMA auto_vacuum = INCREMENTAL")
+                db.execSQL("PRAGMA journal_mode = WAL")
+                db.execSQL("PRAGMA synchronous = NORMAL")
+                db.execSQL("PRAGMA foreign_keys = ON")
+            } catch (e: SQLException) {
+                Log.e("Database", "Error configuring SQLite pragmas", e)
             }
         }
 

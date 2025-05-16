@@ -43,17 +43,17 @@ class MissedTaskAdapter(private val context: Context) :
     inner class TaskMissedViewHolder(val binding: ItemMissedTaskBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(thingToDo: ThingToDo) {
-            // TODO: retrieve category with others infos
             binding.apply {
                 tvTaskName.text = thingToDo.mainTask.title
-                tvCategory.text = thingToDo.category?.title
+                tvCategory.text = thingToDo.category
                 tvCategory.isVisible = thingToDo.category != null
                 tvDeadline.text = context.getString(
                     R.string.las_due_date,
                     Task.getDateFormatted(thingToDo.mainTask.dueDate)
                 )
+                // TODO: add missed times since last completion with unique query
                 tvMissedCount.text =
-                    context.getString(R.string.task_times_missed, thingToDo.mainTask.timesMissed)
+                    context.getString(R.string.no_information)
             }
         }
     }

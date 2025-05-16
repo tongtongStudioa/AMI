@@ -115,7 +115,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                 checkBoxCompleted.isChecked = data.showCheckedState()
                 checkBoxCompleted.isVisible = !data.mainTask.isDraft
                 tvTaskName.paint.isStrikeThruText = data.showCheckedState()
-                tvCategory.text = data.category?.title ?: "Problem"
+                tvCategory.text = data.category
                 tvCategory.isVisible = data.category != null
                 tvNumberPriority.text =
                     this@TaskViewHolder.itemView.context.getString(
@@ -163,36 +163,10 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                         listener.onProjectAddClick(project)
                     }
                 }
-                subCardView.setOnClickListener {
-                    if (expanded) {
-                        collapseView()
-                    } else {
-                        expandView()
-                    }
-                }
-                btnExpandCollapse.setOnClickListener {
-                    if (expanded) {
-                        collapseView()
-                    } else {
-                        expandView()
-                    }
-                }
             }
         }
 
-        private fun collapseView() {
-            expanded = false
-            binding.btnExpandCollapse.setImageResource(R.drawable.ic_baseline_expand_more_24)
-            binding.rvSubTasks.isVisible = expanded
-        }
-
-        private fun expandView() {
-            expanded = true
-            binding.btnExpandCollapse.setImageResource(R.drawable.ic_baseline_expand_less_24)
-            TransitionManager.beginDelayedTransition(binding.projectCardView)
-            binding.rvSubTasks.isVisible = expanded
-        }
-
+        // TODO: Remove recycler view and add intermediate or global project mark
         override fun bind(
             data: ThingToDo
         ) {
@@ -210,18 +184,18 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                     data.mainTask.priority
                 )
                 // TODO: show count completed subtasks
-                /*tvNbSubTasks.text = this@TaskComposedViewHolder.itemView.context.getString(
+                tvNbSubTasks.text = this@TaskComposedViewHolder.itemView.context.getString(
                     R.string.nb_sub_tasks_project,
-                    data.countCompletedSubtasks(),
-                    data.getNbSubTasks()
-                )*/
+                    0, // data.countCompletedSubtasks(),
+                    data.countDirectSubTasks()
+                )
                 val subTaskAdapter = SubTaskAdapter(listener)
                 subTaskAdapter.swapData(data.subTasks)
                 rvSubTasks.apply {
                     layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
                     adapter = subTaskAdapter
                 }
-                tvCategory.text = data.category?.title
+                tvCategory.text = data.category
                 tvCategory.isVisible = data.category != null
 
                 // TODO: resolve sub item touch behavior

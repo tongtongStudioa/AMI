@@ -63,8 +63,9 @@ class SubTaskAdapter(private val listener: InteractionListener) :
             binding.apply {
                 ViewCompat.setTransitionName(binding.root, "shared_element_${data.id}")
                 tvTaskName.text = data.title
-                checkBoxCompleted.isChecked = data.isCompleted
-                tvTaskName.paint.isStrikeThruText = data.isCompleted
+                // TODO: retrieve completion infos from db
+                checkBoxCompleted.isChecked = false
+                tvTaskName.paint.isStrikeThruText = true
                 tvNumberPriority.text =
                     this@SubTaskViewHolder.itemView.context.getString(
                         R.string.importance_thing_to_do,

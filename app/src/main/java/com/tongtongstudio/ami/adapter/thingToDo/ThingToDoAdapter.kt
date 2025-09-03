@@ -1,20 +1,17 @@
-package com.tongtongstudio.ami.adapter.task
+package com.tongtongstudio.ami.adapter.thingToDo
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.TransitionManager
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ItemTouchHelperAdapter
 import com.tongtongstudio.ami.adapter.ViewHolder
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
-import com.tongtongstudio.ami.databinding.ItemProjectBinding
+import com.tongtongstudio.ami.databinding.ItemProjectMinimizedBinding
 import com.tongtongstudio.ami.databinding.ItemTaskBinding
 
 
@@ -23,10 +20,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
 
     private val taskList: MutableList<ThingToDo> = mutableListOf()
 
-    companion object {
-        private const val TYPE_TASK = 0
-        private const val TYPE_TASK_COMPOSED = 1
-    }
+    enum class ViewType {TASK, PROJECT}
 
     fun submitList(tasks: List<ThingToDo>) {
         taskList.clear()
@@ -52,15 +46,15 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder<*> {
         val context = parent.context
         return when (viewType) {
-            TYPE_TASK -> {
+            ViewType.TASK.ordinal -> {
                 LayoutInflater.from(context).inflate(R.layout.item_task, parent, false)
                 val binding = ItemTaskBinding.inflate(LayoutInflater.from(context), parent, false)
                 TaskViewHolder(binding)
             }
-            TYPE_TASK_COMPOSED -> {
+            ViewType.PROJECT.ordinal -> {
                 val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_project, parent, false)
-                val binding = ItemProjectBinding.bind(view)
+                    .inflate(R.layout.item_project_minimized, parent, false)
+                val binding = ItemProjectMinimizedBinding.bind(view)
                 TaskComposedViewHolder(binding)
             }
             else -> throw IllegalArgumentException("Invalid view type")
@@ -68,7 +62,7 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (taskList[position].mainTask.type == Nature.PROJECT.name || taskList[position].subTasks.isNotEmpty()) TYPE_TASK_COMPOSED else TYPE_TASK
+        return if (taskList[position].getNature() == Nature.PROJECT.name || taskList[position].getNature() == Nature.INTERMEDIATE_PROJECT.name) ViewType.PROJECT.ordinal else ViewType.TASK.ordinal
     }
 
     override fun getItemCount(): Int {
@@ -94,14 +88,14 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                 checkBoxCompleted.setOnClickListener {
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        val task = taskList[position].mainTask
-                        listener.onTaskChecked(task, checkBoxCompleted.isChecked, position)
+                        val thingToDo = taskList[position]
+                        listener.onTaskChecked(thingToDo, checkBoxCompleted.isChecked, position)
                     }
                 }
                 root.setOnClickListener {
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        val task = taskList[position].mainTask
+                        val task = taskList[position].taskRelations.mainTask
                         listener.onTaskClick(task, itemView)
                     }
                 }
@@ -110,21 +104,26 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
 
         override fun bind(data: ThingToDo) {
             binding.apply {
-                ViewCompat.setTransitionName(binding.root, "shared_element_${data.mainTask.id}")
-                tvTaskName.text = data.mainTask.title
-                checkBoxCompleted.isChecked = data.showCheckedState()
-                checkBoxCompleted.isVisible = !data.mainTask.isDraft
-                tvTaskName.paint.isStrikeThruText = data.showCheckedState()
-                tvCategory.text = data.category
-                tvCategory.isVisible = data.category != null
+                ViewCompat.setTransitionName(binding.root, "shared_element_${data.taskRelations.mainTask.id}")
+                tvTaskName.text = data.taskRelations.mainTask.title
+                checkBoxCompleted.isChecked = data.lastCompletionStatus ?: false
+                checkBoxCompleted.isVisible = !data.taskRelations.mainTask.isDraft
+                tvTaskName.paint.isStrikeThruText = data.lastCompletionStatus ?: false
+                tvCategory.text = data.taskRelations.category?.title
+                tvCategory.isVisible = data.taskRelations.category != null
+                val status = data.getStatus()
+                tvStatus.text = status.apply {
+                    first().uppercase()
+                    replace('_',' ')
+                }
                 tvNumberPriority.text =
                     this@TaskViewHolder.itemView.context.getString(
                         R.string.importance_thing_to_do,
-                        data.mainTask.priority
+                        data.taskRelations.mainTask.priority
                     )
-                tvNumberPriority.isVisible = data.mainTask.priority != null
-                tvDeadline.isVisible = data.mainTask.dueDate != null
-                divider.isVisible = data.mainTask.dueDate != null || data.mainTask.priority != null
+                tvNumberPriority.isVisible = data.taskRelations.mainTask.priority != null
+                tvDeadline.isVisible = data.taskRelations.mainTask.deadline != null
+                divider.isVisible = data.taskRelations.mainTask.dueDate != null || data.taskRelations.mainTask.priority != null
                 /*if (data.isLate()) {
                     tvTaskName.setTextColor(
                         ContextCompat.getColor(
@@ -133,16 +132,15 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
                         )
                     )
                 }*/
-                tvDeadline.text = Task.getDateFormatted(data.mainTask.dueDate)
-                if (data.mainTask.startDate != null) {
-                    tvStartDate.text = Task.getDateFormatted(data.mainTask.startDate)
-                } else tvStartDate.isVisible = false
+                tvDeadline.text = Task.getDateFormatted(data.taskRelations.mainTask.deadline)
+                tvStartDate.text = Task.getDateFormatted(data.taskRelations.mainTask.startDate)
+                tvStartDate.isVisible = data.taskRelations.mainTask.startDate != null
             }
         }
     }
 
     inner class TaskComposedViewHolder(
-        private val binding: ItemProjectBinding
+        private val binding: ItemProjectMinimizedBinding
     ) : ViewHolder<ThingToDo>(binding.root) {
 
         private var expanded = false
@@ -166,63 +164,33 @@ class ThingToDoAdapter(private val listener: InteractionListener) :
             }
         }
 
-        // TODO: Remove recycler view and add intermediate or global project mark
         override fun bind(
             data: ThingToDo
         ) {
             binding.apply {
-                tvProjectName.text = data.mainTask.title
-                tvProjectName.paint.isStrikeThruText = data.showCheckedState()
-                tvDeadline.text = Task.getDateFormatted(data.mainTask.dueDate)
+                tvProjectName.text = data.taskRelations.mainTask.title
+                tvProjectName.paint.isStrikeThruText = data.lastCompletionStatus ?: false
+                tvCategory.text = data.taskRelations.category?.title
+                tvCategory.isVisible = data.taskRelations.category != null
+                tvStatus.text = data.getStatus()
+                tvNature.text = data.getNature()
+                tvDeadline.text = Task.getDateFormatted(data.taskRelations.mainTask.dueDate)
                 tvDeadline.isVisible =
-                    Task.getDateFormatted(data.mainTask.dueDate) != null
-                tvStartDate.text = Task.getDateFormatted(data.mainTask.startDate)
+                    Task.getDateFormatted(data.taskRelations.mainTask.deadline) != null
+                tvStartDate.text = Task.getDateFormatted(data.taskRelations.mainTask.startDate)
                 tvStartDate.isVisible =
-                    Task.getDateFormatted(data.mainTask.startDate) != null
+                    Task.getDateFormatted(data.taskRelations.mainTask.startDate) != null
                 tvNumberPriority.text = this@TaskComposedViewHolder.itemView.context.getString(
                     R.string.importance_thing_to_do,
-                    data.mainTask.priority
+                    data.taskRelations.mainTask.priority
                 )
-                // TODO: show count completed subtasks
-                tvNbSubTasks.text = this@TaskComposedViewHolder.itemView.context.getString(
+                progressText.text = this@TaskComposedViewHolder.itemView.context.getString(
                     R.string.nb_sub_tasks_project,
-                    0, // data.countCompletedSubtasks(),
-                    data.countDirectSubTasks()
+                     data.nbSubTasksCompleted,
+                    data.nbSubTasks
                 )
-                val subTaskAdapter = SubTaskAdapter(listener)
-                subTaskAdapter.swapData(data.subTasks)
-                rvSubTasks.apply {
-                    layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-                    adapter = subTaskAdapter
-                }
-                tvCategory.text = data.category
-                tvCategory.isVisible = data.category != null
-
-                // TODO: resolve sub item touch behavior
-                ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
-                    0,
-                    ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT
-                ) {
-                    override fun onMove(
-                        recyclerView: RecyclerView,
-                        viewHolder: RecyclerView.ViewHolder,
-                        target: RecyclerView.ViewHolder
-                    ): Boolean {
-                        return false
-                    }
-
-                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-
-                        val subTask: Task =
-                            taskList[bindingAdapterPosition].subTasks[viewHolder.bindingAdapterPosition]
-                        if (direction == ItemTouchHelper.RIGHT) {
-                            listener.onSubTaskRightSwipe(subTask)
-                        } else if (direction == ItemTouchHelper.LEFT) {
-                            listener.onSubTaskLeftSwipe(subTask)
-                        }
-                    }
-
-                }).attachToRecyclerView(rvSubTasks)
+                progressHorizontal.progress = if (data.nbSubTasksCompleted != null && data.nbSubTasks != null && data.nbSubTasks != 0) data.nbSubTasksCompleted /
+                    data.nbSubTasks * 100 else 0
             }
         }
     }

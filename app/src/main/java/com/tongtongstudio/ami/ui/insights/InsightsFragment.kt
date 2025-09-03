@@ -103,11 +103,11 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
         }
         viewModel.ttdCurrentMaxStreak.observe(viewLifecycleOwner) {
             binding.tvCurrentMaxStreak.text =
-                it?.streakInfo?.toString() ?: getString(R.string.no_information)
+                it?.streak?.toString() ?: getString(R.string.no_information)
         }
         viewModel.ttdMaxStreak.observe(viewLifecycleOwner) {
             binding.tvMaxStreak.text =
-                it?.streakInfo?.toString() ?: getString(R.string.no_information)
+                it?.streak?.toString() ?: getString(R.string.no_information)
         }
         viewModel.habitCompletionRate.observe(viewLifecycleOwner) {
             binding.tvHabitCompletionRate.text = if (it != null)

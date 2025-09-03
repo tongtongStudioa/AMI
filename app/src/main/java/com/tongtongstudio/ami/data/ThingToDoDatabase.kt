@@ -9,6 +9,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tongtongstudio.ami.data.dao.AssessmentDao
 import com.tongtongstudio.ami.data.dao.CategoryDao
+import com.tongtongstudio.ami.data.dao.RecurrenceInfoDao
 import com.tongtongstudio.ami.data.dao.ReminderDao
 import com.tongtongstudio.ami.data.dao.TaskDao
 import com.tongtongstudio.ami.data.dao.WorkSessionDao
@@ -299,6 +300,7 @@ abstract class ThingToDoDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
     abstract fun assessmentDao(): AssessmentDao
     abstract fun workSession(): WorkSessionDao
+    abstract fun recurrenceInfoDao(): RecurrenceInfoDao
 
     open class Callback @Inject constructor(
         private val database: Provider<ThingToDoDatabase>,
@@ -359,7 +361,7 @@ abstract class ThingToDoDatabase : RoomDatabase() {
                 priority = 1,
                 dueDate = System.currentTimeMillis(),
                 description = "Attend the regular team meeting to discuss project updates.",
-                type = Nature.TASK.name,
+                nature = Nature.TASK.name,
                 categoryId = null,
                 parentTaskId = null
             ),
@@ -368,7 +370,7 @@ abstract class ThingToDoDatabase : RoomDatabase() {
                 priority = 2,
                 dueDate = System.currentTimeMillis() + 3 * DAY_IN_MILLIS, // 3 days from now
                 description = "Prepare and complete the report on the current project status.",
-                type = Nature.TASK.name,
+                nature = Nature.TASK.name,
                 categoryId = listId[0],
                 parentTaskId = null
             ),
@@ -377,7 +379,7 @@ abstract class ThingToDoDatabase : RoomDatabase() {
                 priority = 3,
                 dueDate = System.currentTimeMillis() + 7 * DAY_IN_MILLIS, // 1 week from now
                 description = "Complete a 30-minute morning exercise routine.",
-                type = Nature.TASK.name,
+                nature = Nature.TASK.name,
                 categoryId = listId[2],
                 parentTaskId = null
             ),
@@ -386,7 +388,7 @@ abstract class ThingToDoDatabase : RoomDatabase() {
                 priority = 4,
                 dueDate = System.currentTimeMillis() + 10 * DAY_IN_MILLIS, // 10 days from now
                 description = "Study for the upcoming exams in mathematics and science.",
-                type = Nature.TASK.name,
+                nature = Nature.TASK.name,
                 categoryId = listId[1],
                 parentTaskId = null
             ),
@@ -395,7 +397,7 @@ abstract class ThingToDoDatabase : RoomDatabase() {
                 priority = 5,
                 dueDate = System.currentTimeMillis(),
                 description = "Buy essential groceries for the week.",
-                type = Nature.TASK.name,
+                nature = Nature.TASK.name,
                 categoryId = null,
                 parentTaskId = null
             )

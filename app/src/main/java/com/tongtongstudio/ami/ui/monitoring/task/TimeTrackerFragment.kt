@@ -222,7 +222,7 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker), WorkS
     }
 
     override fun onClick(workSession: WorkSession) {
-        //TODO("Not yet implemented")
+        TODO("Not yet implemented")
     }
 
     override fun onRemoveClick(workSession: WorkSession) {

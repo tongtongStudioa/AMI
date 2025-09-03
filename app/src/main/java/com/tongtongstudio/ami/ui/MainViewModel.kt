@@ -14,7 +14,9 @@ import com.tongtongstudio.ami.data.PreferencesManager
 import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.SortOrder
 import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.TaskCompletion
 import com.tongtongstudio.ami.data.datatables.ThingToDo
+import com.tongtongstudio.ami.data.datatables.Type
 import com.tongtongstudio.ami.receiver.ReminderBroadcastReceiver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -58,8 +60,14 @@ class MainViewModel @Inject constructor(
         preferencesManager.updateLayoutMode(layoutMode)
     }
 
-    fun onCheckBoxChanged(thingToDo: Task, checked: Boolean) = viewModelScope.launch {
-        TODO("Not yet implemented !")
+    fun onCheckBoxChanged(thingToDo: ThingToDo, checked: Boolean) = viewModelScope.launch {
+        val lastCompletion: Boolean? = thingToDo.lastCompletionStatus
+        if (thingToDo.getType() == Type.RECURRING.name) {
+            val taskCompletion = TaskCompletion(thingToDo.taskRelations.mainTask.id, checked)
+            repository.insertTaskCompletion(taskCompletion)
+        } else
+            repository.updateTaskCompletion(thingToDo.taskRelations.mainTask.id)
+
         //val updatedTask = thingToDo.updateCheckedState(checked)
         //repository.updateTask(updatedTask)
         //updateParentTask(thingToDo.parentTaskId)
@@ -76,17 +84,17 @@ class MainViewModel @Inject constructor(
     }
 
     fun deleteTask(thingToDo: ThingToDo, context: Context) = viewModelScope.launch {
-        val reminders = repository.getTaskReminders(thingToDo.mainTask.id)?.collect() { reminders ->
+        /*val reminders = repository.getTaskReminders(thingToDo.taskRelations.mainTask.id)?.collect() { reminders ->
             reminders.forEach {
                 cancelReminder(context, it.id)
             }
-        }
-        repository.deleteTask(thingToDo.mainTask)
-        if (thingToDo.mainTask.parentTaskId != null) {
-            updateParentTask(thingToDo.mainTask.parentTaskId)
+        }*/
+        repository.deleteTask(thingToDo.taskRelations.mainTask)
+        if (thingToDo.taskRelations.mainTask.parentTaskId != null) {
+            updateParentTask(thingToDo.taskRelations.mainTask.parentTaskId)
         }
         mainEventChannel.send(
-            SharedEvent.ShowUndoDeleteTaskMessage(thingToDo.mainTask)
+            SharedEvent.ShowUndoDeleteTaskMessage(thingToDo.taskRelations.mainTask)
         )
     }
 
@@ -103,7 +111,7 @@ class MainViewModel @Inject constructor(
         alarmManager.cancel(pendingIntent)
     }
 
-    fun updateTask(thingToDo: Task) = viewModelScope.launch {
+    fun updateTask(thingToDo: ThingToDo) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToEditScreen(thingToDo))
     }
 
@@ -119,7 +127,7 @@ class MainViewModel @Inject constructor(
         mainEventChannel.send(SharedEvent.ShowConfirmationMessage(result))
     }
 
-    fun updateSubTask(subTask: Task) = viewModelScope.launch {
+    fun updateSubTask(subTask: ThingToDo) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.NavigateToEditScreen(subTask))
     }
 
@@ -168,7 +176,7 @@ class MainViewModel @Inject constructor(
     }
 
     sealed class SharedEvent {
-        data class NavigateToEditScreen(val task: Task) : SharedEvent()
+        data class NavigateToEditScreen(val thingToDo: ThingToDo) : SharedEvent()
         data object NavigateToAddScreen : SharedEvent()
 
         /**

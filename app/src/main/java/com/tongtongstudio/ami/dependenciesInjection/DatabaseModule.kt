@@ -47,6 +47,8 @@ object DatabaseModule {
     @Provides
     fun provideAssessmentDao(db: ThingToDoDatabase) = db.assessmentDao()
 
+    @Provides
+    fun provideRecurrenceInfoDao(db: ThingToDoDatabase) = db.recurrenceInfoDao()
     @ApplicationScope
     @Provides
     @Singleton

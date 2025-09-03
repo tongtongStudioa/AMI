@@ -27,8 +27,8 @@ import com.google.android.material.transition.MaterialFadeThrough
 import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
-import com.tongtongstudio.ami.adapter.task.InteractionListener
-import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
+import com.tongtongstudio.ami.adapter.project.ProjectAdapter
+import com.tongtongstudio.ami.adapter.thingToDo.InteractionListener
 import com.tongtongstudio.ami.data.SortOrder
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
@@ -48,7 +48,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
     private val viewModel: ProjectViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var binding: FragmentMainBinding
-    private lateinit var mainTaskAdapter: ThingToDoAdapter
+    private lateinit var projectAdapter: ProjectAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enterTransition = MaterialFadeThrough().apply {
@@ -62,7 +62,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
         setUpToolbar()
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-        mainTaskAdapter = ThingToDoAdapter(this)
+        projectAdapter = ProjectAdapter(this)
 
         binding.apply {
             fabAddTask.setOnClickListener {
@@ -71,22 +71,25 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
             mainRecyclerView.apply {
                 layoutManager = LinearLayoutManager(requireContext())
-                adapter = mainTaskAdapter
+                adapter = projectAdapter
                 setHasFixedSize(true)
             }
-            val callback = object : ThingToDoItemCallback(
-                mainTaskAdapter,
+            val callback = object : ThingToDoItemCallback<ProjectAdapter>(
+                projectAdapter,
                 ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
                 requireContext()
             ) {
-                override fun actionOnRightSwiped(thingToDo: ThingToDo) {
-                    // delete task
-                    sharedViewModel.deleteTask(thingToDo, requireContext())
-                }
+                 override fun actionOnRightSwiped(thingToDo: ThingToDo, position: Int) {
+                     // delete task
+                     sharedViewModel.deleteTask(thingToDo, requireContext())
+                     projectAdapter.notifyItemRemoved(position)
 
-                override fun actionLeftSwiped(thingToDo: ThingToDo) {
+                 }
+
+                override fun actionLeftSwiped(thingToDo: ThingToDo, position: Int) {
                     //update task
-                    sharedViewModel.updateTask(thingToDo.mainTask)
+                    sharedViewModel.updateTask(thingToDo)
+                    projectAdapter.notifyItemChanged(position)
                 }
             }
             ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
@@ -102,7 +105,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                     getString(R.string.text_action_no_projects)
             } else {
                 binding.apply {
-                    mainTaskAdapter.submitList(it)
+                    projectAdapter.submitList(it)
                     emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                     mainRecyclerView.isVisible = true
                     //textSup.text = getString(R.string.nb_projects_info, it.size)
@@ -118,7 +121,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                             val action =
                                 ProjectFragmentDirections.actionProjectFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
-                                    event.task
+                                    event.thingToDo
 
                                 )
                             exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
@@ -265,7 +268,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
         }
     }
 
-    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: ThingToDo, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
@@ -279,7 +282,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
     override fun onProjectAddClick(thingToDo: ThingToDo) {
         // TODO: create another event for sub task add action which take composed task as argument
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.mainTask.id))
+        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.taskRelations.mainTask.id))
         sharedViewModel.addThingToDo()
     }
 
@@ -287,7 +290,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
         sharedViewModel.deleteSubTask(thingToDo)
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: Task) {
+    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
         sharedViewModel.updateSubTask(thingToDo)
     }
 }

@@ -150,11 +150,11 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_priority"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                android:layout_width="130dp"
+                android:layout_width="170dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="15dp"
-                android:layout_marginBottom="10dp"
                 android:hint="@string/priority"
+                android:orientation="horizontal"
                 app:endIconMode="clear_text"
                 app:helperText="@string/importance_priority_1_9"
                 app:layout_constraintEnd_toStartOf="@id/input_layout_category"
@@ -168,6 +168,7 @@
                     android:layout_height="wrap_content"
                     android:digits="123456789"
                     android:inputType="number"
+                    android:paddingStart="48dp"
                     android:maxLength="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -186,6 +187,7 @@
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/autocomplete_text_category"
                     android:layout_width="match_parent"
+                    android:paddingStart="48dp"
                     android:layout_height="wrap_content"
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
@@ -481,11 +483,12 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_user_level"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
-                android:layout_width="235dp"
+                android:layout_width="245dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:hint="@string/mastery_level"
                 android:visibility="visible"
+                app:startIconDrawable="@drawable/baseline_bolt_24"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/project_selection_group">
 
@@ -495,20 +498,41 @@
                     android:layout_height="match_parent"
                     android:digits="123456789"
                     android:inputType="number"
+                    android:paddingStart="48dp"
                     android:maxLength="1" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switch_dependency"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/dependency_selection_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/input_layout_user_level">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_choose_dependency"
                 android:layout_width="0dp"
+                style="@style/Button.EditProperties.AMI.Style"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
                 android:text="@string/dependency"
-                android:textAlignment="center"
-                android:visibility="visible"
-                app:layout_constraintStart_toStartOf="@id/input_layout_user_level"
-                app:layout_constraintTop_toBottomOf="@+id/input_layout_user_level" />
+                app:icon="@drawable/ic_project_24"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/remove_blocking_task"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <ImageButton
+                android:id="@+id/remove_blocking_task"
+                style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_clear_24"
+                app:layout_constraintStart_toEndOf="@id/btn_choose_dependency"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

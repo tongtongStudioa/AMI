@@ -24,14 +24,14 @@ class MigrationTest {
     val helper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
         ThingToDoDatabase::class.java.canonicalName!!,
-            FrameworkSQLiteOpenHelperFactory()
-        )
+        FrameworkSQLiteOpenHelperFactory()
+    )
 
     @Test
     @Throws(IOException::class)
     fun migrate4To2_validateSchema() {
         helper.createDatabase(TEST_DB, 4)
-        helper.runMigrationsAndValidate(TEST_DB,2, false, MIGRATION_4_2)
+        helper.runMigrationsAndValidate(TEST_DB, 2, false, MIGRATION_4_2)
     }
 
     @Test
@@ -63,7 +63,7 @@ class MigrationTest {
 
         // Step 3: Check if the completion record exists in task_completions
         val cursor = db.query("SELECT * FROM task_completion_table WHERE parent_task_id = 1")
-        assert(cursor.moveToFirst()) { "Data leak"} // Ensure a record exists
+        assert(cursor.moveToFirst()) { "Data leak" } // Ensure a record exists
         val completionDate = cursor.getLong(cursor.getColumnIndexOrThrow("completionDate"))
         assertEquals(1712000000000, completionDate) // Validate the data is transferred correctly
         cursor.close()
@@ -80,11 +80,13 @@ class MigrationTest {
     fun migrate3To5_correctlyTransfersTaskCompletionData() {
         // Step 1: Create database in version 2 and insert a sample task with a completion timestamp
         helper.createDatabase(TEST_DB, 3).apply {
-            execSQL("""
+            execSQL(
+                """
                 INSERT INTO task_table (title,priority, task_due_date, repetitionFrequency) 
                 VALUES ('Sample Task',null, null, "1/day/"),
                 ('Another Sample task', 4, 1712000000000, "2/week/2;5") 
-                    """.trimIndent())
+                    """.trimIndent()
+            )
             close()
         }
 
@@ -93,17 +95,20 @@ class MigrationTest {
 
         // Step 3: Check if the completion record exists in task_completions
         val taskCursor = db.query("SELECT * FROM task_completion_table")
-        assert(taskCursor.moveToFirst()) { "Data leak"} // Ensure a record exists
+        assert(taskCursor.moveToFirst()) { "Data leak" } // Ensure a record exists
         taskCursor.moveToNext()
         val dueDate = taskCursor.getLong(taskCursor.getColumnIndexOrThrow("task_due_date"))
         assertEquals(1712000000000, dueDate) // Validate the data is transferred correctly
-        val taskRecurrenceId = taskCursor.getLong(taskCursor.getColumnIndexOrThrow("task_recurrence_id"))
+        val taskRecurrenceId =
+            taskCursor.getLong(taskCursor.getColumnIndexOrThrow("task_recurrence_id"))
         taskCursor.close()
-        val recurrenceCursor = db.query("SELECT * FROM task_recurrence_table tr LEFT JOIN task_recurrence_days_cross_ref cr ON cr.recurrenceId = tr.recurrence_id LEFT JOIN days_of_week_table dt ON dt.day_id = cr.dayId")
-        assert(recurrenceCursor.moveToFirst()) { "Data leak"} // Ensure a record exists
+        val recurrenceCursor =
+            db.query("SELECT * FROM task_recurrence_table tr LEFT JOIN task_recurrence_days_cross_ref cr ON cr.recurrenceId = tr.recurrence_id LEFT JOIN days_of_week_table dt ON dt.day_id = cr.dayId")
+        assert(recurrenceCursor.moveToFirst()) { "Data leak" } // Ensure a record exists
         recurrenceCursor.moveToNext()
-        val recurrenceId = recurrenceCursor.getLong(taskCursor.getColumnIndexOrThrow("recurrence_id"))
-        assert(taskRecurrenceId == recurrenceId) {"Problem with foreign key : task_recurrence_id ($taskRecurrenceId) not the same as recurrence_id ($recurrenceId)"}
+        val recurrenceId =
+            recurrenceCursor.getLong(taskCursor.getColumnIndexOrThrow("recurrence_id"))
+        assert(taskRecurrenceId == recurrenceId) { "Problem with foreign key : task_recurrence_id ($taskRecurrenceId) not the same as recurrence_id ($recurrenceId)" }
         // TODO: test if days are well represented in database (2 and 5 for tuesday and friday (?))     
     }
 
@@ -125,8 +130,8 @@ class MigrationTest {
             .addMigrations(MIGRATION_2_3)
             .addMigrations(MIGRATION_3_5)
             .build().apply {
-            openHelper.writableDatabase.close()
-        }
+                openHelper.writableDatabase.close()
+            }
     }
 
 

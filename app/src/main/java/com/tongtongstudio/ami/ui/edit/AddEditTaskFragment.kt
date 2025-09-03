@@ -15,28 +15,33 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.EditText
 import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
-import androidx.core.widget.addTextChangedListener
-import androidx.core.widget.doOnTextChanged
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -46,10 +51,13 @@ import com.tongtongstudio.ami.adapter.AutoCompleteAdapter
 import com.tongtongstudio.ami.adapter.simple.AttributeListener
 import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
 import com.tongtongstudio.ami.data.LayoutMode
+import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.PATTERN_FORMAT_DATE
-import com.tongtongstudio.ami.data.datatables.RecurringTaskInterval
 import com.tongtongstudio.ami.data.datatables.Reminder
+import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.TaskRecurrence
+import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
 import com.tongtongstudio.ami.databinding.FragmentAddEditTaskBinding
 import com.tongtongstudio.ami.receiver.REMINDER_CUSTOM_INTERVAL
 import com.tongtongstudio.ami.receiver.REMINDER_DUE_DATE
@@ -60,20 +68,14 @@ import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.ui.dialog.CURRENT_RECURRING_INFO_REQUEST_KEY
-import com.tongtongstudio.ami.ui.dialog.DAYS_OF_THE_WEEKS_KEY
-import com.tongtongstudio.ami.ui.dialog.DEADLINE
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_DIALOG_TAG
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_LISTENER_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_RESULT_KEY
-import com.tongtongstudio.ami.ui.dialog.NO_VALUE
-import com.tongtongstudio.ami.ui.dialog.PERIOD_KEY
 import com.tongtongstudio.ami.ui.dialog.Period
 import com.tongtongstudio.ami.ui.dialog.RECURRING_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.RECURRING_RESULT_KEY
 import com.tongtongstudio.ami.ui.dialog.RECURRING_SELECTION_DIALOG_TAG
 import com.tongtongstudio.ami.ui.dialog.RecurringChoiceDialogFragment
-import com.tongtongstudio.ami.ui.dialog.START_DATE
-import com.tongtongstudio.ami.ui.dialog.TIMES_KEY
 import com.tongtongstudio.ami.ui.dialog.TimePickerDialogFragment
 import com.tongtongstudio.ami.ui.dialog.category.CATEGORY_EDIT_TAG
 import com.tongtongstudio.ami.ui.dialog.category.EditCategoryDialogFragment
@@ -84,10 +86,18 @@ import com.tongtongstudio.ami.ui.dialog.linkproject.PROJECT_LINKED_RESULT_KEY
 import com.tongtongstudio.ami.util.CalendarCustomFunction
 import com.tongtongstudio.ami.util.DateTimePicker
 import com.tongtongstudio.ami.util.InputValidation
-import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.observeOn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -102,7 +112,9 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var binding: FragmentAddEditTaskBinding
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+    private lateinit var reminderAdapter: EditAttributesAdapter<Reminder>
     private lateinit var dateTimePicker: DateTimePicker
+    private lateinit var categoryAdapter: AutoCompleteAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -118,12 +130,15 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         ) { isGranted: Boolean ->
             if (isGranted) {
                 // Permission granted
-                dateTimePicker.showDialogNewReminder {
-                    viewModel.addNewReminder(it)
+                dateTimePicker.createReminderDialog {
+                    val reminder = it
+                    viewModel.addReminder(reminder)
                 }
             } else showPermissionRationale()
         }
+        setupTransitionAnimations()
     }
+
     @InternalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -141,12 +156,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 safeSave(layoutPreference.layoutMode == LayoutMode.EXTENT)
             }
         }
-        // Transition d'entrée avec MaterialSharedAxis
-        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
-            interpolator = AccelerateDecelerateInterpolator()
-            duration = resources.getInteger(R.integer.middle_duration).toLong()
-        }
-
         /*binding.nestedScroolView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
             if (scrollY > oldScrollY) {
                 // Défilement vers le bas
@@ -157,387 +166,84 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             }
         }*/
 
+        // Pour les éléments non-editables
+        viewModel.uiState.onEach()
+        { state ->
+            binding.apply {
+                // Creation date task's
+                textViewCreatedDate.isVisible = state.thingToDo != null
+                textViewCreatedDate.text = getString(R.string.text_created_date, state.creationDateFormatted)
+                //progressBar.isVisible = state.isLoading
+            }
+        }.launchIn(lifecycleScope)
+
         binding.apply {
-            radioGroupChoiceNature.check(if (viewModel.ttdNature == Nature.TASK.name) rbTask.id else rbProject.id)
-            radioGroupChoiceNature.setOnCheckedChangeListener { group, checkedId ->
-                when (checkedId) {
-                    rbTask.id -> viewModel.ttdNature = Nature.TASK.name
-                    rbProject.id -> viewModel.ttdNature = Nature.PROJECT.name
-                }
-                projectSelectionGroup.isVisible = viewModel.ttdNature == Nature.TASK.name
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewModel.uiState
+                    .filter { it.title.isNotBlank() && it.thingToDo != null}
+                    .take(1)
+                    .collect {
+                        editTextName.setText(it.title)
+                        editTextDescription.setText(it.description)
+                        editTextPriority.setText(it.priority?.toString() ?: "" )
+                        editTextUserLevel.setText(it.skillLevel?.toString() ?: "")
+                        radioGroupChoiceNature.check(if (it.nature == Nature.TASK.name || it.nature == Nature.SUB_TASK.name) rbTask.id else rbProject.id)
+                    }
             }
 
-            // text view created date
-            textViewCreatedDate.isVisible = viewModel.thingToDo != null
-            textViewCreatedDate.text = if (viewModel.createdDateFormatted != null)
-                getString(R.string.text_created_date, viewModel.createdDateFormatted) else ""
-
-            // edit title
-            editTextName.setText(viewModel.title)
-            editTextName.addTextChangedListener {
-                if (InputValidation.isValidText(it)) {
-                    inputLayoutName.error = null
-                    val name = it.toString()
-                    viewModel.title = name.replaceFirst(
-                        name.first(),
-                        name.first().uppercaseChar()
-                    )
-                } else {
-                    viewModel.title = ""
-                    inputLayoutName.error = getString(R.string.error_no_title)
-                }
-            }
-
-            // edit description
-            if (viewModel.description != null)
-                inputLayoutDescription.editText?.setText(viewModel.description)
-            inputLayoutDescription.editText?.doOnTextChanged { text, start, before, count ->
-                viewModel.description = text.toString()
-            }
-
-            // edit priority
-            if (InputValidation.isValidPriority(viewModel.priority)) {
-                val text = if (viewModel.priority != null) viewModel.priority.toString() else ""
-                editTextPriority.setText(text)
-            }
-            editTextPriority.addTextChangedListener {
-                if (InputValidation.isValidPriority(it)) {
-                    inputLayoutPriority.error = null
-                    viewModel.priority = it.toString().toInt()
-                    viewModel.importance = it.toString().toInt()
-                } else {
-                    inputLayoutPriority.error = getString(R.string.error_no_priority)
-                    viewModel.priority = null
-                    viewModel.importance = null
-                }
-            }
-
-            // edit category
-            viewModel.category.observe(viewLifecycleOwner) {
-                if (it != null) {
-                    autocompleteTextCategory.setText(it.title)
-                } else autocompleteTextCategory.setText("")
-            }
-            val adapterCategory = AutoCompleteAdapter(requireContext())
-            viewModel.getCategories().observe(viewLifecycleOwner) {
-                if (!it.contains(viewModel.category.value)) {
-                    viewModel.updateCategory(null)
-                }
-                adapterCategory.submitList(it)
-            }
-            autocompleteTextCategory.setAdapter(adapterCategory)
             autocompleteTextCategory.setOnItemClickListener { parent, view, position, id ->
-                viewModel.updateCategory(adapterCategory.getCategorySelected(position))
-            }
-
-            // set start date
-            handleDateSelection(btnSetStartDate, removeStartDate,
-                { date ->
-                    validateSelectionStartDate(date)
-                },
-                {
-                    val endDateConstraints =
-                        CalendarCustomFunction.buildConstraintsForStartDate(
-                            viewModel.dueDate ?: viewModel.deadline
-                        )
-                    dateTimePicker.showDatePickerMaterial(endDateConstraints, viewModel.dueDate)
-                },
-                { newStartDate -> viewModel.startDate = newStartDate }
-            )
-            removeStartDate.setOnClickListener {
-                viewModel.startDate = null
-                viewModel.isRecurring = false
-                viewModel.recurringTaskInterval = null
-                updateButtonNoDataSelected(
-                    btnSetStartDate,
-                    removeStartDate,
-                    getString(R.string.set_start_date)
-                )
-                updateButtonNoDataSelected(
-                    btnRepeatTask,
-                    removeRepeatedChoice,
-                    getString(R.string.repeat)
-                )
-            }
-            // set due date
-            handleDateSelection(btnSetDueDate, removeDueDate,
-                { date ->
-                    validateSelectionDueDate(date)
-                },
-                {
-                    val endDateConstraints = CalendarCustomFunction.buildConstraintsForDueDate(
-                        viewModel.startDate ?: 0L,
-                        viewModel.deadline
-                    )
-                    dateTimePicker.showDatePickerMaterial(endDateConstraints, viewModel.dueDate)
-                },
-                { newDueDate -> viewModel.dueDate = newDueDate }
-            )
-            removeDueDate.setOnClickListener {
-                viewModel.dueDate = null
-                updateButtonNoDataSelected(
-                    btnSetDueDate,
-                    removeDueDate,
-                    getString(R.string.set_due_date)
-                )
-            }
-
-            // set deadline
-            handleDateSelection(btnSetDeadline, removeDeadline,
-                { date ->
-                    validateSelectionDeadline(date)
-                },
-                {
-                    val endDateConstraints = CalendarCustomFunction.buildConstraintsForDeadline(
-                        viewModel.dueDate ?: viewModel.startDate ?: 0L
-                    )
-                    dateTimePicker.showDatePickerMaterial(
-                        endDateConstraints,
-                        viewModel.deadline ?: viewModel.dueDate
-                    )
-                },
-                { newDeadline -> viewModel.deadline = newDeadline })
-
-            removeDeadline.setOnClickListener {
-                viewModel.deadline = null
-                updateButtonNoDataSelected(
-                    btnSetDeadline,
-                    removeDeadline,
-                    getString(R.string.set_deadline)
-                )
-            }
-
-            // set reminder
-            btnAddReminder.setOnClickListener {
-                // TODO: add logic to make repeatable reminder until thing to do due date
-                if (isNotificationPermissionGranted())
-                    dateTimePicker.showDialogNewReminder {
-                        viewModel.addNewReminder(it)
-                    }
-                else requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-            val reminderAdapter =
-                EditAttributesAdapter(object : AttributeListener<Reminder> {
-                    override fun onItemClicked(attribute: Reminder) {
-                        if (isNotificationPermissionGranted())
-                            dateTimePicker.showDialogNewReminder(attribute.dueDate) {
-                                val updatedReminder = attribute.copy(dueDate = it)
-                                viewModel.updateReminder(attribute, updatedReminder)
-                            }
-                        else requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    }
-
-                    override fun onRemoveCrossClick(attribute: Reminder) {
-                        sharedViewModel.cancelReminder(requireContext(), attribute.id)
-                        viewModel.removeReminder(attribute)
-                    }
-                }) { binding, reminder ->
-                    binding.titleOverview.text = getString(
-                        R.string.reminder_informtions_overview,
-                        reminder.getDueDateFormatted(),
-                        reminder.getTimeFormatted()
-                    )
-                }
-
-            viewModel.reminders.observe(viewLifecycleOwner) {
-                reminderAdapter.submitList(it.toList())
-                reminders = it
-            }
-            rvReminders.apply {
-                adapter = reminderAdapter
-                layoutManager = LinearLayoutManager(requireContext())
-                setHasFixedSize(false)
-            }
-
-            // set repeatable task
-            // TODO: create a custom interval for learning category tasks
-            // TODO: update start date and stopAndReset on deadline
-            val dropDownMenuRepeat = PopupMenu(requireContext(), btnRepeatTask)
-            btnRepeatTask.setOnClickListener {
-                dropDownMenuRepeat.show()
-            }
-            dropDownMenuRepeat.menuInflater.inflate(
-                R.menu.popup_menu_repeatable,
-                dropDownMenuRepeat.menu
-            )
-            dropDownMenuRepeat.setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.action_every_day -> {
-                        viewModel.isRecurring = true
-                        viewModel.recurringTaskInterval = RecurringTaskInterval(1, Period.DAYS.name)
-                        updateSpecificButtonText(
-                            btnRepeatTask, removeRepeatedChoice,
-                            viewModel.isRecurring,
-                            viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
-                            getString(R.string.repeat)
-                        )
-                        true
-                    }
-
-                    R.id.action_every_week -> {
-                        viewModel.isRecurring = true
-                        viewModel.recurringTaskInterval =
-                            RecurringTaskInterval(1, Period.WEEKS.name)
-                        updateSpecificButtonText(
-                            btnRepeatTask, removeRepeatedChoice,
-                            viewModel.isRecurring,
-                            viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
-                            getString(R.string.repeat)
-                        )
-                        true
-                    }
-
-                    R.id.action_personalized -> {
-                        showRepeatableCyclePicker()
-                        true
-                    }
-
-                    else -> true
-                }
-            }
-            removeRepeatedChoice.setOnClickListener {
-                viewModel.recurringTaskInterval = null
-                viewModel.isRecurring = false
-                updateSpecificButtonText(
-                    btnRepeatTask, removeRepeatedChoice,
-                    viewModel.isRecurring,
-                    viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
-                    getString(R.string.repeat)
-                )
-            }
-
-            // set estimated work time
-            btnSetEstimatedTime.setOnClickListener {
-                showEstimatedTimePicker()
-            }
-            removeEstimatedTime.setOnClickListener {
-                viewModel.estimatedTime = null
-                updateSpecificButtonText(
-                    btnSetEstimatedTime, removeEstimatedTime,
-                    viewModel.estimatedTime != null,
-                    TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedTime),
-                    getString(R.string.set_estimated_time)
-                )
-            }
-
-            // attach to a project
-            btnAttachProject.setOnClickListener {
-                showDialogAttachProject()
-            }
-            updateSpecificButtonText(
-                btnAttachProject, removeProjectLinked,
-                viewModel.projectId != null,
-                getString(R.string.project_linked_text, viewModel.getMainTask()),
-                getString(R.string.project_linked_default)
-            )
-            removeProjectLinked.setOnClickListener {
-                viewModel.projectId = null
-                updateSpecificButtonText(
-                    btnAttachProject, removeProjectLinked,
-                    viewModel.projectId != null,
-                    getString(R.string.project_linked_text, viewModel.getMainTask()),
-                    getString(R.string.project_linked_default)
-                )
-            }
-
-            // skill level and dependencyId
-            if (viewModel.skillLevel != null)
-                inputLayoutUserLevel.editText?.setText(viewModel.skillLevel.toString())
-            inputLayoutUserLevel.editText?.addTextChangedListener { text ->
-                viewModel.skillLevel =
-                    if (text.toString() == "" || text.toString() == "null") null else text.toString()
-                        .toInt()
-            }
-
-            switchDependency.isChecked = viewModel.dependencyId ?: false
-            switchDependency.setOnCheckedChangeListener { _, isChecked ->
-                viewModel.dependencyId = isChecked
+                viewModel.updateCategory(categoryAdapter.getCategorySelected(position))
             }
         }
+
+        setupAdapters()
+        setupUiBindings()
+        setupObservers()
 
         // from dialog estimated time selection
         setFragmentResultListener(ESTIMATED_TIME_LISTENER_REQUEST_KEY) { _, bundle ->
             val result = bundle.getLong(ESTIMATED_TIME_RESULT_KEY)
             if (result != 0L) {
-                viewModel.estimatedTime = result
-                updateSpecificButtonText(
-                    binding.btnSetEstimatedTime,
-                    binding.removeEstimatedTime,
-                    viewModel.estimatedTime != null,
-                    getString(
-                        R.string.estimated_time_info,
-                        TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedTime)
-                    ),
-                    getString(R.string.set_estimated_time)
-                )
+                viewModel.updateEstimatedWorkTime(result)
             }
         }
 
         // from dialog recurring selection
         setFragmentResultListener(RECURRING_REQUEST_KEY) { _, bundle ->
-            val result = bundle.getParcelable<RecurringTaskInterval>(RECURRING_RESULT_KEY)
-            viewModel.recurringTaskInterval = result
-            viewModel.isRecurring = result != null
-            // update task start date if not set
-            if (result != null) {
-                updateTaskRecurringStartDate(result)
+            val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                bundle.getParcelable(RECURRING_RESULT_KEY, TaskRecurrenceWithDays::class.java)
+            } else {
+                bundle.getParcelable(RECURRING_RESULT_KEY)
             }
-            updateSpecificButtonText(
-                binding.btnRepeatTask,
-                binding.removeRepeatedChoice,
-                viewModel.isRecurring,
-                result?.getRecurringIntervalReadable(resources),
-                getString(R.string.repeat)
-            )
+            viewModel.updateRecurrenceInfos(result?.taskRecurrence,result?.daysOfWeek ?: emptyList())
+            // TODO: update start date by default if no start date is set
         }
 
-        // TODO: create an action with safe args with nav component
         // from dialog edit project linked
         setFragmentResultListener(PROJECT_LINKED_LISTENER_REQUEST_KEY) { _, bundle ->
-            val result = bundle.getLong(PROJECT_LINKED_RESULT_KEY)
-            if (result != 0L) {
-                viewModel.projectId = result
+            val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                bundle.getParcelable(PROJECT_LINKED_RESULT_KEY,Task::class.java)
+            } else {
+                bundle.getParcelable(PROJECT_LINKED_RESULT_KEY)
             }
-            updateSpecificButtonText(
-                binding.btnAttachProject, binding.removeProjectLinked,
-                viewModel.projectId != null,
-                getString(R.string.project_linked_text, viewModel.getMainTask()),
-                getString(R.string.project_linked_default)
-            )
+            if (result != null) {
+                viewModel.updateParentProject(result)
+            }
         }
 
         // from a project
         setFragmentResultListener("is_new_sub_task") { _, bundle ->
-            val result = bundle.getLong("project_id")
-            viewModel.projectId = result
+            val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                bundle.getParcelable("project",Task::class.java)
+            } else {
+                bundle.getParcelable("project")
+            }
+            viewModel.updateParentProject(result)
             // can't change project id of add sub task demand
             binding.removeProjectLinked.isVisible = false
             binding.btnAttachProject.isClickable = false
-            updateSpecificButtonText(
-                binding.btnAttachProject, binding.removeProjectLinked,
-                viewModel.projectId != null,
-                getString(R.string.project_linked_text, viewModel.getMainTask()),
-                getString(R.string.project_linked_default)
-            )
         }
 
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.addEditTaskEvent.collect { event ->
-                when (event) {
-                    is AddEditTaskViewModel.AddEditTaskEvent.ShowInvalidInputMessage -> {
-                        Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_LONG).show()
-                    }
-
-                    is AddEditTaskViewModel.AddEditTaskEvent.NavigateBackWithResult -> {
-                        // update project if task is linked
-                        sharedViewModel.updateParentTask(viewModel.projectId)
-                        clearFocus()
-                        sharedViewModel.showConfirmationMessage(event.result)
-                        findNavController().popBackStack()
-                    }
-                }.exhaustive
-            }
-        }
         (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.edit_task_menu, menu)
@@ -551,7 +257,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.action_create_new_category -> {
-                        showUpdateCategoryDialog()
+                        showCategoryDialog()
                         true
                     }
 
@@ -571,260 +277,448 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         }, viewLifecycleOwner)
     }
 
+
+    private fun setupTransitionAnimations() {
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+            interpolator = AccelerateDecelerateInterpolator()
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+    }
+
+    private fun setupAdapters() {
+        reminderAdapter =
+            EditAttributesAdapter(object : AttributeListener<Reminder> {
+                override fun onItemClicked(attribute: Reminder) {
+                    if (isNotificationPermissionGranted())
+                        dateTimePicker.createReminderDialog(attribute) {
+                            viewModel.updateReminder(it)
+                        }
+                    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
+
+                override fun onRemoveCrossClick(attribute: Reminder) {
+                    sharedViewModel.cancelReminder(requireContext(), attribute.id)
+                    viewModel.removeReminder(attribute)
+                }
+            }) { binding, reminder ->
+                binding.titleOverview.text = getString(
+                    R.string.reminder_informtions_overview,
+                    reminder.getDueDateFormatted(),
+                    reminder.getTimeFormatted()
+                )
+            }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.uiState
+                .map { it.reminders }
+                .distinctUntilChanged()
+                .collect { reminders ->
+                    reminderAdapter.submitList(reminders)
+                }
+        }
+
+        binding.rvReminders.apply {
+            adapter = reminderAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+            setHasFixedSize(false)
+        }
+
+        categoryAdapter = AutoCompleteAdapter(requireContext())
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.uiState
+                .map { it.categorySuggestions }
+                .collect { suggestions ->
+                    if (!suggestions.contains(viewModel.uiState.value.category)) {
+                        viewModel.updateCategory(null)
+                    }
+                    categoryAdapter.submitList(suggestions)
+                }
+        }
+        binding.autocompleteTextCategory.setAdapter(categoryAdapter)
+    }
+
+    private fun setupUiBindings() {
+        binding.apply {
+            // edit title
+            /*lifecycleScope.launch {
+                viewModel.isFormValid.collect { isValid ->
+                    fabSaveTask.isEnabled = isValid
+                    if (!isValid) inputLayoutName.error = getString(R.string.error_no_title)
+                }
+            }*/
+            radioGroupChoiceNature.setOnCheckedChangeListener { group, checkedId ->
+                when (checkedId) {
+                    rbTask.id -> viewModel.updateNature(Nature.TASK.name)
+                    rbProject.id -> viewModel.updateNature(Nature.PROJECT.name)
+                }
+            }
+
+            editTextName.bindTextTo { text ->
+                if (InputValidation.isValidText(text)) {
+                    inputLayoutName.error = null
+                    viewModel.updateTitle(text.replaceFirstChar { char ->
+                        char.uppercaseChar()
+                    })
+                } else {
+                    inputLayoutName.error = getString(R.string.error_no_title)
+                    viewModel.updateTitle("")
+                }
+            }
+
+            // edit Priority
+            editTextPriority.bindTextTo { text ->
+                if (InputValidation.isValidPriority(text)) {
+                    viewModel.updatePriority(text.toInt())
+                }
+            }
+
+            inputLayoutDescription.editText?.bindTextTo { viewModel.updateDescription(it) }
+
+            // set reminder
+            btnAddReminder.setOnClickListener {
+                // TODO: add logic to make repeatable reminder until thing to do due date
+                if (isNotificationPermissionGranted())
+                    dateTimePicker.createReminderDialog {
+                        viewModel.addReminder(it)
+                    }
+                else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+
+            btnSetEstimatedTime.setOnClickListener {
+                showEstimatedTimeDialog()
+            }
+
+            removeEstimatedTime.setOnClickListener {
+                viewModel.updateEstimatedWorkTime(null)
+            }
+            btnAttachProject.setOnClickListener {
+                showProjectSelectionDialog()
+            }
+            removeProjectLinked.setOnClickListener {
+                viewModel.updateParentProject(null)
+            }
+
+            btnChooseDependency.setOnClickListener {
+                // TODO: show appropriate dialog
+            }
+            removeBlockingTask.setOnClickListener {
+                viewModel.updateDependencyTask(null)
+            }
+            // Bindings complexes
+            setupDateBindings()
+            setupRecurringTaskBinding()
+        }
+    }
+
+    private fun setupDateBindings() {
+        binding.btnSetStartDate.bindDateSelection(
+            viewModel.uiState.value.startDate,
+            validateDate = ::validateSelectionStartDate,
+            getConstraints = { CalendarCustomFunction.buildConstraintsForStartDate(viewModel.uiState.value.dueDate ?: viewModel.uiState.value.deadline) },
+            updateFn = {newStartDate -> viewModel.updateStartDate(newStartDate)}
+            )
+
+        binding.removeStartDate.setOnClickListener {
+            viewModel.updateStartDate(null)
+        }
+
+        binding.btnSetDueDate.bindDateSelection(
+            viewModel.uiState.value.dueDate,
+            validateDate = ::validateSelectionDueDate,
+            getConstraints = { CalendarCustomFunction.buildConstraintsForDueDate(viewModel.uiState.value.startDate ?: 0L, viewModel.uiState.value.deadline) },
+            updateFn = {newDueDate -> viewModel.updateDueDate(newDueDate)}
+        )
+
+        binding.removeDueDate.setOnClickListener {
+            viewModel.updateDueDate(null)
+        }
+
+        binding.btnSetDeadline.bindDateSelection(
+            viewModel.uiState.value.deadline,
+            validateDate = ::validateSelectionDeadline,
+            getConstraints = { CalendarCustomFunction.buildConstraintsForDeadline(viewModel.uiState.value.dueDate ?: viewModel.uiState.value.startDate ?: 0L) } ,
+            updateFn = {newDeadline -> viewModel.updateDeadline(newDeadline)}
+        )
+
+        binding.removeDeadline.setOnClickListener {
+            viewModel.updateDeadline(null)
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.uiState
+                .map { it.error }
+                .distinctUntilChanged()
+                .collect { error ->
+                    error?.let {
+                        Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
+                    }
+                }
+        }
+    }
+
+    private fun setupRecurringTaskBinding() {
+        // set repeatable task
+        // TODO: create a custom interval for learning category tasks
+        // TODO: update start date and stopAndReset on deadline
+        val dropDownMenuRepeat = PopupMenu(requireContext(), binding.btnRepeatTask)
+        binding.btnRepeatTask.setOnClickListener {
+            dropDownMenuRepeat.show()
+        }
+        dropDownMenuRepeat.menuInflater.inflate(
+            R.menu.popup_menu_repeatable,
+            dropDownMenuRepeat.menu
+        )
+        dropDownMenuRepeat.setOnMenuItemClickListener {
+            updateRecurrenceInfos(it.itemId)
+            true
+        }
+        binding.removeRepeatedChoice.setOnClickListener {
+            viewModel.updateRecurrenceInfos(null, emptyList())
+        }
+    }
+
+    private fun updateRecurrenceInfos(itemId: Int) {
+        when (itemId) {
+            R.id.action_every_day -> {
+                viewModel.updateRecurrenceInfos(TaskRecurrence(Period.DAYS.name,1,startDate = null), emptyList())
+            }
+            R.id.action_every_week -> {
+                viewModel.updateRecurrenceInfos(TaskRecurrence(Period.WEEKS.name,1, startDate = null), emptyList())
+            }
+            R.id.action_personalized -> {
+                showRecurringTaskDialog()
+            }
+        }
+    }
+
+    private fun setupObservers() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch { observeUiState() }
+                launch { observeEvents() }
+                launch { observeReminders() }
+            }
+        }
+    }
+
+    private suspend fun observeUiState() {
+        viewModel.uiState.collect() { state ->
+            renderUiState(state)
+        }
+    }
+
+    private suspend fun observeEvents() {
+        viewModel.addEditTaskEvent.collect { event ->
+            handleEvent(event)
+        }
+    }
+
+    private suspend fun observeReminders() {
+        viewModel.reminders.collect { reminders ->
+            reminderAdapter.submitList(reminders)
+        }
+    }
+
+    private fun renderUiState(state: AddEditTaskViewModel.UiState) {
+        binding.apply {
+            // skill level
+            if (state.skillLevel != null)
+                inputLayoutUserLevel.editText?.setText(state.skillLevel.toString())
+
+            // Mise à jour des dates
+            btnSetStartDate.updateDateButton(removeStartDate, state.startDate, getString(R.string.set_start_date))
+            btnSetDueDate.updateDateButton(removeDueDate, state.dueDate, getString(R.string.set_due_date))
+            btnSetDeadline.updateDateButton(removeDeadline, state.deadline, getString(R.string.set_deadline))
+
+            // Complex Update
+            btnRepeatTask.updateSpecificButtonText(
+                removeRepeatedChoice,
+                state.taskRecurrenceWithDays?.getRecurringIntervalReadable(resources),
+                getString(R.string.repeat)
+            )
+
+            btnSetEstimatedTime.updateSpecificButtonText(
+                removeEstimatedTime,
+                state.estimatedWorkTime?.let {
+                    getString(
+                        R.string.estimated_time_info,
+                        TrackingTimeUtility.getFormattedEstimatedTime(state.estimatedWorkTime)
+                    )
+                },
+                getString(R.string.set_estimated_time)
+            )
+
+            btnAttachProject.updateSpecificButtonText(
+                removeProjectLinked,
+                state.parentProject?.let {
+                    getString(R.string.project_linked_text, state.parentProject.title)
+                },
+                getString(R.string.project_linked_default)
+            )
+            // blocking task
+            // TODO: add multiple blocking tasks  (or dependency tasks)
+            btnChooseDependency.updateSpecificButtonText(
+                removeBlockingTask,
+                state.blockingTask?.let {
+                    "Blocking task : $it"
+                },
+                getString(R.string.dependency)
+            )
+        }
+    }
+
+    private fun handleEvent(event: AddEditTaskViewModel.AddEditTaskEvent) {
+        when (event) {
+            is AddEditTaskViewModel.AddEditTaskEvent.NavigateBackWithResult -> {
+                clearFocus()
+                sharedViewModel.showConfirmationMessage(event.result)
+                findNavController().popBackStack()
+            }
+            is AddEditTaskViewModel.AddEditTaskEvent.ShowInvalidInputMessage -> Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_LONG).show()
+            is AddEditTaskViewModel.AddEditTaskEvent.ScheduleReminders -> scheduleReminders(event.reminders)
+        }
+    }
+
+    private fun validateSelectionStartDate(newStartDate: Long): Boolean {
+        val state = viewModel.uiState.value
+        return when {
+            state.dueDate != null && newStartDate > state.dueDate ||state.deadline != null && newStartDate > state.deadline-> {
+                viewModel.setError(getString(R.string.msg_invalid_start_date))
+                false
+            }
+            else -> true
+        }
+    }
+
+    private fun validateSelectionDueDate(newDueDate: Long): Boolean {
+        val state = viewModel.uiState.value
+        return when {
+            state.startDate != null && newDueDate < state.startDate ||state.deadline != null && newDueDate > state.deadline-> {
+                viewModel.setError(getString(R.string.msg_invalid_start_date))
+                false
+            }
+            else -> true
+        }
+    }
+
+    private fun validateSelectionDeadline(newDeadline: Long): Boolean {
+        val state = viewModel.uiState.value
+        return when {
+            state.startDate != null && newDeadline < state.startDate ||state.dueDate != null && newDeadline < state.dueDate-> {
+                viewModel.setError(getString(R.string.msg_invalid_start_date))
+                false
+            }
+            else -> true
+        }
+    }
+
+
+    // Extensions.kt
+    private fun EditText.bindTextTo(updateFn: (String) -> Unit) {
+        doAfterTextChanged { text ->
+                updateFn(text?.toString() ?: "")
+        }
+    }
+
+    private fun MaterialButton.bindDateSelection(
+        date: Long?,
+        validateDate: (Long) -> Boolean,
+        getConstraints: () -> CalendarConstraints,
+        updateFn: (Long) -> Unit
+    ) {
+        val dropDownMenuRepeat = PopupMenu(requireContext(), this)
+        setOnClickListener {
+            dropDownMenuRepeat.show()
+        }
+        dropDownMenuRepeat.menuInflater.inflate(
+            R.menu.popup_menu_date_picker,
+            dropDownMenuRepeat.menu
+        )
+        dropDownMenuRepeat.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.action_today -> updateFn(Calendar.getInstance().timeInMillis)
+
+                R.id.action_tomorrow -> updateFn(Calendar.getInstance().run {
+                    add(Calendar.DAY_OF_MONTH, 1)
+                    timeInMillis
+                })
+
+                R.id.action_personalized -> {
+                    showDatePicker(
+                        initialDate = date,
+                        constraints = getConstraints(),
+                        onDateSelected = { newDate ->
+                            if (validateDate(newDate)) {
+                                updateFn(newDate)
+                            }
+                        }
+                    )
+                }
+            }
+            true
+        }
+    }
+    private fun MaterialButton.updateDateButton(removeButton: View, date: Long?, defaultText: String) {
+        if (date != null) {
+            text = SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(date)
+            setTextColor(MaterialColors.getColor(context, R.attr.colorPrimary,""))
+            removeButton.isVisible = true
+        } else {
+            text = defaultText
+            setTextColor(MaterialColors.getColor(context, R.attr.colorPrimaryInverse,""))
+            removeButton.isVisible = false
+        }
+    }
+
+    private fun MaterialButton.updateSpecificButtonText(
+        removeButton: View,
+        valueText: String?,
+        defaultText: String
+    ){
+        if (InputValidation.isValidText(valueText)) {
+            setTextColor(MaterialColors.getColor(requireView(), R.attr.colorPrimary))
+            removeButton.isVisible = true
+            text = valueText
+        } else {
+            setTextColor(MaterialColors.getColor(requireView(), R.attr.colorPrimaryInverse))
+            removeButton.isVisible = false
+            text = defaultText
+        }
+    }
+
+    fun Fragment.showDatePicker(
+        initialDate: Long? = null,
+        constraints: CalendarConstraints? = null,
+        onDateSelected: (Long) -> Unit
+    ) {
+        val datePicker = MaterialDatePicker.Builder.datePicker()
+            .setSelection(initialDate ?: MaterialDatePicker.todayInUtcMilliseconds())
+            .apply { constraints?.let { setCalendarConstraints(it) } }
+            .build()
+
+        datePicker.addOnPositiveButtonClickListener { date ->
+            val selectedDate = Calendar.getInstance().apply {
+                timeInMillis = date
+                set(Calendar.HOUR_OF_DAY, 23)
+                set(Calendar.MINUTE, 59)
+                set(Calendar.SECOND, 59)
+            }.timeInMillis
+            onDateSelected(selectedDate)
+        }
+
+        datePicker.show(parentFragmentManager, "DATE_PICKER_TAG")
+    }
+
     private fun clearFocus() {
         binding.editTextName.clearFocus()
         binding.editTextPriority.clearFocus()
         binding.editTextDescription.clearFocus()
     }
 
-    private fun validateSelectionDeadline(date: Long): Boolean {
-        return if (!(viewModel.startDate != null && viewModel.startDate!! > date || viewModel.dueDate != null && viewModel.dueDate!! > date)) {
-            true
-        } else {
-            Snackbar.make(
-                requireView(),
-                getString(R.string.msg_invalid_deadline),
-                Snackbar.LENGTH_SHORT
-            ).show()
-            false
-        }
-    }
-
-    private fun validateSelectionDueDate(date: Long): Boolean {
-        return if (!(viewModel.startDate != null && viewModel.startDate!! > date || viewModel.deadline != null && viewModel.deadline!! < date)) {
-            true
-        } else {
-            Snackbar.make(
-                requireView(),
-                getString(R.string.msg_invalid_due_date),
-                Snackbar.LENGTH_SHORT
-            ).show()
-            false
-        }
-    }
-
-    private fun validateSelectionStartDate(date: Long): Boolean {
-        return if (!(viewModel.dueDate != null && viewModel.dueDate!! < date || viewModel.deadline != null && viewModel.deadline!! < date)) {
-            true
-        } else {
-            Snackbar.make(
-                requireView(),
-                getString(R.string.msg_invalid_start_date),
-                Snackbar.LENGTH_SHORT
-            ).show()
-            false
-        }
-    }
-
-
-    private fun updateTaskRecurringStartDate(recurringTaskInterval: RecurringTaskInterval) {
-
-        if (recurringTaskInterval.daysOfWeek == null && viewModel.dueDate == null) {
-            viewModel.dueDate = Calendar.getInstance().apply {
-                set(Calendar.MILLISECOND, 0)
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-            }.timeInMillis
-        } else if (recurringTaskInterval.daysOfWeek != null) {
-            viewModel.dueDate = recurringTaskInterval.setStartDateSpecificDay()
-            viewModel.startDate = viewModel.dueDate
-        }
-        updateDateButtonText(
-            binding.btnSetDueDate,
-            viewModel.dueDate,
-            binding.removeDueDate,
-            getString(R.string.set_due_date)
-        )
-        updateDateButtonText(
-            binding.btnSetStartDate,
-            viewModel.startDate,
-            binding.removeStartDate,
-            getString(R.string.set_start_date)
-        )
-    }
-
-    private fun setUpButtonDetails(layoutMode: LayoutMode) {
-        val isModeExtent = layoutMode == LayoutMode.EXTENT
-        binding.apply {
-
-            updateDateButtonText(
-                btnSetDueDate,
-                viewModel.dueDate,
-                removeDueDate,
-                getString(R.string.set_due_date)
-            )
-            // update estimateTime button and recurring task interval button
-            updateSpecificButtonText(
-                btnRepeatTask, removeRepeatedChoice,
-                viewModel.isRecurring,
-                viewModel.recurringTaskInterval?.getRecurringIntervalReadable(resources),
-                getString(R.string.repeat)
-            )
-
-            showHideViews(isModeExtent)
-
-            // update views if mode extent
-            if (isModeExtent) {
-                updateDateButtonText(
-                    btnSetStartDate,
-                    viewModel.startDate,
-                    removeStartDate,
-                    getString(R.string.set_start_date)
-                )
-                updateDateButtonText(
-                    btnSetDeadline,
-                    viewModel.deadline,
-                    removeDeadline,
-                    getString(R.string.set_deadline)
-                )
-                updateSpecificButtonText(
-                    btnSetEstimatedTime,
-                    removeEstimatedTime,
-                    viewModel.estimatedTime != null,
-                    getString(
-                        R.string.estimated_time_info,
-                        TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedTime)
-                    ),
-                    getString(R.string.set_estimated_time)
-                )
-            }
-        }
-    }
-
-    private fun showHideViews(modeExtent: Boolean) {
-        binding.apply {
-            projectSelectionGroup.isVisible = viewModel.ttdNature == Nature.TASK.name && modeExtent
-            radioGroupChoiceNature.isVisible = modeExtent
-            divider4.isVisible = modeExtent
-            startDateSelectionGroup.isVisible = modeExtent
-            deadlineSelectionGroup.isVisible = modeExtent
-            estimationSelectionGroup.isVisible = modeExtent
-            inputLayoutCategory.isVisible = modeExtent
-            inputLayoutDescription.isVisible = modeExtent
-            inputLayoutUserLevel.isVisible = modeExtent
-            switchDependency.isVisible = modeExtent
-            /*if (modeExtent) {
-                editTextPriority.setText(viewModel.importance.toString().replace("null", ""))
-            } else {
-                editTextPriority.setText(viewModel.priority.replace("null", ""))
-            }*/
-        }
-    }
-
-    private fun updateSpecificButtonText(
-        button: MaterialButton,
-        removeButton: View,
-        valueIsSet: Boolean,
-        valueText: String?,
-        defaultText: String
-    ) {
-        if (valueIsSet && valueText != null) {
-            updateButtonSelection(button, valueText, removeButton)
-        } else {
-            updateButtonNoDataSelected(button, removeButton, defaultText)
-        }
-    }
-
-    private fun updateButtonNoDataSelected(
-        button: MaterialButton,
-        removeButton: View,
-        defaultText: String
-    ) {
-        //button.setIconTintResource(R.color.md_theme_light_inversePrimary)
-        button.setTextColor(MaterialColors.getColor(requireView(), R.attr.colorPrimaryInverse))
-        removeButton.isVisible = false
-        button.text = defaultText
-    }
-
-    private fun handleDateSelection(
-        button: MaterialButton,
-        removeButton: View,
-        actionValidationDate: (Long) -> Boolean,
-        actionPersonalizedDate: () -> MaterialDatePicker<Long>,
-        updateDataAction: (Long) -> Unit
-    ) {
-        val dropDownMenu = PopupMenu(context, button)
-        button.setOnClickListener {
-            dropDownMenu.show()
-        }
-        dropDownMenu.menuInflater.inflate(R.menu.popup_menu_date_picker, dropDownMenu.menu)
-        dropDownMenu.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.action_today -> {
-                    val todayDate = Calendar.getInstance().apply {
-                        set(Calendar.HOUR_OF_DAY, 23)
-                        set(Calendar.MINUTE, 59)
-                        set(Calendar.SECOND, 59)
-                    }.timeInMillis
-                    if (actionValidationDate.invoke(todayDate)) {
-                        updateButtonSelection(button, getStringFromLong(todayDate), removeButton)
-                        updateDataAction(todayDate)
-                    }
-                    true
-                }
-
-                R.id.action_tomorrow -> {
-                    val tomorrowDate =
-                        Calendar.getInstance().apply {
-                            set(Calendar.HOUR_OF_DAY, 23)
-                            set(Calendar.MINUTE, 59)
-                            set(Calendar.SECOND, 59)
-                            add(Calendar.DAY_OF_MONTH, 1)
-                        }.timeInMillis
-                    if (actionValidationDate.invoke(tomorrowDate)) {
-                        updateButtonSelection(button, getStringFromLong(tomorrowDate), removeButton)
-                        updateDataAction(tomorrowDate)
-                    }
-                    true
-                }
-
-                R.id.action_personalized -> {
-                    val datePicker = actionPersonalizedDate()
-                    datePicker.addOnPositiveButtonClickListener { date ->
-                        val selectedDate = Calendar.getInstance().apply {
-                            timeInMillis = date
-                            set(Calendar.HOUR_OF_DAY, 23)
-                            set(Calendar.MINUTE, 59)
-                            set(Calendar.SECOND, 59)
-                        }.timeInMillis
-                        updateDataAction(selectedDate)
-                        updateButtonSelection(button, getStringFromLong(selectedDate), removeButton)
-                    }
-                    true
-                }
-
-                else -> false
-            }
-        }
-    }
-
-    private fun updateDateButtonText(
-        button: MaterialButton,
-        date: Long?,
-        removeButton: View,
-        defaultText: String
-    ) {
-        binding.apply {
-            if (date != null) {
-                updateButtonSelection(button, getStringFromLong(date), removeButton)
-            } else {
-                updateButtonNoDataSelected(button, removeButton, defaultText)
-            }
-        }
-    }
-
-    private fun updateButtonSelection(
-        button: MaterialButton,
-        valueText: String,
-        removeButton: View
-    ) {
-        button.setTextColor(MaterialColors.getColor(requireView(), R.attr.colorPrimary))
-        removeButton.isVisible = true
-        button.text = valueText
-    }
-
-    private fun showEstimatedTimePicker() {
+    private fun showEstimatedTimeDialog() {
         val newFragment = TimePickerDialogFragment(getString(R.string.set_estimated_time))
         newFragment.show(parentFragmentManager, ESTIMATED_TIME_DIALOG_TAG)
     }
@@ -833,46 +727,45 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(long)
     }
 
-    private fun safeSave(modeExtent: Boolean) {
-        /*if (!InputValidation.isNotNull(viewModel.dueDate)) {
-            viewModel.showInvalidInputMessage(getString(R.string.error_no_date))
-            return
-        }*/
-        /*if (InputValidation.isValidText(viewModel.title) && InputValidation.isValidText(viewModel.priority) && InputValidation.isNotNull(viewModel.dueDate))
-            viewModel.showInvalidInputMessage("Draft task")*/
-        if (InputValidation.isValidText(viewModel.title)) {
-            viewModel.onSaveClick(modeExtent)
-            for (reminder in reminders) {
-                scheduleReminder(requireContext(), reminder, viewModel.title)
-            }
-        } else binding.inputLayoutName.error = getString(R.string.error_no_title)
+    private fun setUpButtonDetails(layoutMode: LayoutMode) {
+        binding.apply {
+            radioGroupChoiceNature.isVisible = layoutMode.name != LayoutMode.SIMPLIFIED.name
+            startDateSelectionGroup.isVisible = layoutMode.name != LayoutMode.SIMPLIFIED.name
+            deadlineSelectionGroup.isVisible = layoutMode.name != LayoutMode.SIMPLIFIED.name
+            estimationSelectionGroup.isVisible = layoutMode.name != LayoutMode.SIMPLIFIED.name
+            projectSelectionGroup.isVisible = layoutMode.name != LayoutMode.SIMPLIFIED.name
+            dependencySelectionGroup.isVisible = layoutMode.name != LayoutMode.SIMPLIFIED.name
+            inputLayoutUserLevel.isVisible = layoutMode.name != LayoutMode.SIMPLIFIED.name
+        }
     }
 
-    private fun scheduleReminder(context: Context, reminder: Reminder, taskName: String) {
-        if (reminder.isPassed())
-            return
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, ReminderBroadcastReceiver::class.java).apply {
-            putExtra(TASK_NAME_KEY, taskName)
-            putExtra(REMINDER_DUE_DATE, reminder.dueDate)
-            putExtra(REMINDER_ID, reminder.id)
-            putParcelableArrayListExtra(
-                REMINDER_CUSTOM_INTERVAL,
-                arrayListOf(reminder.repetitionFrequency)
-            )
-        }
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            reminder.id.toInt(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+    private fun safeSave(modeExtent: Boolean) {
+        if (InputValidation.isValidText(binding.editTextName.text))
+            viewModel.saveTask(modeExtent)
+        else binding.inputLayoutName.error = getString(R.string.error_no_title)
+    }
 
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, reminder.dueDate, pendingIntent)
-        /*Log.e(
-            "Schedule Reminder",
-            "Alarm set for: ${Date(reminder.dueDate)} and is Recurrent : ${reminder.isRecurrent}"
-        )*/
+    private fun scheduleReminders(reminders: List<Reminder>) {
+        reminders.forEach { reminder ->
+            if (!reminder.isPassed()) {
+                val intent = Intent(requireContext(), ReminderBroadcastReceiver::class.java).apply {
+                    putExtra(TASK_NAME_KEY, viewModel.uiState.value.title)
+                    putExtra(REMINDER_DUE_DATE, reminder.dueDate)
+                    putExtra(REMINDER_ID, reminder.id)
+                    putExtra(REMINDER_CUSTOM_INTERVAL, reminder.repetitionFrequency)
+                }
+
+                val pendingIntent = PendingIntent.getBroadcast(
+                    requireContext(),
+                    reminder.id.toInt(),
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+                (requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager)
+                    .setExact(AlarmManager.RTC_WAKEUP, reminder.dueDate, pendingIntent)
+            }
+        }
     }
 
     fun isNotificationPermissionGranted(): Boolean {
@@ -912,33 +805,23 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             .show()
     }
 
-    private fun showDialogAttachProject() {
-
-        val bundle = bundleOf(PROJECT_ID to viewModel.projectId)
+    private fun showProjectSelectionDialog() {
+        val bundle = bundleOf(PROJECT_ID to viewModel.uiState.value.parentProject?.id
+        , "CURRENT_TASK" to viewModel.uiState.value.thingToDo?.taskRelations?.mainTask?.id)
         setFragmentResult(CURRENT_RECURRING_INFO_REQUEST_KEY, bundle)
         val editProjectLinkedDialog = EditProjectLinkedDialogFragment()
         editProjectLinkedDialog.show(parentFragmentManager, "project_linked_tag")
     }
 
-    private fun showUpdateCategoryDialog() {
+    private fun showCategoryDialog() {
         val newFragment = EditCategoryDialogFragment()
         newFragment.show(parentFragmentManager, CATEGORY_EDIT_TAG)
     }
 
-    private fun showRepeatableCyclePicker() {
+    private fun showRecurringTaskDialog() {
         val newFragment = RecurringChoiceDialogFragment()
         val result = Bundle().apply {
-            putInt(TIMES_KEY, viewModel.recurringTaskInterval?.times ?: 0)
-            putString(PERIOD_KEY, viewModel.recurringTaskInterval?.period ?: NO_VALUE)
-            putIntArray(
-                DAYS_OF_THE_WEEKS_KEY,
-                viewModel.recurringTaskInterval?.daysOfWeek?.toIntArray() ?: IntArray(1)
-            )
-            putString(
-                DEADLINE,
-                if (viewModel.deadline != null) getStringFromLong(viewModel.deadline!!) else NO_VALUE
-            )
-            putLong(START_DATE, if (viewModel.dueDate != null) viewModel.dueDate!! else 0L)
+            putParcelable("task_recurrence_with_days", viewModel.uiState.value.taskRecurrenceWithDays)
         }
         setFragmentResult(CURRENT_RECURRING_INFO_REQUEST_KEY, result)
         newFragment.show(parentFragmentManager, RECURRING_SELECTION_DIALOG_TAG)

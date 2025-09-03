@@ -2,6 +2,9 @@ package com.tongtongstudio.ami.util
 
 import androidx.core.text.isDigitsOnly
 
+/**
+ * Class for entries validation in edit/add fragment.
+ */
 class InputValidation {
 
     companion object {

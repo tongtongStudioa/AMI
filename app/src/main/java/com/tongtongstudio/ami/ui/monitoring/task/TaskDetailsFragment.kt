@@ -88,10 +88,10 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
             taskDeadline.isVisible = viewModel.deadline != null
 
             // stats view
-            if (viewModel.task?.isRecurring == null)
-                statsView.isVisible = false
-
-            tvNbCompleted.text = if (viewModel.task?.successCount != null)
+            val showDetailsRecurrenceStats = viewModel.task?.recurrenceInfosId != null
+            statsView.isVisible = showDetailsRecurrenceStats
+            // TODO: change this with function in viewModel to get stats and graph
+            /*tvNbCompleted.text = if (viewModel.task?.successCount != null)
                 viewModel.task?.successCount.toString()
             else getString(R.string.no_information)
             tvStreak.text =
@@ -104,7 +104,7 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
             val completionRate = viewModel.task?.getHabitSuccessRate()
             tvCompletionRate.text = if (completionRate != null)
                 getString(R.string.completion_rate_value, completionRate)
-            else getString(R.string.no_information)
+            else getString(R.string.no_information)*/
 
             viewModel.currentTotalWorkTime.observe(viewLifecycleOwner) {
                 totalDurationView.isVisible = it != null
@@ -121,8 +121,9 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
                 viewModel.estimatedWorkingTime != null
 
             // completion date
+            // TODO: get via repository completion date 
             val dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())
-            val completionDateFormatted = viewModel.task?.getCompletionDateFormatted()
+            /*val completionDateFormatted = viewModel.task?.getCompletionDateFormatted()
             completionDate.text = getString(R.string.completion_date, completionDateFormatted)
             completionDate.isVisible = viewModel.task?.isCompleted == true
             //completionDate.isVisible = viewModel.task?.isCompleted == true
@@ -143,7 +144,7 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
                         DateFormat.getDateInstance().format(newCompletionDate)
                     )
                 }
-            }
+            }*/
         }
     }
 

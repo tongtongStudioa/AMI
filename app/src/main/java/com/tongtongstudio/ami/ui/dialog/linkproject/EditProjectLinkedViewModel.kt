@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditProjectLinkedViewModel @Inject constructor(
-    repository: Repository
+    val repository: Repository
 ) : ViewModel() {
     fun changeProjectId(id: Long) {
         _projectId.value = id
@@ -23,6 +23,11 @@ class EditProjectLinkedViewModel @Inject constructor(
     private val _projectId = MutableLiveData<Long?>()
     val projectId: LiveData<Long?>
         get() = _projectId
+    private val _currentTaskId = MutableLiveData<Long?>()
+    val currentTaskId: LiveData<Long?>
+        get() = _currentTaskId
 
-    val projects = repository.getPotentialProjects().asLiveData()
+    fun getPotentialsProjects (currentTaskId: Long) {
+        repository.getPotentialProjects().asLiveData()
+    }
 }

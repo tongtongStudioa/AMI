@@ -34,7 +34,7 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
     val startDate = task?.startDate
     val dueDate = task?.dueDate
     val deadline = task?.deadline
-    val streak: Int = task?.currentStreak ?: 0
+    //val streak: Int = runBlocking { return@runBlocking repository.getCurrentStreak(task!!.id)}
 
     val estimatedWorkingTime = task?.estimatedWorkingTime
 
@@ -53,10 +53,12 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
     }
 
     fun updateTaskCompletionDate(newCompletionDate: Long) = viewModelScope.launch {
-        if (task != null) {
-            val changeState = task!!.updateCheckedState(newCompletionDate = newCompletionDate)
-            repository.updateTask(changeState)
-            task = changeState
+        //TODO("Not yet implemented")
+        if (task != null && task?.recurrenceInfosId == null) {
+            //TODO : Update the only completion entry for this task with the new completion date
+            //show modification immediately
+        } else {
+            // TODO: Update last completion entry for this recurring task
         }
     }
 

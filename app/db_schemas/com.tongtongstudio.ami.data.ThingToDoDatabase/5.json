@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "6dafffbd467cb97cf11bce197dd1a9c0",
+    "identityHash": "a3423f5968ca716ac87561a3ed9659be",
     "entities": [
       {
         "tableName": "task_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`title` TEXT NOT NULL, `priority` INTEGER, `task_due_date` INTEGER, `startDate` INTEGER DEFAULT NULL, `deadline` INTEGER DEFAULT NULL, `description` TEXT DEFAULT NULL, `type` TEXT DEFAULT NULL, `status` TEXT NOT NULL DEFAULT 'not_started', `importance` INTEGER DEFAULT NULL, `urgency` INTEGER DEFAULT NULL, `isDraft` INTEGER NOT NULL DEFAULT 0, `estimatedEmotions` INTEGER NOT NULL DEFAULT 1, `estimatedWorkingTime` INTEGER DEFAULT NULL, `skillLevel` INTEGER DEFAULT NULL, `creationDate` INTEGER NOT NULL, `dependency_task_id` INTEGER DEFAULT NULL, `task_recurrence_id` INTEGER DEFAULT NULL, `category_id` INTEGER DEFAULT NULL, `parent_task_id` INTEGER DEFAULT NULL, `task_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`category_id`) REFERENCES `Category`(`category_id`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`parent_task_id`) REFERENCES `task_table`(`task_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`task_recurrence_id`) REFERENCES `task_recurrence_table`(`recurrence_id`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`dependency_task_id`) REFERENCES `task_table`(`task_id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`title` TEXT NOT NULL, `priority` INTEGER, `task_due_date` INTEGER, `startDate` INTEGER DEFAULT NULL, `deadline` INTEGER DEFAULT NULL, `description` TEXT DEFAULT NULL, `nature` TEXT NOT NULL, `status` TEXT NOT NULL DEFAULT 'not_started', `importance` INTEGER DEFAULT NULL, `urgency` INTEGER DEFAULT NULL, `isDraft` INTEGER NOT NULL DEFAULT 0, `estimatedEmotions` INTEGER NOT NULL DEFAULT 1, `estimatedWorkingTime` INTEGER DEFAULT NULL, `skillLevel` INTEGER DEFAULT NULL, `creationDate` INTEGER NOT NULL, `dependency_task_id` INTEGER DEFAULT NULL, `task_recurrence_id` INTEGER DEFAULT NULL, `category_id` INTEGER DEFAULT NULL, `parent_task_id` INTEGER DEFAULT NULL, `task_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`category_id`) REFERENCES `Category`(`category_id`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`parent_task_id`) REFERENCES `task_table`(`task_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`task_recurrence_id`) REFERENCES `task_recurrence_table`(`recurrence_id`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`dependency_task_id`) REFERENCES `task_table`(`task_id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
         "fields": [
           {
             "fieldPath": "title",
@@ -17,42 +17,36 @@
           {
             "fieldPath": "priority",
             "columnName": "priority",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "dueDate",
             "columnName": "task_due_date",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "startDate",
             "columnName": "startDate",
             "affinity": "INTEGER",
-            "notNull": false,
             "defaultValue": "NULL"
           },
           {
             "fieldPath": "deadline",
             "columnName": "deadline",
             "affinity": "INTEGER",
-            "notNull": false,
             "defaultValue": "NULL"
           },
           {
             "fieldPath": "description",
             "columnName": "description",
             "affinity": "TEXT",
-            "notNull": false,
             "defaultValue": "NULL"
           },
           {
-            "fieldPath": "type",
-            "columnName": "type",
+            "fieldPath": "nature",
+            "columnName": "nature",
             "affinity": "TEXT",
-            "notNull": false,
-            "defaultValue": "NULL"
+            "notNull": true
           },
           {
             "fieldPath": "status",
@@ -65,14 +59,12 @@
             "fieldPath": "importance",
             "columnName": "importance",
             "affinity": "INTEGER",
-            "notNull": false,
             "defaultValue": "NULL"
           },
           {
             "fieldPath": "urgency",
             "columnName": "urgency",
             "affinity": "INTEGER",
-            "notNull": false,
             "defaultValue": "NULL"
           },
           {
@@ -93,14 +85,12 @@
             "fieldPath": "estimatedWorkingTime",
             "columnName": "estimatedWorkingTime",
             "affinity": "INTEGER",
-            "notNull": false,
             "defaultValue": "NULL"
           },
           {
             "fieldPath": "skillLevel",
             "columnName": "skillLevel",
             "affinity": "INTEGER",
-            "notNull": false,
             "defaultValue": "NULL"
           },
           {
@@ -113,28 +103,24 @@
             "fieldPath": "dependencyId",
             "columnName": "dependency_task_id",
             "affinity": "INTEGER",
-            "notNull": false,
             "defaultValue": "NULL"
           },
           {
             "fieldPath": "recurrenceInfosId",
             "columnName": "task_recurrence_id",
             "affinity": "INTEGER",
-            "notNull": false,
             "defaultValue": "NULL"
           },
           {
             "fieldPath": "categoryId",
             "columnName": "category_id",
             "affinity": "INTEGER",
-            "notNull": false,
             "defaultValue": "NULL"
           },
           {
             "fieldPath": "parentTaskId",
             "columnName": "parent_task_id",
             "affinity": "INTEGER",
-            "notNull": false,
             "defaultValue": "NULL"
           },
           {
@@ -150,7 +136,6 @@
             "task_id"
           ]
         },
-        "indices": [],
         "foreignKeys": [
           {
             "table": "Category",
@@ -205,14 +190,12 @@
           {
             "fieldPath": "parentTaskId",
             "columnName": "parent_task_id",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "parentAssessmentId",
             "columnName": "parent_assessment_id",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "title",
@@ -223,14 +206,12 @@
           {
             "fieldPath": "description",
             "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "comment",
             "columnName": "comment",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "targetGoal",
@@ -265,26 +246,22 @@
           {
             "fieldPath": "interval",
             "columnName": "interval",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "rehearsalEndDate",
             "columnName": "rehearsalEndDate",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "score",
             "columnName": "score",
-            "affinity": "REAL",
-            "notNull": false
+            "affinity": "REAL"
           },
           {
             "fieldPath": "categoryId",
             "columnName": "categoryId",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "id",
@@ -299,7 +276,6 @@
             "assessment_id"
           ]
         },
-        "indices": [],
         "foreignKeys": [
           {
             "table": "task_table",
@@ -332,14 +308,12 @@
           {
             "fieldPath": "parentId",
             "columnName": "parent_id",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "description",
             "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "dueDate",
@@ -356,8 +330,7 @@
           {
             "fieldPath": "repetitionFrequency",
             "columnName": "repetitionFrequency",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "id",
@@ -372,7 +345,6 @@
             "reminder_id"
           ]
         },
-        "indices": [],
         "foreignKeys": [
           {
             "table": "task_table",
@@ -400,20 +372,17 @@
           {
             "fieldPath": "description",
             "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "color",
             "columnName": "color",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "parentCategoryId",
             "columnName": "parent_category_id",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "id",
@@ -427,9 +396,7 @@
           "columnNames": [
             "category_id"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
         "tableName": "Unit",
@@ -453,9 +420,7 @@
           "columnNames": [
             "unit_id"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
         "tableName": "WorkSession",
@@ -476,8 +441,7 @@
           {
             "fieldPath": "comment",
             "columnName": "comment",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "date",
@@ -497,9 +461,7 @@
           "columnNames": [
             "work_session_id"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
         "tableName": "PomodoroSession",
@@ -532,8 +494,7 @@
           {
             "fieldPath": "specialMsg",
             "columnName": "specialMsg",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "id",
@@ -547,9 +508,7 @@
           "columnNames": [
             "work_session_id"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
         "tableName": "task_recurrence_table",
@@ -570,14 +529,12 @@
           {
             "fieldPath": "startDate",
             "columnName": "start_date",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "endDate",
             "columnName": "end_date",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "isActive",
@@ -588,8 +545,7 @@
           {
             "fieldPath": "occurrenceLimit",
             "columnName": "occurrence_limit",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "recurrenceId",
@@ -603,9 +559,7 @@
           "columnNames": [
             "recurrence_id"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
         "tableName": "task_recurrence_days_cross_ref",
@@ -631,7 +585,6 @@
             "dayId"
           ]
         },
-        "indices": [],
         "foreignKeys": [
           {
             "table": "task_recurrence_table",
@@ -679,9 +632,7 @@
           "columnNames": [
             "day_id"
           ]
-        },
-        "indices": [],
-        "foreignKeys": []
+        }
       },
       {
         "tableName": "task_completion_table",
@@ -708,14 +659,12 @@
           {
             "fieldPath": "comment",
             "columnName": "comment",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "emotions",
             "columnName": "emotions",
-            "affinity": "INTEGER",
-            "notNull": false
+            "affinity": "INTEGER"
           },
           {
             "fieldPath": "id",
@@ -730,7 +679,6 @@
             "completion_id"
           ]
         },
-        "indices": [],
         "foreignKeys": [
           {
             "table": "task_table",
@@ -746,10 +694,9 @@
         ]
       }
     ],
-    "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6dafffbd467cb97cf11bce197dd1a9c0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a3423f5968ca716ac87561a3ed9659be')"
     ]
   }
 }

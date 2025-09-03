@@ -30,6 +30,7 @@ import com.tongtongstudio.ami.util.AppTutorial
 import com.tongtongstudio.ami.util.TutorialTrigger
 import dagger.hilt.android.AndroidEntryPoint
 import hotchemi.android.rate.AppRate
+import androidx.core.net.toUri
 
 
 @AndroidEntryPoint
@@ -115,7 +116,8 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
 
         // Check at the opening of the app
         viewModel.lookForMissedRecurringTasks()
-        viewModel.updateTasksUrgency()
+        // TODO: update task urgency each time user open app and later once a day
+        //viewModel.updateTasksUrgency()
         intent?.let {
             if (intent.hasExtra(ASSESSMENT_ID)) {
                 showCompleteAssessmentDialog(intent)
@@ -124,7 +126,7 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
     }
 
     private fun showWelcomeDialog(context: Context) {
-        if (prefs.getBoolean(KEY_DIALOG_SHOWN, false)) return
+        if (!prefs.getBoolean(KEY_DIALOG_SHOWN, false)) return
         val dialog = MaterialAlertDialogBuilder(context)
             .setTitle(getString(R.string.welcome_title_msg))
             .setMessage(getString(R.string.welcom_msg))
@@ -148,7 +150,7 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
     }
 
     private fun showCompleteAssessmentDialog(intent: Intent) {
-        val assessment = intent.getParcelableExtra<Assessment>(ASSESSMENT_ID)
+        val assessment = intent.getParcelableExtra(ASSESSMENT_ID, Assessment::class.java)
         if (assessment != null) {
             val action =
                 NavigationGraphDirections.actionGlobalCompleteAssessmentDialogFragment(
@@ -180,19 +182,19 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
 
         val webIntent = Intent().apply {
             action = Intent.ACTION_VIEW
-            data = Uri.parse(gitHubUrl)
+            data = gitHubUrl.toUri()
         }
         startActivity(webIntent)
     }
 
     private fun rateMe() {
         try {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
+            startActivity(Intent(Intent.ACTION_VIEW, "market://details?id=$packageName".toUri()))
         } catch (e: ActivityNotFoundException) {
             startActivity(
                 Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("http://play.google.com/store/apps/details?id=$packageName")
+                    "http://play.google.com/store/apps/details?id=$packageName".toUri()
                 )
             )
         }
@@ -201,7 +203,7 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
     private fun openBuyMeCoffeePage() {
         val url = "https://www.buymeacoffee.com/tongtongStudioa"
         val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = Uri.parse(url)
+        intent.data = url.toUri()
         startActivity(intent)
     }
 

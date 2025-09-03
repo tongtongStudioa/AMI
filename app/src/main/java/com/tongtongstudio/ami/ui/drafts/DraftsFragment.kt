@@ -22,8 +22,8 @@ import com.google.android.material.transition.MaterialElevationScale
 import com.google.android.material.transition.MaterialFadeThrough
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
-import com.tongtongstudio.ami.adapter.task.InteractionListener
-import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
+import com.tongtongstudio.ami.adapter.thingToDo.InteractionListener
+import com.tongtongstudio.ami.adapter.thingToDo.ThingToDoAdapter
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentDraftsBinding
@@ -66,19 +66,19 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
             }
         }
 
-        val callback = object : ThingToDoItemCallback(
+        val callback = object : ThingToDoItemCallback<ThingToDoAdapter>(
             draftAdapter,
             ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
             requireContext()
         ) {
-            override fun actionOnRightSwiped(thingToDo: ThingToDo) {
+            override fun actionOnRightSwiped(thingToDo: ThingToDo,position: Int) {
                 // delete task
                 sharedViewModel.deleteTask(thingToDo, requireContext())
             }
 
-            override fun actionLeftSwiped(thingToDo: ThingToDo) {
+            override fun actionLeftSwiped(thingToDo: ThingToDo, position: Int) {
                 //update task
-                sharedViewModel.updateTask(thingToDo.mainTask)
+                sharedViewModel.updateTask(thingToDo)
             }
         }
         ItemTouchHelper(callback).attachToRecyclerView(binding.draftRecyclerView)
@@ -96,7 +96,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
                             val action =
                                 DraftsFragmentDirections.actionDraftsFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
-                                    event.task
+                                    event.thingToDo
                                 )
                             findNavController().navigate(action)
                         }
@@ -159,7 +159,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
         }
     }
 
-    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: ThingToDo, isChecked: Boolean, position: Int) {
         // do nothing
     }
 
@@ -172,7 +172,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
     }
 
     override fun onProjectAddClick(thingToDo: ThingToDo) {
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.mainTask.id))
+        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.taskRelations.mainTask.id))
         sharedViewModel.addThingToDo()
     }
 
@@ -180,7 +180,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
         sharedViewModel.deleteSubTask(thingToDo)
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: Task) {
+    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
         sharedViewModel.updateSubTask(thingToDo)
     }
 

@@ -7,12 +7,13 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.color.MaterialColors
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
+import com.tongtongstudio.ami.adapter.project.ProjectAdapter
+import com.tongtongstudio.ami.adapter.thingToDo.ThingToDoAdapter
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
-abstract class ThingToDoItemCallback(
-    private val adapter: ThingToDoAdapter,
+abstract class ThingToDoItemCallback<T>(
+    private val adapter: T,
     private val swipeFlags: Int = ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
     private val context: Context
 ) :
@@ -35,23 +36,26 @@ abstract class ThingToDoItemCallback(
         /*val fromPosition = viewHolder.bindingAdapterPosition
         val toPosition = target.bindingAdapterPosition
         adapter.onItemMove(fromPosition, toPosition)
-        val newSubTask = adapter.getTaskList()[fromPosition].mainTask
-        val parentId = adapter.getTaskList()[toPosition].mainTask.id
+        val newSubTask = adapter.getProjectList()[fromPosition].mainTask
+        val parentId = adapter.getProjectList()[toPosition].mainTask.id
         actionOnTaskMove(newSubTask,parentId)
         */
         return false
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        val thingToDo = adapter.getTaskList()[viewHolder.absoluteAdapterPosition]
+        val thingToDo: ThingToDo = when (adapter) {
+            is ThingToDoAdapter -> adapter.getTaskList()[viewHolder.absoluteAdapterPosition]
+            is ProjectAdapter -> adapter.getProjectList()[viewHolder.absoluteAdapterPosition]
+            else -> throw NullPointerException()
+        }
+
         if (direction == ItemTouchHelper.RIGHT) {
             // delete task
-            adapter.notifyItemRemoved(viewHolder.absoluteAdapterPosition)
-            actionOnRightSwiped(thingToDo)
+            actionOnRightSwiped(thingToDo, viewHolder.absoluteAdapterPosition)
         } else if (direction == ItemTouchHelper.LEFT) {
             // edit task
-            adapter.notifyItemChanged(viewHolder.absoluteAdapterPosition)
-            actionLeftSwiped(thingToDo)
+            actionLeftSwiped(thingToDo, viewHolder.absoluteAdapterPosition)
         }
     }
 
@@ -113,6 +117,6 @@ abstract class ThingToDoItemCallback(
     }
 
     open fun actionOnTaskMove(thingToDo: ThingToDo, parentId: Long) {}
-    open fun actionOnRightSwiped(thingToDo: ThingToDo) {}
-    open fun actionLeftSwiped(thingToDo: ThingToDo) {}
+    open fun actionOnRightSwiped(thingToDo: ThingToDo, position: Int) {}
+    open fun actionLeftSwiped(thingToDo: ThingToDo, position: Int) {}
 }

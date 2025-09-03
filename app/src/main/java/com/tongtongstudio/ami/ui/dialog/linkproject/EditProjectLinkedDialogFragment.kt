@@ -76,6 +76,7 @@ class EditProjectLinkedDialogFragment : DialogFragment() {
 
         setFragmentResultListener(CURRENT_PROJECT_ID_REQUEST_KEY) { _, bundle ->
             viewModel.changeProjectId(bundle.getLong(PROJECT_ID))
+
             binding.rvProjects.apply {
                 adapter = projectLinkAdapter
                 layoutManager = LinearLayoutManager(requireContext())

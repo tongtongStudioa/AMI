@@ -2,42 +2,79 @@ package com.tongtongstudio.ami.data.datatables
 
 import android.content.res.Resources
 import android.os.Parcelable
+import android.util.Log
 import androidx.room.Embedded
+import androidx.room.Ignore
 import androidx.room.Junction
 import androidx.room.Relation
+import com.google.errorprone.annotations.CanIgnoreReturnValue
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.ui.dialog.Period
 import kotlinx.parcelize.Parcelize
 import java.util.Calendar
 
 const val PATTERN_FORMAT_DATE = "E dd/MM"
+const val PATTERN_FORMAT_DATE_YEAR = "E dd/MM/yyyy"
+enum class Nature { PROJECT, INTERMEDIATE_PROJECT, SUB_TASK, TASK }
+enum class Type { UNIQUE, RECURRING }
+enum class Status { NOT_STARTED, IN_PROGRESS, FINISHED, ABANDONED, REVIEW}
 
-enum class Nature { PROJECT, TASK }
-
-enum class STATUS { NOT_STARTED, IN_PROGRESS, FINISHED, ABANDONED}
+@Parcelize
+data class TaskRelations(
+    @Embedded
+    val mainTask: Task,
+    @Relation(
+        parentColumn = "dependency_task_id",
+        entityColumn = "task_id",
+        entity = Task::class)
+    val taskDependency: Task?, // The task on which the main task depends
+    @Relation(
+        parentColumn = "category_id",
+        entityColumn = "category_id",
+        entity = Category::class)
+    val category: Category?,
+    @Relation(
+        parentColumn = "parent_task_id",
+        entityColumn = "task_id",
+        entity = Task::class)
+    val parentProject: Task?
+) : Parcelable
 
 @Parcelize
 data class ThingToDo(
     @Embedded
-    val mainTask: Task,
-    @Relation(
-        parentColumn = "task_id",
-        entityColumn = "parent_task_id",
-        entity = Task::class)
-    val subTasks: List<Task>,
-    val category: String?,
-    val taskDependency: String?,
-    @Relation(parentColumn = "task_id", entityColumn = "parent_task_id", entity = TaskCompletion::class)
-    val completions: List<TaskCompletion> // Achievement historic
-
+    val taskRelations: TaskRelations,
+    val nbSubTasks: Int?,
+    val nbSubTasksCompleted: Int?,
+    val lastCompletionStatus: Boolean? // True if completed already or False if not
 ) : Parcelable {
 
-    fun showCheckedState(): Boolean {
-        return if (mainTask.recurrenceInfosId == null) false else completions.lastOrNull()?.isCompleted ?: false
+    /**
+     * The type describe the particularity of a task to be recurring or not.
+     */
+    fun getType(): String {
+        val type: Type =
+            if (taskRelations.mainTask.recurrenceInfosId == null) Type.UNIQUE else Type.RECURRING
+        return type.name
     }
 
-    fun isProject(): Boolean {
-        return mainTask.type == Nature.PROJECT.name || subTasks.isNotEmpty()
+    /**
+     * The Nature of the task describe how it will be show to the user
+     * and how it will be treated.
+     */
+    fun getNature(): String {
+        val nature: Nature = if (taskRelations.parentProject!= null && nbSubTasks != null && nbSubTasks > 0 || taskRelations.mainTask.nature == Nature.INTERMEDIATE_PROJECT.name)
+            Nature.INTERMEDIATE_PROJECT
+        else if ((nbSubTasks?.let { it > 0 } == true) || taskRelations.mainTask.nature == Nature.PROJECT.name)
+            Nature.PROJECT
+        else if (taskRelations.parentProject != null)
+            Nature.SUB_TASK
+        else Nature.TASK
+        return nature.name
+    }
+
+    fun getStatus(): String {
+        return if (lastCompletionStatus != null) Status.IN_PROGRESS.name else Status.NOT_STARTED.name
     }
 
     /*fun countCompletedSubtasks(): Int {
@@ -49,18 +86,17 @@ data class ThingToDo(
         val nestedCompleted = subTasks.sumOf { it.countCompletedSubtasks() }
         return directCompleted + nestedCompleted
     }*/
+    fun getAdvancementStatus(): String {
+        return "$nbSubTasksCompleted/$nbSubTasks"
+    }
 
-    fun countDirectSubTasks(): Int = subTasks.size
-
-    fun getHabitSuccessRate(): Float? {
-        val totalRepetitionCount = completions.size
-        val successCount = completions.count { it.isCompleted }
-        return if (totalRepetitionCount != 0)
-            (successCount.toFloat() / totalRepetitionCount) * 100
-        else null
+    fun getPercentageProgress(): Float? {
+        if (nbSubTasks == null)
+            return null
+        val progress: Float = nbSubTasksCompleted!!.toFloat() / nbSubTasks * 100
+        return progress
     }
 }
-
 /**
  * Class with task completed info to analyse productivity (number of task achieved in a period of time).
  */
@@ -96,8 +132,10 @@ data class TaskRecurrenceWithDays(
     @Embedded val taskRecurrence: TaskRecurrence, // recurrence details
     @Relation(
         parentColumn = "recurrence_id",
-        entityColumn = "recurrenceId",
-        associateBy = Junction(TaskRecurrenceDaysCrossRef::class)
+        entityColumn = "day_id",
+        associateBy = Junction(TaskRecurrenceDaysCrossRef::class,
+            parentColumn = "recurrenceId",
+            entityColumn = "dayId")
     )
     val daysOfWeek: List<DaysOfWeek> // days associate
 ) : Parcelable

@@ -1,27 +1,19 @@
 package com.tongtongstudio.ami.data.datatables
 
-import android.content.res.Resources
 import android.os.Parcelable
 import android.text.format.DateUtils.DAY_IN_MILLIS
 import androidx.room.ColumnInfo
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.ForeignKey.Companion.SET_NULL
-import androidx.room.Junction
 import androidx.room.PrimaryKey
-import androidx.room.Relation
-import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.ui.dialog.Period
 import kotlinx.parcelize.Parcelize
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.abs
-import kotlin.math.pow
 
 /* ** juste après isDraft dans l'ordre **
     @ColumnInfo(defaultValue = "0")
@@ -102,10 +94,9 @@ data class Task(
     val deadline: Long? = null, // to have a vision of the main targetGoal (exam's date, project's end, etc.)
     @ColumnInfo(defaultValue = "NULL")
     val description: String? = null,
-    @ColumnInfo(defaultValue = "NULL")
-    val type: String? = null,
+    val nature: String = Nature.TASK.name,
     @ColumnInfo(defaultValue = "not_started")
-    val status: String = STATUS.NOT_STARTED.name,
+    val status: String = Status.NOT_STARTED.name,
     @ColumnInfo(defaultValue = "NULL")
     val importance: Int? = null, // task's impact on the smooth running of daily life
     @ColumnInfo(defaultValue = "NULL")
@@ -143,11 +134,13 @@ data class Task(
          * Otherwise, if no deadline, delay between today date and due date.
          * @return Int : between 2 and 10
          */
-        fun calculusUrgency(todayDateMillis: Long, dueDate: Long, deadline: Long?): Int {
+        fun calculusUrgency(todayDateMillis: Long, dueDate: Long?, deadline: Long?): Int {
             val delay =
                 if (deadline != null)
                     abs(deadline - todayDateMillis)
-                else abs(dueDate - todayDateMillis)
+                else if (dueDate != null)
+                    abs(dueDate - todayDateMillis)
+                else 0
             return when {
                 delay <= 2 * DAY_IN_MILLIS -> 9
                 delay <= 4 * DAY_IN_MILLIS -> 8

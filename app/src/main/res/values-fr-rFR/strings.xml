@@ -177,7 +177,7 @@
     <string name="msg_invalid_start_date">La date de début doit être réglé avant l\'échéance et avant la deadline</string>
     <string name="priority">Priorité</string>
     <string name="category">Categorie</string>
-    <string name="dependency">Dependance ?</string>
+    <string name="dependency">Selectionner tâche bloquante</string>
     <string name="mastery_level">Niveau de compétence</string>
     <string name="goal_title">Titre du but à atteindre</string>
     <string name="selector_quantity">Quantité</string>

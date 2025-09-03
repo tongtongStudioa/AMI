@@ -33,8 +33,8 @@ import com.google.android.material.transition.MaterialFadeThrough
 import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
-import com.tongtongstudio.ami.adapter.task.InteractionListener
-import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
+import com.tongtongstudio.ami.adapter.thingToDo.InteractionListener
+import com.tongtongstudio.ami.adapter.thingToDo.ThingToDoAdapter
 import com.tongtongstudio.ami.data.SortOrder
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
@@ -114,19 +114,21 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 itemAnimator = DefaultItemAnimator()
             }
 
-            val callback = object : ThingToDoItemCallback(
+            val callback = object : ThingToDoItemCallback<ThingToDoAdapter>(
                 mainTaskAdapter,
                 ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
                 requireContext()
             ) {
-                override fun actionOnRightSwiped(thingToDo: ThingToDo) {
+                override fun actionOnRightSwiped(thingToDo: ThingToDo, position: Int) {
                     // delete task
                     sharedViewModel.deleteTask(thingToDo, requireContext())
+                    mainTaskAdapter.notifyItemRemoved(position)
                 }
 
-                override fun actionLeftSwiped(thingToDo: ThingToDo) {
+                override fun actionLeftSwiped(thingToDo: ThingToDo, position: Int) {
                     //update task
-                    sharedViewModel.updateTask(thingToDo.mainTask)
+                    sharedViewModel.updateTask(thingToDo)
+                    mainTaskAdapter.notifyItemChanged(position)
                 }
             }
             ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
@@ -160,7 +162,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                             val action =
                                 TodayTasksFragmentDirections.actionTodayTasksFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
-                                    event.task
+                                    event.thingToDo
                                 )
                             findNavController().navigate(action)
                         }
@@ -334,7 +336,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM).format(viewModel.startOfToday)
     }
 
-    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: ThingToDo, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
         if (isChecked) {
             soundPlayer.playSuccessSound()
@@ -350,7 +352,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     }
 
     override fun onProjectAddClick(thingToDo: ThingToDo) {
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.mainTask.id))
+        setFragmentResult("is_new_sub_task", bundleOf("project" to thingToDo.taskRelations.mainTask))
         sharedViewModel.addThingToDo()
     }
 
@@ -358,7 +360,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         sharedViewModel.deleteSubTask(thingToDo)
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: Task) {
+    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
         sharedViewModel.updateSubTask(thingToDo)
     }
 

@@ -1,9 +1,12 @@
 package com.tongtongstudio.ami.data.datatables
 
+import android.content.res.Resources
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.ui.dialog.Period
 import kotlinx.parcelize.Parcelize
 import kotlin.math.pow
 
@@ -43,5 +46,28 @@ data class TaskRecurrence(
     private fun decreaseInterval(): TaskRecurrence {
         val newInterval = if (interval > 1) interval - 1 else interval
         return this.copy(interval = newInterval)
+    }
+
+    fun getReadableTaskRecurrenceInfos(resources: Resources): String {
+        return if (interval == 1) {
+            when (frequency) {
+                Period.DAYS.name -> resources.getString(R.string.each_days)
+                Period.WEEKS.name -> resources.getString(R.string.each_weeks)
+                Period.MONTHS.name -> resources.getString(R.string.each_months)
+                Period.YEARS.name -> resources.getString(R.string.each_years)
+                else -> resources.getString(R.string.each_days)
+            }
+        } else {
+            when (frequency) {
+                Period.DAYS.name -> resources.getString(R.string.every_x_days, interval)
+                Period.WEEKS.name -> resources.getString(R.string.every_x_weeks, interval)
+                Period.MONTHS.name -> resources.getString(
+                    R.string.every_x_months,
+                    interval
+                )
+                Period.YEARS.name -> resources.getString(R.string.every_x_years, interval)
+                else -> resources.getString(R.string.every_x_days, interval)
+            }
+        }
     }
 }

@@ -21,8 +21,8 @@ import com.google.android.material.transition.MaterialElevationScale
 import com.google.android.material.transition.MaterialFadeThrough
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
-import com.tongtongstudio.ami.adapter.task.InteractionListener
-import com.tongtongstudio.ami.adapter.task.ThingToDoAdapter
+import com.tongtongstudio.ami.adapter.thingToDo.InteractionListener
+import com.tongtongstudio.ami.adapter.thingToDo.ThingToDoAdapter
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
@@ -63,12 +63,12 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                 adapter = completedAdapter
             }
 
-            val callback = object : ThingToDoItemCallback(
+            val callback = object : ThingToDoItemCallback<ThingToDoAdapter>(
                 completedAdapter,
                 ItemTouchHelper.RIGHT,
                 requireContext()
             ) {
-                override fun actionOnRightSwiped(thingToDo: ThingToDo) {
+                override fun actionOnRightSwiped(thingToDo: ThingToDo, position: Int) {
                     sharedViewModel.deleteTask(thingToDo, requireContext())
                 }
 
@@ -174,7 +174,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         binding.toolbar.subtitle = getString(R.string.completed_tasks_subtitle)
     }
 
-    override fun onTaskChecked(thingToDo: Task, isChecked: Boolean, position: Int) {
+    override fun onTaskChecked(thingToDo: ThingToDo, isChecked: Boolean, position: Int) {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
@@ -194,7 +194,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         sharedViewModel.deleteSubTask(thingToDo)
     }
 
-    override fun onSubTaskLeftSwipe(thingToDo: Task) {
+    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
         sharedViewModel.updateSubTask(thingToDo)
     }
 

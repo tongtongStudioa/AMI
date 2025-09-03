@@ -2,6 +2,7 @@ package com.tongtongstudio.ami.data
 
 import com.tongtongstudio.ami.data.dao.AssessmentDao
 import com.tongtongstudio.ami.data.dao.CategoryDao
+import com.tongtongstudio.ami.data.dao.RecurrenceInfoDao
 import com.tongtongstudio.ami.data.dao.ReminderDao
 import com.tongtongstudio.ami.data.dao.TaskDao
 import com.tongtongstudio.ami.data.dao.WorkSessionDao
@@ -9,6 +10,9 @@ import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.Reminder
 import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.TaskCompletion
+import com.tongtongstudio.ami.data.datatables.TaskRecurrence
+import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.data.datatables.TimeWorkedDistribution
 import com.tongtongstudio.ami.data.datatables.TtdAchieved
@@ -24,7 +28,8 @@ class Repository @Inject constructor(
     private val categoryDao: CategoryDao,
     private val reminderDao: ReminderDao,
     private val assessmentDao: AssessmentDao,
-    private val workSessionDao: WorkSessionDao
+    private val workSessionDao: WorkSessionDao,
+    private val recurrenceInfo: RecurrenceInfoDao
 ) {
 
     fun getThingsToDoToday(
@@ -85,6 +90,31 @@ class Repository @Inject constructor(
         return taskDao.getMissedRecurringTasks(todayDate)
     }
 
+    suspend fun getComposedTask(parentTaskId: Long): ThingToDo {
+        return taskDao.getParentTask(parentTaskId)
+    }
+
+    fun getDraftsTasks(): Flow<List<ThingToDo>> {
+        return taskDao.getDraftTask()
+    }
+
+    suspend fun updateTasksUrgency(todayDate: Long) {
+        TODO("Not yet implemented")
+        val taskList = taskDao.getTasksNotCompleted().first()
+        for (task in taskList) {
+            if (task.dueDate == null)
+                return
+            val urgency = Task.calculusUrgency(todayDate, task.dueDate, task.deadline)
+            val priority = Task.calculatingPriority(task.priority, task.importance, task.urgency)
+            taskDao.update(task.copy(urgency = urgency, priority = priority))
+        }
+    }
+
+    fun getSubTasks(parentTaskId: Long): Flow<List<Task>> {
+        return taskDao.getSubTasks(parentTaskId)
+    }
+
+    // ****** Categories ******* //
     suspend fun getCategoryById(id: Long): Category {
         return categoryDao.getById(id)
     }
@@ -109,6 +139,7 @@ class Repository @Inject constructor(
         categoryDao.delete(category)
     }
 
+    /** ****** Assessment and Goals ******* **/
     suspend fun getAssessment(id: Long): Assessment {
         return assessmentDao.get(id)
     }
@@ -131,6 +162,11 @@ class Repository @Inject constructor(
         assessmentDao.delete(assessment)
     }
 
+    fun getGlobalGoals(): Flow<List<Assessment>> {
+        return assessmentDao.getGlobalGoals()
+    }
+
+    /** ******* Reminders ****** **/
     fun getTaskReminders(id: Long?): Flow<MutableList<Reminder>>? {
         return if (id != null)
             reminderDao.getTaskReminders(id)
@@ -149,6 +185,25 @@ class Repository @Inject constructor(
         reminderDao.update(reminder)
     }
 
+    /** ****** Work Sessions ******* **/
+    suspend fun suppressWorkSession(workSession: WorkSession) {
+        workSessionDao.delete(workSession)
+    }
+
+    suspend fun insertWorkSession(workSession: WorkSession) {
+        workSessionDao.insert(workSession)
+    }
+
+    fun getWorkSessions(taskId: Long): Flow<List<WorkSession>> {
+        return workSessionDao.getWorkSessions(taskId)
+    }
+
+    /** ****** Recurrence Infos ******* **/
+    fun getRecurrenceInfos(recurrenceId: Long): Flow<TaskRecurrence?> {
+        return recurrenceInfo.getRecurrenceInfoById(recurrenceId)
+    }
+
+    /** ****** Stats ******* **/
     fun getHabits(): Flow<List<ThingToDo>> {
         return taskDao.getRecurringTasks()
     }
@@ -255,54 +310,42 @@ class Repository @Inject constructor(
         else taskDao.getHabitCompletionRate()
     }
 
-    suspend fun getComposedTask(parentTaskId: Long): ThingToDo {
-        return taskDao.getParentTask(parentTaskId)
-    }
-
-    fun getGlobalGoals(): Flow<List<Assessment>> {
-        return assessmentDao.getGlobalGoals()
-    }
-
-    fun getDraftsTasks(): Flow<List<ThingToDo>> {
-        return taskDao.getDraftTask()
-    }
-
-    fun getWorkSessions(taskId: Long): Flow<List<WorkSession>> {
-        return workSessionDao.getWorkSessions(taskId)
-    }
-
-    suspend fun suppressWorkSession(workSession: WorkSession) {
-        workSessionDao.delete(workSession)
-    }
-
-    suspend fun insertWorkSession(workSession: WorkSession) {
-        workSessionDao.insert(workSession)
-    }
-
     fun getTaskTimeWorked(taskId: Long?): Flow<Long> {
         return if (taskId != null)
             workSessionDao.getTaskTimeWorked(taskId)
         else flowOf(0)
     }
 
-    suspend fun updateTasksUrgency(todayDate: Long) {
-        TODO("Not yet implemented")
-        val taskList = taskDao.getTasksNotCompleted().first()
-        for (task in taskList) {
-            if (task.dueDate == null)
-                return
-            val urgency = Task.calculusUrgency(todayDate, task.dueDate, task.deadline)
-            val priority = Task.calculatingPriority(task.priority, task.importance, task.urgency)
-            taskDao.update(task.copy(urgency = urgency, priority = priority))
+    suspend fun getProjectTimeWorked(mainTaskId: Long?): Long {
+        if (mainTaskId == null)
+            return 0L
+        val subTasks = taskDao.getSubTasks(mainTaskId).first()
+        var projectWorkTime = 0L
+        subTasks.forEach {
+            projectWorkTime += workSessionDao.getTaskTimeWorked(it.id).first()
         }
+        return projectWorkTime
     }
 
-    fun getSubTasks(parentTaskId: Long): Flow<List<Task>> {
-        return taskDao.getSubTasks(parentTaskId)
-    }
-
-    fun getTaskMaxStreak(id: Long): Int {
+    fun getCurrentStreak(taskId: Long): Int {
         TODO("Not yet implemented")
     }
 
+    suspend fun getBlockingTask(blockingTaskId: Long): Task {
+            return taskDao.getTask(blockingTaskId)
+    }
+
+    suspend fun getTaskRecurrenceWithDays(taskId: Long): TaskRecurrenceWithDays {
+        return taskDao.getTaskRecurrenceInfos(taskId)
+    }
+
+    suspend fun insertTaskCompletion(completion: TaskCompletion) {
+        TODO("Insert task completion not yet implemented !")
+    }
+
+    suspend fun updateTaskCompletion(id: Long) {
+        TODO("update task completion not yet implemented")
+    }
+
+    // ************* //
 }

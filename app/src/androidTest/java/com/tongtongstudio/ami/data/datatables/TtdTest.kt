@@ -3,7 +3,6 @@ package com.tongtongstudio.ami.data.datatables
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import com.tongtongstudio.ami.data.SortOrder
 import com.tongtongstudio.ami.data.ThingToDoDatabase
 import com.tongtongstudio.ami.data.dao.TaskDao
 import com.tongtongstudio.ami.util.DataTestUtil
@@ -15,6 +14,7 @@ import org.junit.Before
 import org.junit.Test
 import java.io.IOException
 import java.util.*
+import kotlin.collections.filter
 
 
 internal class TtdTest {
@@ -50,26 +50,62 @@ internal class TtdTest {
 
     @Test
     @Throws(IOException::class)
+    fun getSubTasks_returnSubTasksList() = runBlocking {
+        val subTasks = dataTestUtil.getTasks().filter {
+            it.parentTaskId != null
+        }
+        print("Sub tasks : ")
+        subTasks.forEach { print(it.title+ ", ") }
+
+        val result = taskDao.getSubTasks(5).first()
+        assert(result.size == subTasks.size) {"Problem : not same size list; result list size = ${result.size} / subtasks test data = ${subTasks.size}"}
+
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun getTasksRelations_allTasksWithRelations_returnTaskRelations() = runBlocking {
+        val tasks = dataTestUtil.getTasks()
+        print("Tasks : ")
+        tasks.forEach { print(it.title+ ", ") }
+
+        val result = taskDao.getTasksRelations().first()
+        result.forEach { println(it) }
+        assert(result.size == tasks.size) {"Problem : not same size list; result list size = ${result.size} / subtasks test data = ${tasks.size}"}
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun getAllTasks_EisenhowerMatrixSort_returnSortedList() = runBlocking {
-        val resultedFlow = taskDao.getTodayTasks(
-            SortOrder.BY_EISENHOWER_MATRIX,
+
+        println("Data inserted:")
+        val tasks = dataTestUtil.getTasks().filter {
+            it.startDate?.let {
+                it > dataTestUtil.startOfDay && it < dataTestUtil.endOfDay
+            } == true || it.dueDate?.let {
+                it < dataTestUtil.endOfDay
+            } == true || it.deadline?.let {
+                it > dataTestUtil.startOfDay && it < dataTestUtil.endOfDay
+            } == true
+        }
+        tasks.forEach { print(it.title + ", ") }
+        val resultedFlow = taskDao.getTasksOrderByEisenhowerMatrixSort(
             false,
             false,
             dataTestUtil.startOfDay,
             dataTestUtil.endOfDay
         )
+
         val result = resultedFlow.first()
-        println("Data inserted:")
-        dataTestUtil.getTasks().forEach { println(it.title) }
-
         println("Sorted data:")
-        result.forEach { println(it.mainTask.title) }
+        result.forEach { println(it) }
 
+        assert(tasks.size == result.size) {" Not same size list : result list size = ${result.size} / tasks test data = ${tasks.size}"}
         assertEquals(result, result.sortedWith(
-            compareBy<ThingToDo> { it.mainTask.priority }
-                .thenByDescending { it.mainTask.importance }
-                .thenByDescending { it.mainTask.urgency }
-                .thenByDescending { it.mainTask.estimatedWorkingTime })
+            compareByDescending <ThingToDo> { it.taskRelations.mainTask.priority }
+                .thenByDescending { it.taskRelations.mainTask.importance }
+                .thenByDescending { it.taskRelations.mainTask.urgency }
+                .thenByDescending { it.taskRelations.mainTask.estimatedWorkingTime })
         )
     }
 
@@ -95,14 +131,14 @@ internal class TtdTest {
         val result = resultedFlow.first()
 
         println("Result :")
-        result.forEach { println(it.mainTask.title + " " + it.mainTask.dueDate) }
+        result.forEach { println(it.taskRelations.mainTask.title + " " + it.taskRelations.mainTask.dueDate) }
 
         assertEquals(result, result.sortedWith(
-            compareBy<ThingToDo> { it.mainTask.dueDate }
-                .thenBy { it.mainTask.deadline }
-                .thenBy { it.mainTask.startDate }
-                .thenBy { it.mainTask.priority }
-                .thenByDescending { it.mainTask.estimatedWorkingTime }
+            compareBy<ThingToDo> { it.taskRelations.mainTask.dueDate }
+                .thenBy { it.taskRelations.mainTask.deadline }
+                .thenBy { it.taskRelations.mainTask.startDate }
+                .thenBy { it.taskRelations.mainTask.priority }
+                .thenByDescending { it.taskRelations.mainTask.estimatedWorkingTime }
         ))
     }
 

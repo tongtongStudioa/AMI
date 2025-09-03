@@ -16,7 +16,6 @@ class DataTestUtil(private val ttdDao: TaskDao) {
             importance = 4,
             urgency = 8,
             estimatedWorkingTime = util.getTimeInMillis(1, 30),
-            dependency = false,
             skillLevel = 10
         ),
         Task(
@@ -26,7 +25,6 @@ class DataTestUtil(private val ttdDao: TaskDao) {
             importance = 9,
             urgency = 2,
             estimatedWorkingTime = util.getTimeInMillis(4, 0),
-            dependency = false,
             skillLevel = 4
         ),
         Task(
@@ -36,7 +34,6 @@ class DataTestUtil(private val ttdDao: TaskDao) {
             importance = 6,
             urgency = 10,
             estimatedWorkingTime = util.getTimeInMillis(0, 30),
-            dependency = true
         ),
         Task(
             "Aller voir un pote",
@@ -45,9 +42,8 @@ class DataTestUtil(private val ttdDao: TaskDao) {
             importance = 4,
             urgency = 8,
             estimatedWorkingTime = util.getTimeInMillis(2, 30),
-            isRecurring = true,
-            dependency = true,
-            skillLevel = 10
+            skillLevel = 10,
+            dependencyId = 2
         ),
         Task(
             "Créer un test pour la base de donnée",
@@ -56,11 +52,13 @@ class DataTestUtil(private val ttdDao: TaskDao) {
             importance = 4,
             urgency = 8,
             estimatedWorkingTime = util.getTimeInMillis(1, 30),
-            dependency = false,
             skillLevel = 10,
-            isCompleted = true,
-            currentWorkingTime = util.getTimeInMillis(1),
-            completedOnTime = true
+        ),
+        Task(
+            "Ajouter une tâche enfant",
+            6,
+            util.getRdDate(),
+            parentTaskId = 5
         ),
         Task(
             "Examen de math",
@@ -69,11 +67,7 @@ class DataTestUtil(private val ttdDao: TaskDao) {
             importance = 9,
             urgency = 2,
             estimatedWorkingTime = util.getTimeInMillis(4, 0),
-            dependency = false,
-            skillLevel = 4,
-            isCompleted = true,
-            currentWorkingTime = util.getTimeInMillis(4, 0),
-            completedOnTime = false
+            skillLevel = 4
         ),
         Task(
             "Faire une lessive",
@@ -82,10 +76,6 @@ class DataTestUtil(private val ttdDao: TaskDao) {
             importance = 6,
             urgency = 10,
             estimatedWorkingTime = util.getTimeInMillis(0, 30),
-            dependency = true,
-            isCompleted = true,
-            currentWorkingTime = util.getTimeInMillis(2),
-            completedOnTime = false
         ),
         Task(
             "Boire de l'eau",
@@ -94,11 +84,7 @@ class DataTestUtil(private val ttdDao: TaskDao) {
             importance = 4,
             urgency = 8,
             estimatedWorkingTime = util.getTimeInMillis(2, 30),
-            dependency = true,
-            skillLevel = 10,
-            isCompleted = true,
-            currentWorkingTime = util.getTimeInMillis(3, 40),
-            completedOnTime = false
+            skillLevel = 10
         )
 
     )

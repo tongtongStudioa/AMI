@@ -65,11 +65,13 @@ android {
 dependencies {
 
     // Gson pour la sérialisation JSON
-    implementation "com.google.code.gson:gson:2.11.0"
+    implementation 'com.google.code.gson:gson:2.13.1'
 
     // Tutorial guide
     implementation 'uk.co.samuelwall:material-tap-target-prompt:3.3.2'
-    implementation 'androidx.databinding:databinding-adapters:8.9.1'
+    implementation 'androidx.databinding:databinding-adapters:8.12.0'
+    implementation 'androidx.media3:media3-common-ktx:1.8.0'
+    implementation 'androidx.preference:preference:1.2.0'
 
     // Ksp dependency
     ksp "com.google.devtools.ksp:symbol-processing-api:$ksp_version"
@@ -81,7 +83,7 @@ dependencies {
     // MPAndroidChart dependency
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // notification FLAG_IMMUTABLE on Android12
-    implementation 'androidx.work:work-runtime-ktx:2.10.0'
+    implementation 'androidx.work:work-runtime-ktx:2.10.3'
 
     // custom swipe view
     implementation 'it.xabaras.android:recyclerview-swipedecorator:1.4'
@@ -93,11 +95,11 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "com.google.android.material:material:$materialVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
-    implementation 'androidx.lifecycle:lifecycle-service:2.8.7'
+    implementation 'androidx.lifecycle:lifecycle-service:2.9.2'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation "junit:junit:$junitVersion"
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.4'
     androidTestImplementation "androidx.test.ext:junit:$testExtJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
 
@@ -118,8 +120,8 @@ dependencies {
     implementation "androidx.room:room-runtime:$roomVersion"
     ksp "androidx.room:room-compiler:$roomVersion"
     implementation "androidx.room:room-ktx:$roomVersion"
-    implementation "androidx.sqlite:sqlite-ktx:2.5.0"
-    implementation "androidx.sqlite:sqlite-framework:2.5.0"
+    implementation 'androidx.sqlite:sqlite-ktx:2.5.2'
+    implementation 'androidx.sqlite:sqlite-framework:2.5.2'
     // Test helpers
     androidTestImplementation "androidx.room:room-testing:$roomVersion"
 

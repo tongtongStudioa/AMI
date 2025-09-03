@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.adapter.task
+package com.tongtongstudio.ami.adapter.thingToDo
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -45,7 +45,7 @@ class SubTaskAdapter(private val listener: InteractionListener) :
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
                         val task = subTasks[position]
-                        listener.onTaskChecked(task, checkBoxCompleted.isChecked, position)
+                        //todo : listener.onTaskChecked(task, checkBoxCompleted.isChecked, position)
                         //notifyItemChanged(position)
                     }
                 }

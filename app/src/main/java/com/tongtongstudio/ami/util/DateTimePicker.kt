@@ -9,14 +9,15 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.MaterialTimePicker.INPUT_MODE_CLOCK
 import com.google.android.material.timepicker.TimeFormat
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.data.datatables.Reminder
 import java.util.Calendar
 
 
 class DateTimePicker(private val parentFragmentManager: FragmentManager, val context: Context) {
 
-    fun showDialogNewReminder(
-        dueDateTime: Long? = null,
-        actionSaveReminder: (Long) -> Unit
+    fun createReminderDialog(
+        reminder: Reminder? = null,
+        actionSaveReminder: (Reminder) -> Unit
     ) {
         var reminderTriggerTime: Long
         // create the calendar constraint builder
@@ -26,16 +27,18 @@ class DateTimePicker(private val parentFragmentManager: FragmentManager, val con
                 timeInMillis
             }
         )
-        val reminderDatePicker = showDatePickerMaterial(endDateConstraints, dueDateTime)
+        val reminderDatePicker = showDatePickerMaterial(endDateConstraints, reminder?.dueDate)
 
         reminderDatePicker.addOnPositiveButtonClickListener { dateInMillisSelection ->
-            val timePicker = showTimePickerMaterial(dueDateTime)
+            val timePicker = showTimePickerMaterial(reminder?.dueDate)
             timePicker.addOnPositiveButtonClickListener {
                 val pickedHour = timePicker.hour
                 val pickedMinutes = timePicker.minute
                 reminderTriggerTime =
                     setReminderTriggerTime(dateInMillisSelection, pickedHour, pickedMinutes)
-                actionSaveReminder(reminderTriggerTime)
+                val updatedReminder = reminder?.copy(dueDate = reminderTriggerTime)
+                    ?: Reminder(dueDate = reminderTriggerTime, isRecurrent = false)
+                actionSaveReminder(updatedReminder)
             }
         }
     }

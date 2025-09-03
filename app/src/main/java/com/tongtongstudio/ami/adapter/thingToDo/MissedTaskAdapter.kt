@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.adapter.task
+package com.tongtongstudio.ami.adapter.thingToDo
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -44,12 +44,12 @@ class MissedTaskAdapter(private val context: Context) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(thingToDo: ThingToDo) {
             binding.apply {
-                tvTaskName.text = thingToDo.mainTask.title
-                tvCategory.text = thingToDo.category
-                tvCategory.isVisible = thingToDo.category != null
+                tvTaskName.text = thingToDo.taskRelations.mainTask.title
+                tvCategory.text = thingToDo.taskRelations.category?.title ?: ""
+                tvCategory.isVisible = thingToDo.taskRelations.category != null
                 tvDeadline.text = context.getString(
                     R.string.las_due_date,
-                    Task.getDateFormatted(thingToDo.mainTask.dueDate)
+                    Task.getDateFormatted(thingToDo.taskRelations.mainTask.dueDate)
                 )
                 // TODO: add missed times since last completion with unique query
                 tvMissedCount.text =

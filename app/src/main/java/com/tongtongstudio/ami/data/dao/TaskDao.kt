@@ -401,7 +401,7 @@ interface TaskDao {
         "SELECT COUNT(*) FROM task_table t " +
                 "LEFT JOIN LatestCompletion AS c ON t.task_id = c.parent_task_id " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE isCompleted AND NOT is_active" +
+                "WHERE isCompleted OR (task_recurrence_id IS NOT NULL AND NOT is_active AND isCompleted)" +
                 ""
     )
     fun getCompletedTasksCount(): Flow<Int>
@@ -1250,7 +1250,7 @@ ORDER BY period ASC
     @Query(
         "SELECT t.* FROM task_table t " +
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
-                "WHERE (isCompleted == 0 OR isCompleted IS NULL)" +
+                "WHERE (isCompleted == 0 OR isCompleted IS NULL  AND task_recurrence_id IS NULL)" +
                 "AND task_id != :taskId"
     )
     fun getPotentialParentTasks(taskId: Long): Flow<List<Task>>
@@ -1259,7 +1259,7 @@ ORDER BY period ASC
     @Query(
         "SELECT t.* FROM task_table t " +
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
-                "WHERE (isCompleted == 0 OR isCompleted IS NULL)"
+                "WHERE (isCompleted == 0 OR isCompleted IS NULL AND task_recurrence_id IS NULL)"
     )
     fun getPotentialParentTasks(): Flow<List<Task>>
 

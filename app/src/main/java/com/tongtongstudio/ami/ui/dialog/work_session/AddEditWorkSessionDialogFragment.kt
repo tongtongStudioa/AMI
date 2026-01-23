@@ -12,9 +12,15 @@ import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.data.datatables.PATTERN_FORMAT_DATE
 import com.tongtongstudio.ami.data.datatables.WorkSession
 import com.tongtongstudio.ami.databinding.DialogAddEditWorkSessionBinding
+import com.tongtongstudio.ami.util.CalendarCustomFunction
+import com.tongtongstudio.ami.util.showDatePicker
 import dagger.hilt.android.AndroidEntryPoint
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 const val WORK_SESSION_LISTENER_REQUEST_KEY = "WORK_SESSION_LISTENER_REQUEST_KEY"
 const val WORK_SESSION_RESULT_KEY = "WORK_SESSION_RESULT_KEY"
@@ -28,6 +34,7 @@ class AddEditWorkSessionDialogFragment : DialogFragment() {
     val args: AddEditWorkSessionDialogFragmentArgs by navArgs()
 
     lateinit var workSession: WorkSession
+    var sessionDate: Long? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         workSession = args.workSession ?: WorkSession(0,0L,null)
@@ -78,6 +85,17 @@ class AddEditWorkSessionDialogFragment : DialogFragment() {
             val secondes = (workSession.duration / 1000 % 60).toInt()
             secondesPicker.value = secondes
             inputLayoutComment.editText?.setText(workSession.comment ?: "")
+            inputLayoutDate.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(workSession.date)
+            inputLayoutDate.setOnClickListener {
+                showDatePicker(
+                    workSession.date,
+                    CalendarCustomFunction.buildConstraintsForStartDate(Calendar.getInstance().timeInMillis))
+                    {
+                        sessionDate = it
+                        inputLayoutDate.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(sessionDate)
+
+                    }
+            }
         }
 
 
@@ -93,16 +111,12 @@ class AddEditWorkSessionDialogFragment : DialogFragment() {
             (hours.toLong() * 60 * 60 * 1000) + (minutes.toLong() * 60 * 1000) + (secondes * 1000)
 
         val comment = binding.inputLayoutComment.editText?.text.toString()
-        val date = binding.inputLayoutDate.editText?.text?.dateStringToLong()
-        workSession = workSession.copy(duration = duration, comment = comment, date = date ?: workSession.date)
+        //val date = binding.inputLayoutDate.editText?.text?.dateStringToLong()
+        workSession = workSession.copy(duration = duration, comment = comment, date = sessionDate ?: workSession.date)
         dialog.setFragmentResult(
             WORK_SESSION_LISTENER_REQUEST_KEY,
             bundleOf(WORK_SESSION_RESULT_KEY to workSession)
         )
         dialog.dismiss()
     }
-}
-
-fun Editable.dateStringToLong(): Long {
-
 }

@@ -2,28 +2,30 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="Application_android.AMI.app">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="Application_android.AMI.app">
-        <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2025-10-25T10:18:35.582756889Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/axel/.android/avd/Medium_Phone.avd" />
+            </handle>
+          </Target>
+        </DropdownSelection>
+        <DialogSelection />
       </SelectionState>
       <SelectionState runConfigName="MigrationTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="getAllTasks_EisenhowerMatrixSort_returnSortedList()">
+      <SelectionState runConfigName="migrate4To2_validateSchema()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="migrateAll()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="TtdTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="getSubTasks_returnSubTasksList()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="getTasks_returnTaskRelations()">
+      <SelectionState runConfigName="getEstimationAccuracyRate_allCompletedTasks_correctRate()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

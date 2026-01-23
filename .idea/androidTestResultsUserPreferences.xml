@@ -10,6 +10,7 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Fairphone&#10; FP4" value="120" />
+                  <entry key="Medium_Phone_API_36.1" value="120" />
                   <entry key="Tests" value="360" />
                   <entry key="a321737e" value="120" />
                 </map>
@@ -24,6 +25,20 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_4_API_28" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-1163504626">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Fairphone FP4" value="120" />
+                  <entry key="Medium_Phone_API_36.1" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>
@@ -45,6 +60,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-752175895">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Fairphone FP4" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-630973871">
           <value>
             <AndroidTestResultsTableState>
@@ -59,32 +87,6 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
-        <entry key="-1163504626">
-          <value>
-            <AndroidTestResultsTableState>
-              <option name="preferredColumnWidths">
-                <map>
-                  <entry key="Duration" value="90" />
-                  <entry key="Fairphone FP4" value="120" />
-                  <entry key="Tests" value="360" />
-                </map>
-              </option>
-            </AndroidTestResultsTableState>
-          </value>
-        </entry>
-        <entry key="-752175895">
-          <value>
-            <AndroidTestResultsTableState>
-              <option name="preferredColumnWidths">
-                <map>
-                  <entry key="Duration" value="90" />
-                  <entry key="Fairphone FP4" value="120" />
-                  <entry key="Tests" value="360" />
-                </map>
-              </option>
-            </AndroidTestResultsTableState>
-          </value>
-        </entry>
         <entry key="-494558062">
           <value>
             <AndroidTestResultsTableState>
@@ -92,6 +94,7 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Medium_Phone_API_35" value="120" />
+                  <entry key="Medium_Phone_API_36.1" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>
@@ -142,6 +145,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="123892456">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Medium_Phone_API_36.1" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="960504523">
           <value>
             <AndroidTestResultsTableState>
@@ -149,6 +165,46 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Fairphone FP4" value="120" />
+                  <entry key="Medium_Phone_API_36.1" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="985592541">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Medium_Phone_API_36.1" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1134290543">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Medium_Phone_API_36.1" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1821497482">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Medium_Phone_API_36.1" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>

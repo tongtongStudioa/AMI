@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.edit.AddEditTaskFragment">
+    tools:context=".ui.edit.thingtodo.AddEditTaskFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
@@ -342,11 +342,11 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_repeat_task"
                     style="@style/Button.EditProperties.AMI.Style"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="@string/repeat_text"
                     app:icon="@drawable/ic_repeat_24"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/remove_repeated_choice"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -357,7 +357,8 @@
                     android:layout_height="wrap_content"
                     android:src="@drawable/baseline_clear_24"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="@+id/btn_repeat_task"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/btn_repeat_task"
                     app:layout_constraintTop_toTopOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -480,14 +481,17 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <!-- TODO: add emotions feeling about this task (is it hard to complete ? boring ?) -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_user_level"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
-                android:layout_width="245dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
                 android:hint="@string/mastery_level"
                 android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:startIconDrawable="@drawable/baseline_bolt_24"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/project_selection_group">
@@ -546,6 +550,7 @@
         android:layout_margin="25dp"
         android:contentDescription="Save task"
         android:text="@string/save"
+        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
         app:icon="@drawable/ic_save_task_24" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

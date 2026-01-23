@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="20dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/timePicker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <NumberPicker
+            android:id="@+id/hours_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/materialTextView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="center"
+            android:text="@string/hours"
+            app:layout_constraintEnd_toEndOf="@+id/hours_picker"
+            app:layout_constraintStart_toStartOf="@+id/hours_picker"
+            app:layout_constraintTop_toBottomOf="@+id/hours_picker" />
+
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/separation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="7dp"
+            android:gravity="center"
+            android:text=":"
+            app:layout_constraintBottom_toBottomOf="@+id/hours_picker"
+            app:layout_constraintEnd_toStartOf="@id/minutes_picker"
+            app:layout_constraintStart_toEndOf="@id/hours_picker"
+            app:layout_constraintTop_toTopOf="@+id/hours_picker"
+            tools:ignore="HardcodedText" />
+
+        <NumberPicker
+            android:id="@+id/minutes_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            app:layout_constraintStart_toEndOf="@id/hours_picker"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/secondes_picker"/>
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="center"
+            android:text="@string/minutes"
+            app:layout_constraintEnd_toEndOf="@+id/minutes_picker"
+            app:layout_constraintStart_toStartOf="@+id/minutes_picker"
+            app:layout_constraintTop_toBottomOf="@+id/minutes_picker" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/separation2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="7dp"
+            android:gravity="center"
+            android:text=":"
+            app:layout_constraintBottom_toBottomOf="@+id/minutes_picker"
+            app:layout_constraintEnd_toStartOf="@id/secondes_picker"
+            app:layout_constraintStart_toEndOf="@id/minutes_picker"
+            app:layout_constraintTop_toTopOf="@+id/minutes_picker"
+            tools:ignore="HardcodedText" />
+
+        <NumberPicker
+            android:id="@+id/secondes_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="center"
+            android:text="@string/secondes"
+            app:layout_constraintEnd_toEndOf="@+id/secondes_picker"
+            app:layout_constraintStart_toStartOf="@+id/secondes_picker"
+            app:layout_constraintTop_toBottomOf="@+id/secondes_picker" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_layout_comment"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_comment_work_session"
+        android:layout_marginTop="15dp"
+        app:counterEnabled="true"
+        app:endIconMode="clear_text"
+        app:layout_constraintEnd_toEndOf="@id/timePicker"
+        app:layout_constraintStart_toStartOf="@+id/timePicker"
+        app:layout_constraintTop_toBottomOf="@id/timePicker">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:inputType="textMultiLine"
+            android:maxHeight="300dp"
+            android:maxLines="5"
+            android:scrollbarStyle="insideInset"
+            android:scrollbars="vertical" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/input_layout_date"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Update session date"
+        android:layout_marginTop="5dp"
+        app:endIconMode="clear_text"
+        app:layout_constraintEnd_toEndOf="@id/timePicker"
+        app:layout_constraintStart_toStartOf="@+id/timePicker"
+        app:layout_constraintTop_toBottomOf="@id/input_layout_comment">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:inputType="textMultiLine"
+            android:maxHeight="300dp"
+            tools:text="23/01/2026"
+            android:maxLines="5"
+            android:scrollbarStyle="insideInset"
+            android:scrollbars="vertical" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

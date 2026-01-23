@@ -91,7 +91,7 @@ class ReminderBroadcastReceiver : BroadcastReceiver() {
             )
 
             val newReminderDueDate =
-                customReminderInterval.getNextOccurrenceDay(reminderDueDate, true)
+                customReminderInterval.getNextOccurrenceDay(reminderDueDate)
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, newReminderDueDate, pendingIntent)
         }
     }

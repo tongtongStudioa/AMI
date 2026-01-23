@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -116,8 +117,11 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
 
         // Check at the opening of the app
         viewModel.lookForMissedRecurringTasks()
+
         // TODO: update task urgency each time user open app and later once a day
         //viewModel.updateTasksUrgency()
+
+        // Wait for intent from intermediate evaluation
         intent?.let {
             if (intent.hasExtra(ASSESSMENT_ID)) {
                 showCompleteAssessmentDialog(intent)
@@ -126,7 +130,7 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
     }
 
     private fun showWelcomeDialog(context: Context) {
-        if (!prefs.getBoolean(KEY_DIALOG_SHOWN, false)) return
+        if (prefs.getBoolean(KEY_DIALOG_SHOWN, false)) return
         val dialog = MaterialAlertDialogBuilder(context)
             .setTitle(getString(R.string.welcome_title_msg))
             .setMessage(getString(R.string.welcom_msg))
@@ -150,7 +154,11 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
     }
 
     private fun showCompleteAssessmentDialog(intent: Intent) {
-        val assessment = intent.getParcelableExtra(ASSESSMENT_ID, Assessment::class.java)
+        val assessment = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(ASSESSMENT_ID, Assessment::class.java)
+        } else {
+            intent.getParcelableExtra(ASSESSMENT_ID)
+        }
         if (assessment != null) {
             val action =
                 NavigationGraphDirections.actionGlobalCompleteAssessmentDialogFragment(

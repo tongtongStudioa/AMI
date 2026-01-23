@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.ui.edit
+package com.tongtongstudio.ami.ui.edit.thingtodo
 
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
@@ -6,11 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.datatables.Category
-import com.tongtongstudio.ami.data.datatables.DaysOfWeek
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.Reminder
 import com.tongtongstudio.ami.data.datatables.Task
-import com.tongtongstudio.ami.data.datatables.TaskRecurrence
 import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.data.datatables.Type
@@ -51,7 +49,7 @@ class AddEditTaskViewModel @Inject constructor(
         val dueDate: Long? = null,
         val deadline: Long? = null,
 
-        // Priorité et importance
+        // Priority and importance
         val priority: Int? = null,
         val importance: Int? = null,
         val urgency: Int? = null,
@@ -61,28 +59,25 @@ class AddEditTaskViewModel @Inject constructor(
         val blockingTask: Task? = null, //predecessorTask
         val category: Category? = null,
 
-        // Métadonnées
+        // Metadata
         val nature: String? = Nature.TASK.name,
         val estimatedWorkTime: Long? = null,
         val estimatedEmotions: Int = 1,
         val skillLevel: Int? = null,
         val taskRecurrenceWithDays: TaskRecurrenceWithDays? = null,
 
-        // Rappels
+        // Reminders
         val reminders: List<Reminder> = emptyList(),
         // Categories
         val categorySuggestions: List<Category> = emptyList(),
 
-        // État UI
+        // Ui state
         val isLoading: Boolean = false,
         val error: String? = null
     )
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
-
-    private val _reminders = MutableStateFlow<List<Reminder>>(emptyList())
-    val reminders: StateFlow<List<Reminder>> = _reminders.asStateFlow()
 
     // Events
     private val _events = Channel<AddEditTaskEvent>()
@@ -99,7 +94,7 @@ class AddEditTaskViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             try {
                 _uiState.update {
-                        it.copy(categorySuggestions = categoriesSuggestions)
+                    it.copy(categorySuggestions = categoriesSuggestions)
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message, isLoading = false) }
@@ -114,27 +109,37 @@ class AddEditTaskViewModel @Inject constructor(
 
             try {
                 val thingToDo = savedStateHandle.get<ThingToDo>("thingToDo")
-                val taskReminders: List<Reminder> = thingToDo?.taskRelations?.mainTask?.id?.let { repository.getTaskReminders(it)?.first() } ?: emptyList()
+                val taskReminders: List<Reminder> = thingToDo?.taskRelations?.mainTask?.id?.let {
+                    repository.getTaskReminders(it)?.first()
+                } ?: emptyList()
                 val category: Category? = thingToDo?.taskRelations?.category
                 val blockingTask: Task? = thingToDo?.taskRelations?.taskDependency
                 val parentProject: Task? = thingToDo?.taskRelations?.parentProject
-                val recurringTaskInterval: TaskRecurrenceWithDays? = thingToDo?.taskRelations?.mainTask?.recurrenceInfosId?.let {repository.getTaskRecurrenceWithDays(it)}
+                    ?: savedStateHandle.get<Task>("parent_task")
+                //Log.e("addEditviewmodel", "Task relations loaded !")
+                val taskRecurrenceWithDays: TaskRecurrenceWithDays? =
+                    thingToDo?.taskRelations?.mainTask?.recurrenceInfosId?.let {
+                        //Log.e("addEditviewmodel", "Try to load task recurrence with days")
+                        repository.getTaskRecurrenceWithDays(it)
+                    }
+                //Log.e("addEditviewmodel", "Task recurrence loaded !")
                 _uiState.update {
                     it.copy(
                         thingToDo = thingToDo,
                         title = thingToDo?.taskRelations?.mainTask?.title ?: "",
                         creationDateFormatted = thingToDo?.taskRelations?.mainTask?.getCreationDateFormatted(),
                         priority = thingToDo?.taskRelations?.mainTask?.priority,
-                        nature = thingToDo?.getNature() ?: Nature.TASK.name,
+                        nature = getNature(it),
                         type = thingToDo?.getType(),
                         description = thingToDo?.taskRelations?.mainTask?.description ?: "",
                         startDate = thingToDo?.taskRelations?.mainTask?.startDate,
                         dueDate = thingToDo?.taskRelations?.mainTask?.dueDate,
                         deadline = thingToDo?.taskRelations?.mainTask?.deadline,
-                        estimatedWorkTime= thingToDo?.taskRelations?.mainTask?.estimatedWorkingTime,
-                        estimatedEmotions = thingToDo?.taskRelations?.mainTask?.estimatedEmotions ?: 1,
-                        skillLevel= thingToDo?.taskRelations?.mainTask?.skillLevel,
-                        taskRecurrenceWithDays = recurringTaskInterval,
+                        estimatedWorkTime = thingToDo?.taskRelations?.mainTask?.estimatedWorkingTime,
+                        estimatedEmotions = thingToDo?.taskRelations?.mainTask?.estimatedEmotions
+                            ?: 1,
+                        skillLevel = thingToDo?.taskRelations?.mainTask?.skillLevel,
+                        taskRecurrenceWithDays = taskRecurrenceWithDays,
                         reminders = taskReminders,
                         category = category,
                         blockingTask = blockingTask,
@@ -142,11 +147,23 @@ class AddEditTaskViewModel @Inject constructor(
                         isLoading = false
                     )
                 }
-                _reminders.value = taskReminders
             } catch (e: Exception) {
+                Log.e("Error loading task", e.message.toString())
                 _uiState.update { it.copy(error = e.message, isLoading = false) }
             }
         }
+    }
+
+    private fun getNature(uiState: UiState): String {
+        val nature: Nature =
+            if (uiState.parentProject != null && uiState.nature == Nature.PROJECT.name || uiState.nature == Nature.INTERMEDIATE_PROJECT.name)
+                Nature.INTERMEDIATE_PROJECT
+            else if (uiState.parentProject == null && uiState.nature == Nature.PROJECT.name)
+                Nature.PROJECT
+            else if (uiState.parentProject != null)
+                Nature.SUB_TASK
+            else Nature.TASK
+        return nature.name
     }
 
     private fun restoreSavedState() {
@@ -155,25 +172,30 @@ class AddEditTaskViewModel @Inject constructor(
             current.copy(
                 title = savedStateHandle.get<String>("thingToDoName") ?: current.title,
                 priority = savedStateHandle.get<Int>("thingToDoPriority") ?: current.priority,
-                creationDateFormatted = savedStateHandle.get<String>("creationDateFormatted") ?: current.creationDateFormatted,
+                creationDateFormatted = savedStateHandle.get<String>("creationDateFormatted")
+                    ?: current.creationDateFormatted,
                 nature = savedStateHandle.get<String>("thingToDoNature") ?: current.nature,
-                description = savedStateHandle.get<String>("thingToDoDescription") ?: current.description,
+                description = savedStateHandle.get<String>("thingToDoDescription")
+                    ?: current.description,
                 importance = savedStateHandle.get<Int>("importance") ?: current.importance,
                 urgency = savedStateHandle.get<Int>("urgency") ?: current.urgency,
                 startDate = savedStateHandle.get<Long>("thingToDoStartDate") ?: current.startDate,
                 dueDate = savedStateHandle.get<Long>("dueDate") ?: current.dueDate,
                 deadline = savedStateHandle.get<Long>("thingToDoDeadline") ?: current.deadline,
-                estimatedWorkTime = savedStateHandle.get<Long>("estimatedWorkingTime") ?: current.estimatedWorkTime,
+                estimatedWorkTime = savedStateHandle.get<Long>("estimatedWorkingTime")
+                    ?: current.estimatedWorkTime,
                 parentProject = savedStateHandle.get<Task>("parentId") ?: current.parentProject,
                 blockingTask = savedStateHandle.get<Task>("dependencyId") ?: current.blockingTask,
-                category = savedStateHandle.get<Category>("thingToDoCategory")?: current.category,
+                category = savedStateHandle.get<Category>("thingToDoCategory") ?: current.category,
                 skillLevel = savedStateHandle.get<Int>("level") ?: current.skillLevel,
-                taskRecurrenceWithDays = savedStateHandle.get<TaskRecurrenceWithDays>("taskRecurrenceWithDays") ?: current.taskRecurrenceWithDays,
+                taskRecurrenceWithDays = savedStateHandle.get<TaskRecurrenceWithDays>("taskRecurrenceWithDays")
+                    ?: current.taskRecurrenceWithDays,
                 reminders = savedStateHandle.get<List<Reminder>>("reminders") ?: current.reminders,
                 isLoading = false // On restaure l'état donc le chargement est terminé
             )
         }
     }
+
     // Method to update fields
     fun updateTitle(title: String) {
         _uiState.update { it.copy(title = title) }
@@ -188,7 +210,7 @@ class AddEditTaskViewModel @Inject constructor(
     fun updateNature(nature: String) {
         _uiState.update { it.copy(nature = nature) }
         savedStateHandle["thingToDoNature"] = nature
-        Log.e("Task nature test", " update task nature = $nature")
+        //Log.e("Task nature test", "Update task nature = $nature")
     }
 
     fun updateDescription(description: String?) {
@@ -218,7 +240,7 @@ class AddEditTaskViewModel @Inject constructor(
         savedStateHandle["parentId"] = project
     }
 
-    fun updateDependencyTask(blockingTask: Task?) {
+    fun updateBlockingTask(blockingTask: Task?) {
         _uiState.update { it.copy(blockingTask = blockingTask) }
         savedStateHandle["blockingTask"] = blockingTask
     }
@@ -249,21 +271,18 @@ class AddEditTaskViewModel @Inject constructor(
         savedStateHandle["urgency"] = urgency
     }
 
-    fun updateRecurrenceInfos(taskRecurrence: TaskRecurrence?, days: List<DaysOfWeek> = emptyList()) = viewModelScope.launch {
-        var recurrenceInfos: TaskRecurrenceWithDays? = null
-        if ((taskRecurrence == null))
-            _uiState.update { it.copy( taskRecurrenceWithDays = null) }
-        else {
-            uiState.collect { state ->
-                    val uTaskRecurrence = taskRecurrence.copy(
+    fun updateRecurrenceInfos(
+        taskRecurrenceWithDays: TaskRecurrenceWithDays?
+    ) = viewModelScope.launch {
+        _uiState.update { state ->
+            if (taskRecurrenceWithDays != null) {
+                val taskRecurrence = taskRecurrenceWithDays.taskRecurrence.copy(
                     startDate = state.startDate,
                     endDate = state.deadline,
                 )
-                recurrenceInfos = TaskRecurrenceWithDays(uTaskRecurrence, days)
             }
+            state.copy(taskRecurrenceWithDays = taskRecurrenceWithDays)
         }
-        _uiState.update { it.copy( taskRecurrenceWithDays = recurrenceInfos) }
-        savedStateHandle["recurringTaskInterval"] = recurrenceInfos
     }
 
     fun updateReminder(updatedReminder: Reminder) = viewModelScope.launch {
@@ -299,12 +318,21 @@ class AddEditTaskViewModel @Inject constructor(
         if (reminder.parentId != null) repository.deleteReminder(reminder)
     }
 
+    private suspend fun updateRemindersList(idTtd: Long) {
+        for (reminder in _uiState.value.reminders) {
+            if (reminder.parentId == null) {
+                val newTaskReminder = reminder.copy(parentId = idTtd)
+                repository.insertReminder(newTaskReminder)
+            }
+        }
+    }
+
     fun updateCategorySearch(query: String) {
         _uiState.update { state ->
             state.copy(
                 categorySuggestions = state.categorySuggestions
                     .filter { it.title.contains(query, ignoreCase = true) }
-                    //.take(5) // Limite les suggestions
+                //.take(5) // Limite les suggestions
             )
         }
     }
@@ -320,22 +348,58 @@ class AddEditTaskViewModel @Inject constructor(
     fun saveTask(modeExtent: Boolean) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-
+            try {
+                val taskRecurrenceWithDays = _uiState.value.taskRecurrenceWithDays
+                if (taskRecurrenceWithDays != null) {
+                    val taskRecurrenceId =
+                        repository.insertOrUpdateTaskRecurrenceWithDays(taskRecurrenceWithDays)
+                    _uiState.update {
+                        it.copy(
+                            taskRecurrenceWithDays = taskRecurrenceWithDays.copy(
+                                taskRecurrenceWithDays.taskRecurrence.copy(
+                                    recurrenceId = taskRecurrenceId
+                                )
+                            )
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _events.send(
+                    AddEditTaskEvent.ShowInvalidInputMessage(
+                        e.message ?: "Error saving task recurrence infos"
+                    )
+                )
+            }
             try {
                 val currentState = _uiState.value
                 val task = buildTaskFromState(currentState, modeExtent)
 
-                if (currentState.thingToDo == null) {
-                    val taskId = repository.insertTask(task)
-                    _events.send(AddEditTaskEvent.ScheduleReminders(_reminders.value))
-                    _events.send(AddEditTaskEvent.NavigateBackWithResult(ADD_TASK_RESULT_OK))
-                } else {
-                    repository.updateTask(task.copy(id= currentState.thingToDo.taskRelations.mainTask.id))
-                    _events.send(AddEditTaskEvent.ScheduleReminders(_reminders.value))
-                    _events.send(AddEditTaskEvent.NavigateBackWithResult(EDIT_TASK_RESULT_OK))
-                }
+                // get task id for saving reminders
+                val isUpdate = currentState.thingToDo != null
+                val taskId = if (isUpdate)
+                    currentState.thingToDo.taskRelations.mainTask.id
+                else repository.insertTask(task)
+
+                // update if id is not null
+                if (isUpdate)
+                    repository.updateTask(task.copy(id = taskId))
+
+                // update category of sub task
+                repository.updateSubTasksCategory(parentTaskId = taskId, categoryId = currentState.category?.id)
+
+                // Save and schedule reminders
+                updateRemindersList(taskId)
+                _events.send(AddEditTaskEvent.ScheduleReminders(currentState.reminders))
+
+                val result = if (isUpdate) EDIT_TASK_RESULT_OK else ADD_TASK_RESULT_OK
+                _events.send(AddEditTaskEvent.NavigateBackWithResult(result))
+
             } catch (e: Exception) {
-                _events.send(AddEditTaskEvent.ShowInvalidInputMessage(e.message ?: "Error saving task"))
+                _events.send(
+                    AddEditTaskEvent.ShowInvalidInputMessage(
+                        e.message ?: "Error saving task"
+                    )
+                )
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
             }
@@ -344,19 +408,18 @@ class AddEditTaskViewModel @Inject constructor(
 
     private fun buildTaskFromState(state: UiState, modeExtent: Boolean): Task {
         val isDraft = state.priority == null || state.dueDate == null
-        val nature = when {
-            state.parentProject != null && state.nature == Nature.PROJECT.name -> Nature.INTERMEDIATE_PROJECT.name
-            state.parentProject != null && state.nature == Nature.TASK.name -> Nature.SUB_TASK.name
-            state.parentProject == null && state.nature == Nature.PROJECT.name -> Nature.PROJECT.name
-            else -> Nature.TASK.name
-        }
+        val nature = getNature(state)
         return if (modeExtent) {
-            val urgency = Task.calculusUrgency(Calendar.getInstance().timeInMillis, state.dueDate, state.deadline)
+            val urgency = Task.calculusUrgency(
+                Calendar.getInstance().timeInMillis,
+                state.dueDate,
+                state.deadline
+            )
             Task(
                 title = state.title,
                 priority = Task.calculatingPriority(state.priority, state.importance, urgency),
                 dueDate = state.dueDate,
-                startDate =state.startDate,
+                startDate = state.startDate,
                 deadline = state.deadline,
                 description = state.description,
                 nature = nature,
@@ -383,163 +446,35 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 
+    fun navigateToEditParentProject() = viewModelScope.launch {
+        _events.send(
+            AddEditTaskEvent.NavigateToEditParentProjectDialog(
+                _uiState.value.thingToDo?.taskRelations?.mainTask?.id,
+                uiState.value.parentProject
+            )
+        )
+    }
+
+    fun navigateToEditBlockingTaskDialog() = viewModelScope.launch {
+        _events.send(
+            AddEditTaskEvent.NavigateToEditBlockingTaskDialog(
+                _uiState.value.thingToDo?.taskRelations?.mainTask?.id,
+                _uiState.value.blockingTask
+            )
+        )
+    }
+
+
     sealed class AddEditTaskEvent {
         data class ShowInvalidInputMessage(val msg: String) : AddEditTaskEvent()
         data class NavigateBackWithResult(val result: Int) : AddEditTaskEvent()
+
         //object NavigatePickerDateScreen : AddEditTaskEvent()
         data class ScheduleReminders(val reminders: List<Reminder>) : AddEditTaskEvent()
+        data class NavigateToEditParentProjectDialog(val taskId: Long?, val parentProject: Task?) :
+            AddEditTaskEvent()
+
+        data class NavigateToEditBlockingTaskDialog(val taskId: Long?, val blockingTask: Task?) :
+            AddEditTaskEvent()
     }
-
-    /*
-    fun onSaveClick(modeExtent: Boolean) {
-        thingToDo?.let { thingtoDo ->
-            updateThingToDo(thingtoDo, modeExtent)
-        } ?: saveThingToDo(modeExtent)
-    }
-
-    private fun updateRemindersList(idTtd: Long) {
-        if (reminders.value != null) {
-            for (reminder in reminders.value!!) {
-                if (reminder.parentId == null) {
-                    val newTaskReminder = reminder.copy(parentId = idTtd)
-                    insertNewReminder(newTaskReminder)
-                }
-            }
-        }
-    }
-
-    fun updateReminder(oldReminder: Reminder, updatedReminder: Reminder) = viewModelScope.launch {
-        if (oldReminder.parentId == null) {
-            val currentReminders = _reminders.value ?: mutableListOf()
-            val indexElement = currentReminders.indexOf(oldReminder)
-            currentReminders.remove(oldReminder)
-            currentReminders.add(indexElement, updatedReminder)
-            _reminders.value = currentReminders
-        } else
-            repository.updateReminder(updatedReminder)
-    }
-
-    private fun insertNewReminder(reminder: Reminder) = viewModelScope.launch {
-        repository.insertReminder(reminder)
-    }
-
-    fun updateCategory(updatedCategory: Category?) {
-        _category.value = updatedCategory
-        categoryId = updatedCategory?.id
-    }
-
-    fun getCategories() = repository.getCategories().asLiveData()
-
-    private fun saveThingToDo(modeExtent: Boolean) = viewModelScope.launch {
-        val taskId: Long
-        val isDraft = dueDate == null || priority == null
-        val newThingToDo =
-            Task(
-                title = title,
-                priority = priority,
-                dueDate = dueDate,
-                startDate = startDate,
-                type = Nature.TASK.name,
-                isDraft = isDraft,
-                recurrenceInfosId = getRecurrenceId(),
-                categoryId = categoryId,
-                parentTaskId = projectId
-            )
-
-        taskId = if (modeExtent) {
-            urgency = Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate, deadline)
-            val newThingToDoExtent = newThingToDo.copy(
-                priority = Task.calculatingPriority(priority, importance, urgency),
-                deadline = deadline,
-                description = description,
-                importance = importance,
-                urgency = urgency,
-                estimatedWorkingTime = estimatedTime,
-                dependencyId = dependencyId,
-                skillLevel = skillLevel,
-                type = ttdNature
-            )
-            repository.insertTask(newThingToDoExtent)
-        } else repository.insertTask(newThingToDo)
-
-        updateRemindersList(taskId)
-
-        // navigate back with result "OK"
-        addEditChannelEvent.send(
-            AddEditTaskEvent.NavigateBackWithResult(
-                if (isDraft) ADD_DRAFT_TASK_OK else ADD_TASK_RESULT_OK
-            )
-        )
-    }
-
-    private fun updateThingToDo(thingToDo: ThingToDo, modeExtent: Boolean) =
-        viewModelScope.launch {
-            val updatedThingToDo =
-                thingToDo.mainTask.copy(
-                    title = title,
-                    priority = priority,
-                    dueDate = dueDate,
-                    startDate = startDate,
-                    recurrenceInfosId = recurringTaskInterval,
-                    parentTaskId = projectId,
-                    categoryId = categoryId,
-                    isDraft = dueDate == null || priority == null,
-                    type = Nature.TASK.name
-                )
-            if (modeExtent) {
-                urgency =
-                    Task.calculusUrgency(Calendar.getInstance().timeInMillis, dueDate, deadline)
-                val updatedThingToDoExtent = updatedThingToDo.copy(
-                    priority = Task.calculatingPriority(priority, importance, urgency),
-                    deadline = deadline,
-                    description = description,
-                    importance = importance,
-                    urgency = urgency,
-                    estimatedWorkingTime = estimatedTime,
-                    dependencyId = dependencyId,
-                    skillLevel = skillLevel,
-                    type = ttdNature
-                )
-                repository.updateTask(updatedThingToDoExtent)
-            } else repository.updateTask(updatedThingToDo)
-
-            addEditChannelEvent.send(
-                AddEditTaskEvent.NavigateBackWithResult(
-                    EDIT_TASK_RESULT_OK
-                )
-            )
-        }
-
-    fun showInvalidInputMessage(invalidUserMsg: String) = viewModelScope.launch {
-        addEditChannelEvent.send(AddEditTaskEvent.ShowInvalidInputMessage(invalidUserMsg))
-    }
-
-    fun getMainTask(): String = runBlocking {
-        return@runBlocking if (projectId != null) {
-            repository.getTask(projectId!!).title
-        } else "null"
-    }
-
-    fun addNewReminder(reminderTriggerTime: Long) {
-        // TODO: find a new way for repeating reminder (update entity and migrate)
-        val newReminder = Reminder(
-            dueDate = reminderTriggerTime,
-            isRecurrent = isRecurring,
-            //repetitionFrequency = recurringTaskInterval
-        )
-        if (thingToDo?.mainTask?.id == null) { // is a new task ?
-            val currentReminders = reminders.value ?: mutableListOf()
-            currentReminders.add(newReminder)
-            _reminders.value = currentReminders
-        } else insertNewReminder(newReminder.copy(parentId = thingToDo.mainTask.id))
-    }
-
-    fun removeReminder(attribute: Reminder) = viewModelScope.launch {
-        val updatedList: MutableList<Reminder> = _reminders.value ?: mutableListOf()
-        val updatedList2 = updatedList - attribute
-        _reminders.value = updatedList2
-        if (attribute.parentId != null) repository.deleteReminder(attribute)
-    }
-
-   */
 }

@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.ui.dialog.linkproject
+package com.tongtongstudio.ami.ui.dialog.blocking_task
 
 import android.app.Dialog
 import android.os.Bundle
@@ -8,37 +8,45 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
-import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.simple.AttributeListener
 import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
 import com.tongtongstudio.ami.data.datatables.Task
-import com.tongtongstudio.ami.databinding.DialogEditProjectLinkedBinding
+import com.tongtongstudio.ami.databinding.DialogEditLinkedTaskBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.properties.Delegates
 
-const val PROJECT_LINKED_LISTENER_REQUEST_KEY = "project_linked_listener_request_key"
-const val PROJECT_LINKED_RESULT_KEY = "project_linked_result_key"
-const val PROJECT_ID = "project_id"
-const val CURRENT_PROJECT_ID_REQUEST_KEY = "current_project_id_request_key"
+const val BLOCKING_TASK_REQUEST_KEY = "BLOCKING_TASK_REQUEST_KEY"
+const val BLOCKING_TASK_RESULT_KEY = "BLOCKING_TASK_RESULT_KEY"
+
 
 @AndroidEntryPoint
-class EditProjectLinkedDialogFragment : DialogFragment() {
-    private lateinit var binding: DialogEditProjectLinkedBinding
-    private val viewModel: EditProjectLinkedViewModel by viewModels()
+class EditBlockingTaskDialogFragment : DialogFragment() {
+    private var taskId: Long?= null
+    private lateinit var binding: DialogEditLinkedTaskBinding
+    val args: EditBlockingTaskDialogFragmentArgs by navArgs()
+    private val viewModel: EditBlockingTaskViewModel by viewModels()
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        viewModel.updateBlockingTask(args.blockingTask)
+        taskId = args.taskId
+        super.onViewCreated(view, savedInstanceState)
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             val dialog = MaterialAlertDialogBuilder(it)
             // Get the layout inflater
             val inflater = requireActivity().layoutInflater
-            binding = DialogEditProjectLinkedBinding.inflate(inflater)
+            binding = DialogEditLinkedTaskBinding.inflate(inflater)
             // Inflate and set the layout for the dialog
             // Pass null as the parent view because its going in the dialog layout
             dialog.setView(binding.root)
-                .setTitle(getString(R.string.edit_task_link))
+                .setTitle(getString(R.string.edit_blocking_task))
                 // Add action buttons
                 .setNegativeButton(
                     R.string.cancel
@@ -54,15 +62,14 @@ class EditProjectLinkedDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         val projectLinkAdapter = EditAttributesAdapter(object : AttributeListener<Task> {
             override fun onItemClicked(attribute: Task) {
-                viewModel.changeProjectId(attribute.id)
-                onMainTaskSelected(this@EditProjectLinkedDialogFragment)
+                viewModel.updateBlockingTask(attribute)
+                onBlockingTaskSelected(this@EditBlockingTaskDialogFragment)
             }
 
             override fun onRemoveCrossClick(attribute: Task) {
-                viewModel.removeProjectId()
+                viewModel.removeBlockingTask()
             }
         }) { binding, composedTask ->
             binding.titleOverview.text = composedTask.title
@@ -74,31 +81,25 @@ class EditProjectLinkedDialogFragment : DialogFragment() {
             setHasFixedSize(true)
         }
 
-        setFragmentResultListener(CURRENT_PROJECT_ID_REQUEST_KEY) { _, bundle ->
-            viewModel.changeProjectId(bundle.getLong(PROJECT_ID))
+        viewModel.blockingTask.observe(viewLifecycleOwner) {
+            projectLinkAdapter.actionBindView = { binding, task ->
+                binding.titleOverview.text = task.title
+            }
+        }
 
-            binding.rvProjects.apply {
-                adapter = projectLinkAdapter
-                layoutManager = LinearLayoutManager(requireContext())
-                setHasFixedSize(true)
-            }
+
+        viewModel.potentialBlockingTasks(taskId).observe(viewLifecycleOwner) { listPotentialProjects ->
+            projectLinkAdapter.submitList(listPotentialProjects)
         }
-        /*viewModel.projectId.observe(viewLifecycleOwner) {
-            projectLinkAdapter.actionBindView = { binding, composedTask ->
-                binding.titleOverview.text = composedTask.goalTitle
-            }
-        }*/
-        viewModel.projects.observe(viewLifecycleOwner) {
-            projectLinkAdapter.submitList(it)
-        }
+
         return binding.root
     }
 
-    private fun onMainTaskSelected(dialog: EditProjectLinkedDialogFragment) {
-        val result = if (viewModel.projectId.value != null) viewModel.projectId.value else 0
+    private fun onBlockingTaskSelected(dialog: EditBlockingTaskDialogFragment) {
+        val result = viewModel.blockingTask.value
         dialog.setFragmentResult(
-            PROJECT_LINKED_LISTENER_REQUEST_KEY,
-            bundleOf(PROJECT_LINKED_RESULT_KEY to result)
+            BLOCKING_TASK_REQUEST_KEY,
+            bundleOf(BLOCKING_TASK_RESULT_KEY to result)
         )
         dialog.dismiss()
     }

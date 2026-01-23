@@ -40,7 +40,7 @@ import java.io.IOException
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SettingsFragment : Fragment(R.layout.fragment_settings) {
+class SettingsFragment : Fragment(R.layout.fragment_settings) { // TODO: update this fragment only with ui modification and remove logic elsewhere
 
     @Inject
     lateinit var taskDao: TaskDao

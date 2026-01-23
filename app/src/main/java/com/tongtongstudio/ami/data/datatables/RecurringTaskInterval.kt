@@ -4,7 +4,7 @@ import android.content.res.Resources
 import android.os.Parcelable
 import androidx.room.TypeConverter
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.ui.dialog.Period
+import com.tongtongstudio.ami.ui.dialog.recurring_task.Period
 import kotlinx.parcelize.Parcelize
 import java.util.Calendar
 import kotlin.math.pow
@@ -50,6 +50,7 @@ class RecurringConverters {
     }
 }
 
+// TODO: Suppress this class 
 @Parcelize
 class RecurringTaskInterval(
     val times: Int, // every 1, 2, 3 or 18 ...
@@ -67,7 +68,6 @@ class RecurringTaskInterval(
     }
 
     private fun increaseInterval(): RecurringTaskInterval {
-        // TODO: find a correct way to increase interval
         val newTimes = times.toDouble().pow(2).toInt()
         return RecurringTaskInterval(newTimes, period, daysOfWeek)
     }
@@ -92,8 +92,6 @@ class RecurringTaskInterval(
         }
         val newDueDateDate = updatedStartDate.newDueDate
         val timesSkipped = updatedStartDate.timesSkipped
-
-        // TODO: 25/10/2022 how dismiss a miss check ? how count when task were completed or not ?
 
         // all attributes to update
         val isTaskEnding = if (ttd.deadline != null) newDueDateDate > ttd.deadline else false
@@ -219,7 +217,6 @@ class RecurringTaskInterval(
                 else -> resources.getString(R.string.each_days)
             }
         } else if (daysOfWeek != null) {
-            // TODO: create function to retrieve E from int : Mon, Tue, Wed, Thu, Fri (Lun, Mar, Mer, Jeu, Ven, ...)
             if (times == 1) resources.getString(
                 R.string.weekly_interval,
                 daysOfWeek.toString()

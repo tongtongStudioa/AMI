@@ -9,12 +9,10 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -191,14 +189,17 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                                 ADD_DRAFT_TASK_OK -> getString(R.string.draft_task_created)
                                 else -> getString(R.string.task_updated)
                             }
-                            Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
+                            Snackbar.make(binding.fabAddTask, msg, Snackbar.LENGTH_SHORT)
+                                .setAnchorView(binding.fabAddTask)
+                                .show()
                         }
                         is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {
                             Snackbar.make(
-                                requireView(),
+                                binding.fabAddTask,
                                 getString(R.string.msg_thing_to_do_deleted),
                                 Snackbar.LENGTH_LONG
                             )
+                                .setAnchorView(binding.fabAddTask)
                                 .setAction(getText(R.string.msg_action_undo)) {
                                     sharedViewModel.onUndoDeleteClick(event.thingToDo)
                                 }.show()
@@ -206,7 +207,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                         is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
                             val action =
                                 TodayTasksFragmentDirections.actionTodayTasksFragmentToTabPageTrackingStats(
-                                    event.task
+                                    event.task.id
                                 )
                             val extras =
                                 FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
@@ -218,18 +219,41 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                             }
                             findNavController().navigate(action, extras)
                         }
-                        is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
+                        is MainViewModel.SharedEvent.NavigateToProjectDetailsScreen -> {
                             val action =
                                 TodayTasksFragmentDirections.actionTodayTasksFragmentToLocalProjectStatsFragment2(
-                                    event.project
+                                    event.project.taskRelations.mainTask.id
                                 )
-                            findNavController().navigate(action)
+                            val extras =
+                                FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            findNavController().navigate(action,extras)
                         }
                         is MainViewModel.SharedEvent.ShowMissedRecurringTaskDialog -> {
                             val action =
                                 TodayTasksFragmentDirections.actionTodayTasksFragmentToMissedRecurringTasksDialogFragment(
                                     event.missedTasks.toTypedArray()
                                 )
+                            findNavController().navigate(action)
+                        }
+
+                        is MainViewModel.SharedEvent.NavigateToAddScreenWithParentTask -> {
+                            val action = actionTodayTasksFragmentToAddEditTaskFragment(
+                                title = getString(R.string.fragment_title_add_thing_to_do),
+                                thingToDo = null,
+                                parentTask = event.parentTask
+                            )
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
                             findNavController().navigate(action)
                         }
 
@@ -343,8 +367,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         }
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo) {
-        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
+        sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView)
     }
 
     override fun onTaskClick(thingToDo: Task, itemView: View) {
@@ -352,16 +376,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     }
 
     override fun onProjectAddClick(thingToDo: ThingToDo) {
-        setFragmentResult("is_new_sub_task", bundleOf("project" to thingToDo.taskRelations.mainTask))
-        sharedViewModel.addThingToDo()
-    }
-
-    override fun onSubTaskRightSwipe(thingToDo: Task) {
-        sharedViewModel.deleteSubTask(thingToDo)
-    }
-
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
-        sharedViewModel.updateSubTask(thingToDo)
+        sharedViewModel.addSubThingTodo(thingToDo.taskRelations.mainTask)
     }
 
     override fun onDestroyView() {

@@ -57,16 +57,53 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:gravity="start"
+                    android:layout_marginTop="3dp"
+                    android:paddingEnd="7dp"
                     android:textAppearance="@style/TextAppearance.Ami.Body2"
                     app:layout_constraintStart_toStartOf="@+id/task_name"
                     app:layout_constraintTop_toBottomOf="@+id/task_name"
                     tools:text="Category" />
 
                 <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/task_nature"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:paddingEnd="6dp"
+                    android:layout_marginTop="3dp"
+                    android:textAppearance="@style/TextAppearance.Ami.Body2"
+                    app:layout_constraintStart_toEndOf="@+id/task_category"
+                    app:layout_constraintTop_toBottomOf="@+id/task_name"
+                    tools:text="Nature" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/task_type"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:paddingEnd="7dp"
+                    android:layout_marginTop="3dp"
+                    android:textAppearance="@style/TextAppearance.Ami.Body2"
+                    app:layout_constraintStart_toEndOf="@+id/task_nature"
+                    app:layout_constraintTop_toBottomOf="@+id/task_name"
+                    tools:text="Type" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/task_status"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:layout_marginTop="3dp"
+                    android:textAppearance="@style/TextAppearance.Ami.Body2"
+                    app:layout_constraintStart_toEndOf="@+id/task_type"
+                    app:layout_constraintTop_toBottomOf="@+id/task_name"
+                    tools:text="Status" />
+
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/task_description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="8dp"
                     android:textAppearance="@style/TextAppearance.Ami.Caption"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/task_category"
@@ -381,7 +418,7 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/completion_date"
+                    android:id="@+id/btn_completion_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"

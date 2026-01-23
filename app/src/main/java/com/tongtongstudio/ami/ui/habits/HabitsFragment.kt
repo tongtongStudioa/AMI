@@ -3,11 +3,9 @@ package com.tongtongstudio.ami.ui.habits
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -99,7 +97,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                             val action =
                                 HabitsFragmentDirections.actionEventFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
-                                    event.thingToDo
+                                    thingToDo = event.thingToDo
                                 )
                             exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
                                 duration = resources.getInteger(R.integer.middle_duration).toLong()
@@ -115,9 +113,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                         is MainViewModel.SharedEvent.NavigateToAddScreen -> {
                             val action =
                                 HabitsFragmentDirections.actionEventFragmentToAddEditTaskFragment(
-                                    getString(R.string.fragment_title_add_thing_to_do),
-                                    null
-
+                                    getString(R.string.fragment_title_add_thing_to_do)
                                 )
                             exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
                                 duration = 300
@@ -126,6 +122,21 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                                 MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
                                     duration = 300
                                 }
+                            findNavController().navigate(action)
+                        }
+
+                        is MainViewModel.SharedEvent.NavigateToAddScreenWithParentTask -> {
+                            val action = HabitsFragmentDirections.actionEventFragmentToAddEditTaskFragment(
+                                title = getString(R.string.fragment_title_add_thing_to_do),
+                                thingToDo = null,
+                                parentTask = event.parentTask
+                            )
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
                             findNavController().navigate(action)
                         }
 
@@ -152,7 +163,7 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
                         is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
                             val action =
                                 HabitsFragmentDirections.actionHabitsFragmentToDetailsFragment(
-                                    event.task
+                                    event.task.id
                                 )
                             val extras =
                                 FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
@@ -227,8 +238,8 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo) {
-        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
+        sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView)
     }
 
     override fun onTaskClick(thingToDo: Task, itemView: View) {
@@ -236,16 +247,6 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
     }
 
     override fun onProjectAddClick(thingToDo: ThingToDo) {
-        // TODO: create another event for sub task add action which take composed task as argument
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.taskRelations.mainTask.id))
-        sharedViewModel.addThingToDo()
-    }
-
-    override fun onSubTaskRightSwipe(thingToDo: Task) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
-        TODO("Not yet implemented")
+        sharedViewModel.addSubThingTodo(thingToDo.taskRelations.mainTask)
     }
 }

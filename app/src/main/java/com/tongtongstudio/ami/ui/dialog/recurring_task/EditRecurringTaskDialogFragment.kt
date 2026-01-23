@@ -1,20 +1,26 @@
-package com.tongtongstudio.ami.ui.dialog
+package com.tongtongstudio.ami.ui.dialog.recurring_task
 
 import android.app.Dialog
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.core.view.isVisible
+import androidx.core.view.iterator
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
+import androidx.fragment.app.viewModels
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.datatables.TaskRecurrence
 import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
 import com.tongtongstudio.ami.databinding.DialogSetRepeatingBinding
+import com.tongtongstudio.ami.util.InputValidation
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Calendar
 
 enum class Period { DAYS, WEEKS, MONTHS, YEARS }
@@ -23,17 +29,15 @@ const val RECURRING_SELECTION_DIALOG_TAG = "recurring_selection_tag"
 const val RECURRING_RESULT_KEY = "recurring_selection_result_key"
 const val RECURRING_REQUEST_KEY = "recurring_selection_request_key"
 const val CURRENT_RECURRING_INFO_REQUEST_KEY = "current_recurring_info_request_key"
-const val TIMES_KEY = "times"
-const val PERIOD_KEY = "period"
-const val DAYS_OF_THE_WEEKS_KEY = "daysOfWeek"
-const val DEADLINE = "deadline"
-const val START_DATE = "start_date"
-const val NO_VALUE = "no_value"
+const val TASK_RECURRENCE_WITH_DAYS_KEY = "task_recurrence_with_days"
 
-class RecurringChoiceDialogFragment : DialogFragment() {
+@AndroidEntryPoint
+class EditRecurringDialogFragment : DialogFragment() {
 
     private lateinit var binding: DialogSetRepeatingBinding
-    private var selection: Int = 0
+    private val viewModel: EditRecurringTaskViewModel by viewModels()
+    lateinit var adapter: ArrayAdapter<String>
+
     private lateinit var stringItems: Array<String>
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
@@ -47,7 +51,7 @@ class RecurringChoiceDialogFragment : DialogFragment() {
                 .setTitle(R.string.repeat_every_title)
                 // Add action buttons
                 .setPositiveButton(R.string.ok) { dialog, id ->
-                    onDialogPositiveClick(this)
+                    onDialogPositiveClick(this, viewModel.uiState.value)
                 }
                 .setNegativeButton(
                     R.string.cancel
@@ -58,19 +62,14 @@ class RecurringChoiceDialogFragment : DialogFragment() {
         } ?: throw IllegalStateException("Activity cannot be null")
     }
 
-    private fun onDialogPositiveClick(dialog: RecurringChoiceDialogFragment) {
-        val nDays: Int =
-            if (binding.inputLayoutUserChoice.editText?.text?.isNotEmpty() == true) {
-                binding.inputLayoutUserChoice.editText?.text.toString().toInt()
-            } else 1
-        val frequency = getPeriod(selection)
-        val recurrenceDays = getDaysOfWeek()
-        // TODO: update method to share task recurrence infos
-        //val taskRecurrence = TaskRecurrence(frequency, interval = )
+    private fun onDialogPositiveClick(
+        dialog: EditRecurringDialogFragment,
+        uiState: EditRecurringTaskViewModel.EditRecurringTaskUiState
+    ) {
+        val taskRecurrenceWithDays = viewModel.buildTaskRecurrenceWithDays(uiState)
         val result = Bundle().apply {
-            //putParcelable(RECURRING_RESULT_KEY, taskRecurrence)
+            putParcelable(RECURRING_RESULT_KEY, taskRecurrenceWithDays)
         }
-
         dialog.setFragmentResult(
             RECURRING_REQUEST_KEY,
             result
@@ -84,41 +83,89 @@ class RecurringChoiceDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?
     ): View {
         stringItems = resources.getStringArray(R.array.period_list)
-        val adapter = ArrayAdapter(requireContext(), R.layout.item_options, stringItems)
+        adapter = ArrayAdapter(requireContext(), R.layout.item_options, stringItems)
 
-        TODO("Change method and listener to get recurrence infos")
         setFragmentResultListener(CURRENT_RECURRING_INFO_REQUEST_KEY) { _, bundle ->
-            val times = bundle.getInt(TIMES_KEY)
-            val period = bundle.getString(PERIOD_KEY)
-            val daysOfWeek = bundle.getIntArray(DAYS_OF_THE_WEEKS_KEY)
-            val deadline = bundle.getString(DEADLINE)
-            val startDate = bundle.getLong(START_DATE)
+            val taskRecurrenceWithDays =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    bundle.getParcelable(
+                        TASK_RECURRENCE_WITH_DAYS_KEY,
+                        TaskRecurrenceWithDays::class.java
+                    )
+                } else {
+                    bundle.getParcelable(TASK_RECURRENCE_WITH_DAYS_KEY)
+                }
+            viewModel.updateTaskRecurrenceWithDays(taskRecurrenceWithDays)
             // populate data
-            selection = getSelection(period)
-            binding.deadlineTextView.text =
-                if (deadline == null || deadline == NO_VALUE) getString(R.string.set_recurring_end) else deadline
-            binding.deadlineTextView.isVisible = deadline != NO_VALUE
-            binding.recurringEndInfo.isVisible = deadline != NO_VALUE
-            binding.inputLayoutUserChoice.editText?.setText(if (times != 0) times.toString() else "1")
-            binding.autoCompleteTextView.setText(setPeriod(period))
+            binding.inputLayoutInterval.editText?.setText(if (taskRecurrenceWithDays?.taskRecurrence?.interval != null) taskRecurrenceWithDays.taskRecurrence.interval.toString() else "1")
+            val currentFrequency =
+                adapter.getItem(getFrequencySelection(taskRecurrenceWithDays?.taskRecurrence?.frequency))
+            binding.autoCompleteTextView.setText(currentFrequency)
             binding.autoCompleteTextView.setAdapter(adapter)
-            if (period == Period.WEEKS.name)
+            if (taskRecurrenceWithDays?.taskRecurrence?.frequency == Period.WEEKS.name)
                 binding.daysOfWeekSelection.isVisible = true
-            updateCheckBoxes(daysOfWeek, startDate)
+            updateCheckBoxes(
+                taskRecurrenceWithDays?.daysOfWeek?.map { it.dayId }?.toIntArray()
+                    ?: emptyArray<Int>().toIntArray(),
+                taskRecurrenceWithDays?.taskRecurrence?.startDate
+                    ?: Calendar.getInstance().timeInMillis
+            )
+            binding.deadlineTextView.text =
+                if (taskRecurrenceWithDays?.taskRecurrence?.endDate == null) getString(R.string.set_recurring_end) else taskRecurrenceWithDays.taskRecurrence.endDate.toString()
         }
 
         binding.apply {
             autoCompleteTextView.setOnItemClickListener { parent, view, position, id ->
-                selection = position
                 binding.daysOfWeekSelection.isVisible = position == 1
+                viewModel.updateFrequency(position)
+                if (position != 1)
+                    unCheckAllDays()
             }
+            inputLayoutInterval.editText?.doOnTextChanged { intervalText, _, _, _ ->
+                if (InputValidation.isValidText(intervalText))
+                    viewModel.updateInterval(intervalText.toString().toInt())
+            }
+            weekViewBindings()
         }
 
         return binding.root
     }
 
-    private fun getSelection(period: String?): Int {
-        return when (period) {
+    private fun weekViewBindings() {
+        binding.apply {
+            mondayCheckBox.addDaysOfWeekListener()
+            tuesdayCheckBox.addDaysOfWeekListener()
+            wednesdayCheckBox.addDaysOfWeekListener()
+            thursdayCheckBox.addDaysOfWeekListener()
+            fridayCheckBox.addDaysOfWeekListener()
+            saturdayCheckBox.addDaysOfWeekListener()
+            sundayCheckBox.addDaysOfWeekListener()
+        }
+    }
+
+    fun MaterialCheckBox.addDaysOfWeekListener() {
+        addOnCheckedStateChangedListener { _, _ ->
+            viewModel.updateDaysOfWeek(getDaysIds())
+        }
+    }
+
+    private fun unCheckAllDays() {
+        binding.apply {
+            mondayCheckBox.unCheck()
+            tuesdayCheckBox.unCheck()
+            wednesdayCheckBox.unCheck()
+            thursdayCheckBox.unCheck()
+            fridayCheckBox.unCheck()
+            saturdayCheckBox.unCheck()
+            sundayCheckBox.unCheck()
+        }
+    }
+
+    fun MaterialCheckBox.unCheck() {
+        isChecked = false
+    }
+    private fun getFrequencySelection(frequency: String?): Int {
+        return when (frequency) {
             Period.DAYS.name -> 0
             Period.WEEKS.name -> 1
             Period.MONTHS.name -> 2
@@ -156,18 +203,8 @@ class RecurringChoiceDialogFragment : DialogFragment() {
         }
     }
 
-    private fun getPeriod(listSelection: Int): String {
-        return when (listSelection) {
-            0 -> Period.DAYS.name
-            1 -> Period.WEEKS.name
-            2 -> Period.MONTHS.name
-            3 -> Period.YEARS.name
-            else -> Period.DAYS.name
-        }
-    }
-
-    private fun setPeriod(period: String?): String {
-        return when (period) {
+    private fun setFrequency(frequency: String?): String {
+        return when (frequency) {
             Period.DAYS.name -> stringItems[0]
             Period.WEEKS.name -> stringItems[1]
             Period.MONTHS.name -> stringItems[2]
@@ -176,7 +213,7 @@ class RecurringChoiceDialogFragment : DialogFragment() {
         }
     }
 
-    private fun getDaysOfWeek(): List<Int>? {
+    private fun getDaysIds(): List<Int>? {
         val recurrenceDays = ArrayList<Int>()
         if (binding.mondayCheckBox.isChecked) recurrenceDays.add(Calendar.MONDAY)
         if (binding.tuesdayCheckBox.isChecked) recurrenceDays.add(Calendar.TUESDAY)

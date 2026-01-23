@@ -11,7 +11,7 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class OthersTasksViewModel @Inject constructor(
+class LaterTasksViewModel @Inject constructor(
     private val repository: Repository,
     preferencesManager: PreferencesManager
 ) : ViewModel() {

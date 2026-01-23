@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.ui.edit
+package com.tongtongstudio.ami.ui.edit.goal
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -46,13 +46,13 @@ class EditGoalViewModel @Inject constructor(
             state["targetGoal"] = value
         }
 
-    // TODO: change
     var unit =
         state.get<String>("unit") ?: objective?.unit.toString()
         set(value) {
             field = value
             state["unit"] = value
         }
+
     var dueDate =
         state.get<Long>("dueDate") ?: objective?.dueDate
         set(value) {
@@ -67,7 +67,7 @@ class EditGoalViewModel @Inject constructor(
     init {
         // TODO: change repository method
         viewModelScope.launch {
-            repository.getGoalAssessments(objective?.id)?.collect { assessments ->
+            repository.getIntermediateAssessmentsByGoal(objective?.id)?.collect { assessments ->
                 _assessments.value = assessments
             }
         }

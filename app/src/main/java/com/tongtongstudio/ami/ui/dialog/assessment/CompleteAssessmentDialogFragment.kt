@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.core.view.isVisible
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
@@ -56,7 +57,6 @@ class CompleteAssessmentDialogFragment : DialogFragment() {
 
     private fun onDialogPositiveClick(dialog: CompleteAssessmentDialogFragment) {
         viewModel.saveCompletedAssessment()
-        // TODO: navigate back with result
         Snackbar.make(
             dialog.requireView(),
             getString(R.string.assessment_completed),
@@ -77,10 +77,10 @@ class CompleteAssessmentDialogFragment : DialogFragment() {
 
         binding.apply {
             btnMinus.setOnClickListener {
-                viewModel.remove1()
+                viewModel.remove_one()
             }
             btnPlus.setOnClickListener {
-                viewModel.add1()
+                viewModel.add_one()
             }
         }
         viewModel.assessment = args.assessment
@@ -88,19 +88,15 @@ class CompleteAssessmentDialogFragment : DialogFragment() {
             fillContent(it)
         }
 
-        // TODO: add commentary
+        binding.inputLayoutResult.editText?.doOnTextChanged { commentChar, _, _, _ ->
+            if (commentChar?.isNotBlank() == true)
+                viewModel.updateComment(
+                    commentChar.toString()
+                )
+        }
         viewModel.result.observe(viewLifecycleOwner) {
             binding.inputLayoutResult.editText?.setText(it.toString())
         }
-
-        // TODO: problem with input layout result and result observer because each elements modify the other
-        // input result
-        /*binding.inputLayoutResult.editText?.addTextChangedListener {
-            if (it.toString() != "" && it.toString() != "null") {
-                viewModel.updateResult(it.toString().toInt())
-                //positiveButton.isEnabled = true
-            }
-        }*/
     }
 
     private fun fillContent(assessment: Assessment) {

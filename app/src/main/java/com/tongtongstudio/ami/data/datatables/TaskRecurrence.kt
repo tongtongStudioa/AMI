@@ -6,7 +6,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.ui.dialog.Period
+import com.tongtongstudio.ami.ui.dialog.recurring_task.Period
 import kotlinx.parcelize.Parcelize
 import kotlin.math.pow
 

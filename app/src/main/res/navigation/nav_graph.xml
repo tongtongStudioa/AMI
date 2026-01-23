@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/addEditTaskFragment"
-        android:name="com.tongtongstudio.ami.ui.edit.AddEditTaskFragment"
+        android:name="com.tongtongstudio.ami.ui.edit.thingtodo.AddEditTaskFragment"
         android:label="{title}"
         tools:layout="@layout/fragment_add_edit_task">
         <argument
@@ -20,11 +20,22 @@
             app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo"
             app:nullable="true"
             android:defaultValue="@null" />
+        <argument
+            android:name="parent_task"
+            app:argType="com.tongtongstudio.ami.data.datatables.Task"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <action
+            android:id="@+id/action_addEditTaskFragment_to_editProjectLinkedDialogFragment"
+            app:destination="@id/editProjectLinkedDialogFragment" />
+        <action
+            android:id="@+id/action_addEditTaskFragment_to_editBlockingTaskDialogFragment"
+            app:destination="@id/editBlockingTaskDialogFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/othersTasksFragment"
-        android:name="com.tongtongstudio.ami.ui.otherstasks.OthersTasksFragment"
+        android:name="com.tongtongstudio.ami.ui.otherstasks.LaterTasksFragment"
         android:label="@string/fragment_title_other_tasks"
         tools:layout="@layout/fragment_main">
         <action
@@ -101,11 +112,14 @@
         <action
             android:id="@+id/action_completedThingToDoFragment_to_localProjectStatsFragment2"
             app:destination="@id/projectDetailsFragment" />
+        <action
+            android:id="@+id/action_completedThingToDoFragment_to_addEditTaskFragment"
+            app:destination="@id/addEditTaskFragment" />
     </fragment>
 
     <dialog
         android:id="@+id/recurringChoiceDialogFragment"
-        android:name="com.tongtongstudio.ami.ui.dialog.RecurringChoiceDialogFragment"
+        android:name="com.tongtongstudio.ami.ui.dialog.recurring_task.EditRecurringDialogFragment"
         android:label="RecurringChoiceDialogFragment"
         tools:layout="@layout/dialog_set_repeating" />
 
@@ -115,8 +129,8 @@
         android:label="@string/fragment_task_details_title"
         tools:layout="@layout/fragment_task_details">
         <argument
-            android:name="task"
-            app:argType="com.tongtongstudio.ami.data.datatables.Task" />
+            android:name="task_id"
+            app:argType="long" />
     </fragment>
     <fragment
         android:id="@+id/achievementsFragment"
@@ -129,14 +143,17 @@
         android:label="@string/fragment_title_local_project_stats"
         tools:layout="@layout/fragment_project_details">
         <argument
-            android:name="project"
-            app:argType="com.tongtongstudio.ami.data.datatables.ThingToDo" />
+            android:name="project_id"
+            app:argType="long" />
         <action
             android:id="@+id/action_projectDetailsFragment_to_addEditTaskFragment"
             app:destination="@id/addEditTaskFragment" />
         <action
             android:id="@+id/action_projectDetailsFragment_to_viewPagerTrackingAndStatsFragment"
             app:destination="@id/viewPagerTrackingAndStatsFragment" />
+        <action
+            android:id="@+id/action_projectDetailsFragment_self"
+            app:destination="@id/projectDetailsFragment" />
     </fragment>
     <dialog
         tools:layout="@layout/dialog_custom_time_picker"
@@ -159,14 +176,23 @@
         android:label="@string/view_pager_screen_title">
 
         <argument
-            android:name="task"
-            app:argType="com.tongtongstudio.ami.data.datatables.Task" />
+            android:name="task_id"
+            app:argType="long" />
 
         <argument
             android:name="fragment_pos"
             app:argType="integer"
             android:defaultValue="0" />
+
+        <action
+            android:id="@+id/action_viewPagerTrackingAndStatsFragment_to_addEditWorkSessionDialogFragment"
+            app:destination="@id/addEditWorkSessionDialogFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@animator/nav_default_pop_exit_anim" />
     </fragment>
+
 
     <fragment
         android:id="@+id/timeTrackerFragment"
@@ -176,10 +202,17 @@
         <argument
             android:name="task"
             app:argType="com.tongtongstudio.ami.data.datatables.Task" />
+        <action
+            android:id="@+id/action_timeTrackerFragment_to_addEditWorkSessionDialogFragment"
+            app:destination="@id/addEditWorkSessionDialogFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@animator/nav_default_pop_exit_anim" />
     </fragment>
     <fragment
         android:id="@+id/editGoalFragment"
-        android:name="com.tongtongstudio.ami.ui.edit.EditGoalFragment"
+        android:name="com.tongtongstudio.ami.ui.edit.goal.EditGoalFragment"
         android:label="{title}"
         tools:layout="@layout/fragment_add_edit_goal">
         <argument
@@ -244,5 +277,43 @@
         android:name="com.tongtongstudio.ami.ui.SettingsFragment"
         android:label="@string/settings"
         tools:layout="@layout/fragment_settings" />
+    <dialog
+        android:id="@+id/editProjectLinkedDialogFragment"
+        android:name="com.tongtongstudio.ami.ui.dialog.parent_project.EditParentProjectDialogFragment"
+        android:label="@string/edit_task_link"
+        tools:layout="@layout/dialog_edit_linked_task">
+        <argument
+            android:name="currentTaskId"
+            app:argType="long" />
+        <argument
+            android:name="parentProject"
+            app:argType="com.tongtongstudio.ami.data.datatables.Task"
+            app:nullable="true" />
+    </dialog>
+    <dialog
+        android:id="@+id/editBlockingTaskDialogFragment"
+        android:name="com.tongtongstudio.ami.ui.dialog.blocking_task.EditBlockingTaskDialogFragment"
+        android:label="EditBlockingTaskDialogFragment"
+        tools:layout="@layout/dialog_edit_linked_task">
+        <argument
+            android:name="blockingTask"
+            app:argType="com.tongtongstudio.ami.data.datatables.Task"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="taskId"
+            app:argType="long" />
+    </dialog>
+    <dialog
+        android:id="@+id/addEditWorkSessionDialogFragment"
+        android:name="com.tongtongstudio.ami.ui.dialog.work_session.AddEditWorkSessionDialogFragment"
+        android:label="AddEditWorkSessionDialogFragment"
+        tools:layout="@layout/dialog_add_edit_work_session">
+        <argument
+            android:name="workSession"
+            app:argType="com.tongtongstudio.ami.data.datatables.WorkSession"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </dialog>
 
 </navigation>

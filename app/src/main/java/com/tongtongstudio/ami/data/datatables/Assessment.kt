@@ -44,9 +44,9 @@ data class Assessment(
     @ColumnInfo(name = "assessment_due_date")
     val dueDate: Long,
     val isRecurrent: Boolean = false,
-    val interval: RecurringTaskInterval? = null,
+    val interval: RecurringTaskInterval? = null, // TODO: change this recurring saving
     val rehearsalEndDate: Long? = null,
-    val score: Float? = null, // result that the user enter at the due date // maybe change name to "rating"
+    val score: Float? = null, // result that the user enter at the due date // todo: maybe change name to "rating"
     val categoryId: Long? = null,
     @ColumnInfo(name = "assessment_id")
     @PrimaryKey(autoGenerate = true) val id: Long = 0

@@ -65,5 +65,10 @@ class InsightsViewModel @Inject constructor(
         _categoryId.value = category?.id
     }
 
+    fun updateCategoryId(id: Long) = viewModelScope.launch {
+        val category = repository.getCategoryById(id)
+        _categoryId.value = category.id
+    }
+
     val categories = repository.getCategories().asLiveData()
 }

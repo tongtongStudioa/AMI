@@ -5,13 +5,11 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -23,6 +21,7 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialElevationScale
 import com.google.android.material.transition.MaterialFadeThrough
 import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
@@ -152,6 +151,21 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                             findNavController().navigate(action)
                         }
 
+                        is MainViewModel.SharedEvent.NavigateToAddScreenWithParentTask -> {
+                            val action = ProjectFragmentDirections.actionProjectFragmentToAddEditTaskFragment(
+                                title = getString(R.string.fragment_title_add_thing_to_do),
+                                thingToDo = null,
+                                parentTask = event.parentTask
+                            )
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            findNavController().navigate(action)
+                        }
+
                         is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
                             val msg = when (event.result) {
                                 ADD_TASK_RESULT_OK -> getString(R.string.task_added)
@@ -172,10 +186,10 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                                 }.show()
                         }
 
-                        is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
+                        is MainViewModel.SharedEvent.NavigateToProjectDetailsScreen -> {
                             val action =
                                 ProjectFragmentDirections.actionProjectFragmentToLocalProjectStatsFragment2(
-                                    event.project
+                                    event.project.taskRelations.mainTask.id
                                 )
                             findNavController().navigate(action)
                         }
@@ -183,7 +197,7 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                         is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
                             val action =
                                 ProjectFragmentDirections.actionProjectFragmentToTabPageTrackingStats(
-                                    event.task
+                                    event.task.id
                                 )
                             findNavController().navigate(action)
                         }
@@ -272,8 +286,8 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo) {
-        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
+        sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView)
     }
 
     override fun onTaskClick(thingToDo: Task, itemView: View) {
@@ -281,16 +295,6 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
     }
 
     override fun onProjectAddClick(thingToDo: ThingToDo) {
-        // TODO: create another event for sub task add action which take composed task as argument
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.taskRelations.mainTask.id))
-        sharedViewModel.addThingToDo()
-    }
-
-    override fun onSubTaskRightSwipe(thingToDo: Task) {
-        sharedViewModel.deleteSubTask(thingToDo)
-    }
-
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
-        sharedViewModel.updateSubTask(thingToDo)
+        sharedViewModel.addSubThingTodo(thingToDo.taskRelations.mainTask)
     }
 }

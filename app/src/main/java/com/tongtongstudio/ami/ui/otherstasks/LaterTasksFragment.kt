@@ -5,13 +5,11 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -45,9 +43,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListener {
+class LaterTasksFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
-    private val viewModel: OthersTasksViewModel by viewModels()
+    private val viewModel: LaterTasksViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var mainAdapter: ThingToDoAdapter
@@ -71,7 +69,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
 
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
-        mainAdapter = ThingToDoAdapter(this)
+        mainAdapter = ThingToDoAdapter(this, fragmentView = ThingToDoAdapter.FragmentViewType.LATER)
 
         binding.apply {
             mainRecyclerView.apply {
@@ -135,7 +133,7 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                     when (event) {
                         is MainViewModel.SharedEvent.NavigateToEditScreen -> {
                             val action =
-                                OthersTasksFragmentDirections.actionOthersTasksFragmentToAddEditTaskFragment(
+                                LaterTasksFragmentDirections.actionOthersTasksFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
                                     event.thingToDo
                                 )
@@ -144,9 +142,8 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
 
                         is MainViewModel.SharedEvent.NavigateToAddScreen -> {
                             val action =
-                                OthersTasksFragmentDirections.actionOthersTasksFragmentToAddEditTaskFragment(
-                                    getString(R.string.fragment_title_add_thing_to_do),
-                                    null
+                                LaterTasksFragmentDirections.actionOthersTasksFragmentToAddEditTaskFragment(
+                                    getString(R.string.fragment_title_add_thing_to_do)
                                 )
                             // Transition de sortie avec MaterialSharedAxis (DIRECTION X pour effet slide)
                             exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
@@ -158,6 +155,21 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                                     duration =
                                         resources.getInteger(R.integer.middle_duration).toLong()
                                 }
+                            findNavController().navigate(action)
+                        }
+
+                        is MainViewModel.SharedEvent.NavigateToAddScreenWithParentTask -> {
+                            val action = LaterTasksFragmentDirections.actionOthersTasksFragmentToAddEditTaskFragment(
+                                title = getString(R.string.fragment_title_add_thing_to_do),
+                                thingToDo = null,
+                                parentTask = event.parentTask
+                            )
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
                             findNavController().navigate(action)
                         }
 
@@ -183,8 +195,8 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
 
                         is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
                             val action =
-                                OthersTasksFragmentDirections.actionOthersTasksFragmentToDetailsFragment(
-                                    event.task
+                                LaterTasksFragmentDirections.actionOthersTasksFragmentToDetailsFragment(
+                                    event.task.id
                                 )
                             val extras =
                                 FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
@@ -197,12 +209,20 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
                             findNavController().navigate(action, extras)
                         }
 
-                        is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
+                        is MainViewModel.SharedEvent.NavigateToProjectDetailsScreen -> {
                             val action =
-                                OthersTasksFragmentDirections.actionOthersTasksFragmentToLocalProjectStatsFragment2(
-                                    event.project
+                                LaterTasksFragmentDirections.actionOthersTasksFragmentToLocalProjectStatsFragment2(
+                                    event.project.taskRelations.mainTask.id
                                 )
-                            findNavController().navigate(action)
+                            val extras =
+                                FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            findNavController().navigate(action,extras)
                         }
 
                         else -> {}
@@ -286,8 +306,8 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo) {
-        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
+        sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView)
     }
 
     override fun onTaskClick(thingToDo: Task, itemView: View) {
@@ -295,15 +315,6 @@ class OthersTasksFragment : Fragment(R.layout.fragment_main), InteractionListene
     }
 
     override fun onProjectAddClick(thingToDo: ThingToDo) {
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.taskRelations.mainTask.id))
-        sharedViewModel.addThingToDo()
-    }
-
-    override fun onSubTaskRightSwipe(thingToDo: Task) {
-        //TODO("Not yet implemented")
-    }
-
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
-        //TODO("Not yet implemented")
+        sharedViewModel.addSubThingTodo(thingToDo.taskRelations.mainTask)
     }
 }

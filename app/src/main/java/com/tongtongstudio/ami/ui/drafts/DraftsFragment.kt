@@ -2,10 +2,8 @@ package com.tongtongstudio.ami.ui.drafts
 
 import android.os.Bundle
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -96,7 +94,8 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
                             val action =
                                 DraftsFragmentDirections.actionDraftsFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
-                                    event.thingToDo
+                                    thingToDo = event.thingToDo,
+                                    parentTask = null
                                 )
                             findNavController().navigate(action)
                         }
@@ -105,11 +104,26 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
                             val action =
                                 DraftsFragmentDirections.actionDraftsFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_add_thing_to_do),
-                                    null
+                                    thingToDo = null,
+                                    parentTask = null
                                 )
                             findNavController().navigate(action)
                         }
 
+                        is MainViewModel.SharedEvent.NavigateToAddScreenWithParentTask -> {
+                            val action = DraftsFragmentDirections.actionDraftsFragmentToAddEditTaskFragment(
+                                title = getString(R.string.fragment_title_add_thing_to_do),
+                                thingToDo = null,
+                                parentTask = event.parentTask
+                            )
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            findNavController().navigate(action)
+                        }
                         is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
                             val msg = if (event.result == ADD_TASK_RESULT_OK)
                                 getString(R.string.task_added)
@@ -131,7 +145,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
                         is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
                             val action =
                                 DraftsFragmentDirections.actionDraftsFragmentToDetailsFragment(
-                                    event.task
+                                    event.task.id
                                 )
                             val extras =
                                 FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
@@ -144,10 +158,10 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
                             findNavController().navigate(action, extras)
                         }
 
-                        is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
+                        is MainViewModel.SharedEvent.NavigateToProjectDetailsScreen -> {
                             val action =
                                 DraftsFragmentDirections.actionDraftsFragmentToProjectDetailsFragment(
-                                    event.project
+                                    event.project.taskRelations.mainTask.id
                                 )
                             findNavController().navigate(action)
                         }
@@ -163,8 +177,8 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
         // do nothing
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo) {
-        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
+        sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView)
     }
 
     override fun onTaskClick(thingToDo: Task, itemView: View) {
@@ -172,16 +186,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
     }
 
     override fun onProjectAddClick(thingToDo: ThingToDo) {
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.taskRelations.mainTask.id))
-        sharedViewModel.addThingToDo()
-    }
-
-    override fun onSubTaskRightSwipe(thingToDo: Task) {
-        sharedViewModel.deleteSubTask(thingToDo)
-    }
-
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
-        sharedViewModel.updateSubTask(thingToDo)
+        sharedViewModel.addSubThingTodo(thingToDo.taskRelations.mainTask)
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout

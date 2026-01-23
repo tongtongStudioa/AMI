@@ -28,7 +28,11 @@ import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.GoalsAdapter
 import com.tongtongstudio.ami.adapter.GoalsListener
+import com.tongtongstudio.ami.adapter.ItemTouchHelperAdapter
+import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
+import com.tongtongstudio.ami.adapter.thingToDo.ThingToDoAdapter
 import com.tongtongstudio.ami.data.datatables.Assessment
+import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentMainBinding
 import com.tongtongstudio.ami.notification.SoundPlayer
 import com.tongtongstudio.ami.ui.ADD_GOAL_RESULT_OK

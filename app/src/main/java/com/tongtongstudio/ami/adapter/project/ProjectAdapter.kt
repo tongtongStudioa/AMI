@@ -27,12 +27,6 @@ class ProjectAdapter(private val listener: InteractionListener) :
         notifyDataSetChanged()
     }
 
-    /*fun addTask(newTask: ThingToDo) {
-        val position: Int = findInsertionPosition(newTask)
-        taskList.add(position, newTask)
-        notifyItemInserted(position)
-    }*/
-
     override fun onBindViewHolder(holder: TaskComposedViewHolder, position: Int) {
         val element = taskList[position]
         holder.bind(element)
@@ -75,7 +69,7 @@ class ProjectAdapter(private val listener: InteractionListener) :
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
                         val project = taskList[position]
-                        listener.onProjectClick(project)
+                        listener.onProjectClick(project,itemView)
                     }
                 }
                 btnAddSubTask.setOnClickListener {
@@ -94,27 +88,23 @@ class ProjectAdapter(private val listener: InteractionListener) :
             binding.apply {
                 tvProjectName.text = data.taskRelations.mainTask.title
                 tvProjectName.paint.isStrikeThruText = data.lastCompletionStatus ?: false
-                val nature = data.getNature()
-                tvNature.text = nature.apply {
-                    first().uppercase()
-                    replace('_',' ')
-                }
+                tvNature.text = data.getNature(itemView.context)
                 tvDeadline.text = Task.getDateFormatted(data.taskRelations.mainTask.dueDate)
                 tvDeadline.isVisible =
                     Task.getDateFormatted(data.taskRelations.mainTask.dueDate) != null
                 tvStartDate.text = Task.getDateFormatted(data.taskRelations.mainTask.startDate)
                 tvStartDate.isVisible =
                     Task.getDateFormatted(data.taskRelations.mainTask.startDate) != null
-                tvNumberPriority.text = this@TaskComposedViewHolder.itemView.context.getString(
+                tvNumberPriority.text = itemView.context.getString(
                     R.string.importance_thing_to_do,
                     data.taskRelations.mainTask.priority
                 )
-                // TODO: show count completed subtasks
-                tvNbSubTasks.text = this@TaskComposedViewHolder.itemView.context.getString(
+                tvNbSubTasks.text = itemView.context.getString(
                     R.string.nb_sub_tasks_project,
-                    0, // data.countCompletedSubtasks(),
+                    data.nbSubTasksCompleted,
                     data.nbSubTasks
                 )
+                progressHorizontal.progress = (data.completionRate ?: 0).toInt()
                 /*val subTaskAdapter = SubTaskAdapter(listener)
                 subTaskAdapter.swapData(data.subTasks)
                 rvSubTasks.apply {

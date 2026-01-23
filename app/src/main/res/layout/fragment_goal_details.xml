@@ -13,13 +13,14 @@
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/goal_card_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         app:cardCornerRadius="0dp"
         app:strokeWidth="0dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:padding="15dp">
 
             <com.google.android.material.appbar.AppBarLayout
                 android:id="@+id/app_bar"
@@ -135,6 +136,7 @@
                 android:id="@+id/rv_evaluations"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxHeight="150dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/objective_view"
                 tools:itemCount="3"
@@ -142,13 +144,24 @@
 
             <!-- Todo: add graph to show result of intermediate assessment -->
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/completion_date"
+            <com.github.mikephil.charting.charts.LineChart
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:id="@+id/intermediate_eval_chart"
+                android:layout_marginTop="15dp"
+                app:layout_constraintTop_toBottomOf="@id/rv_evaluations"
+                />
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_completion_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
+                android:padding="5dp"
+                style="@style/TextAppearance.Ami.Caption"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="15sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/rv_evaluations"
+                app:layout_constraintTop_toBottomOf="@id/intermediate_eval_chart"
                 tools:text="Completion date : 25/07/2024" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>

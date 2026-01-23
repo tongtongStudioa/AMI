@@ -1,11 +1,11 @@
 package com.tongtongstudio.ami.ui.monitoring.project
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
-import androidx.core.os.bundleOf
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -16,12 +16,14 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialContainerTransform
+import com.google.android.material.transition.MaterialElevationScale
 import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
 import com.tongtongstudio.ami.adapter.thingToDo.InteractionListener
-import com.tongtongstudio.ami.adapter.thingToDo.SubTaskAdapter
+import com.tongtongstudio.ami.adapter.thingToDo.ThingToDoAdapter
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.databinding.FragmentProjectDetailsBinding
@@ -39,7 +41,15 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
     lateinit var binding: FragmentProjectDetailsBinding
     private val viewModel: ProjectDetailsViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
-    private lateinit var subTaskAdapter: SubTaskAdapter
+    private lateinit var subTaskAdapter: ThingToDoAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        sharedElementEnterTransition = MaterialContainerTransform().apply {
+            duration = resources.getInteger(R.integer.long_duration).toLong()
+            scrimColor = Color.TRANSPARENT
+        }
+        super.onCreate(savedInstanceState)
+    }
 
     @SuppressLint("UnsafeRepeatOnLifecycleDetector")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -47,21 +57,19 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
         binding = FragmentProjectDetailsBinding.bind(view)
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
+        // Shared transition id
+        ViewCompat.setTransitionName(binding.projectDetails, "shared_element_${viewModel.projectId}")
+
         setUpToolbar()
 
-
-        subTaskAdapter = SubTaskAdapter(this)
+        subTaskAdapter = ThingToDoAdapter(this)
 
         binding.apply {
-            tvProjectTitle.text = viewModel.projectName
-            tvDescription.text = viewModel.description ?: ""
-
             fabAddSubTask.setOnClickListener {
-                sharedViewModel.addThingToDo()
+                viewModel.project?.value?.taskRelations?.mainTask?.let { mainTask ->
+                    sharedViewModel.addSubThingTodo(mainTask)
+                }
             }
-            estimatedTime.text =
-                TrackingTimeUtility.getFormattedTimeWorked(viewModel.estimatedTime)
-                    ?: getText(R.string.no_information)
             totalWorkTime.text =
                 TrackingTimeUtility.getFormattedTimeWorked(viewModel.getProjectWorkTime())
                     ?: getText(R.string.no_information)
@@ -72,36 +80,31 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
             }
         }
 
-        viewModel.subTasks.observe(viewLifecycleOwner) {
-            subTaskAdapter.swapData(it)
-            updateProgressBar(it)
+        viewModel.project?.observe(viewLifecycleOwner) {
+            updateProjectInformation(it)
         }
-        updateEstimatedTimeIndicator()
+        viewModel.subTasks.observe(viewLifecycleOwner) {
+            subTaskAdapter.submitList(it)
+        }
 
-        // TODO: resolve sub item touch behavior
-        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
-            0,
-            ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT
+        val callback = object : ThingToDoItemCallback<ThingToDoAdapter>(
+            subTaskAdapter,
+            ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
+            requireContext()
         ) {
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean {
-                return false
+            override fun actionOnRightSwiped(thingToDo: ThingToDo, position: Int) {
+                // delete task
+                sharedViewModel.deleteTask(thingToDo, requireContext())
+                subTaskAdapter.notifyItemRemoved(position)
             }
 
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val subTask: Task =
-                    subTaskAdapter.subTasks[viewHolder.bindingAdapterPosition]
-                if (direction == ItemTouchHelper.RIGHT) {
-                    onSubTaskRightSwipe(subTask)
-                } else if (direction == ItemTouchHelper.LEFT) {
-                    //onSubTaskLeftSwipe(subTask)
-                }
+            override fun actionLeftSwiped(thingToDo: ThingToDo, position: Int) {
+                //update task
+                sharedViewModel.updateTask(thingToDo)
+                subTaskAdapter.notifyItemChanged(position)
             }
-
-        }).attachToRecyclerView(binding.rvSubtasks)
+        }
+        ItemTouchHelper(callback).attachToRecyclerView(binding.rvSubtasks)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -111,8 +114,7 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
                             val action =
                                 ProjectDetailsFragmentDirections.actionProjectDetailsFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
-                                    event.thingToDo
-
+                                     event.thingToDo
                                 )
                             exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
                                 duration = resources.getInteger(R.integer.middle_duration).toLong()
@@ -128,8 +130,7 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
                         is MainViewModel.SharedEvent.NavigateToAddScreen -> {
                             val action =
                                 ProjectDetailsFragmentDirections.actionProjectDetailsFragmentToAddEditTaskFragment(
-                                    getString(R.string.fragment_title_add_thing_to_do),
-                                    null
+                                    getString(R.string.fragment_title_add_thing_to_do)
                                 )
                             exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
                                 duration = resources.getInteger(R.integer.middle_duration).toLong()
@@ -139,6 +140,29 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
                                     duration =
                                         resources.getInteger(R.integer.middle_duration).toLong()
                                 }
+                            findNavController().navigate(action)
+                        }
+
+                        is MainViewModel.SharedEvent.NavigateToAddScreenWithParentTask -> {
+                            val action = ProjectDetailsFragmentDirections.actionProjectDetailsFragmentToAddEditTaskFragment(
+                                title = getString(R.string.fragment_title_add_thing_to_do),
+                                thingToDo = null,
+                                parentTask = event.parentTask
+                            )
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            findNavController().navigate(action)
+                        }
+
+                        is MainViewModel.SharedEvent.NavigateToProjectDetailsScreen -> {
+                            val action =
+                                ProjectDetailsFragmentDirections.actionProjectDetailsFragmentSelf(
+                                    event.project.taskRelations.mainTask.id
+                                )
                             findNavController().navigate(action)
                         }
 
@@ -154,7 +178,7 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
                         is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
                             val action =
                                 ProjectDetailsFragmentDirections.actionProjectDetailsFragmentToViewPagerTrackingAndStatsFragment(
-                                    event.task
+                                    event.task.id
                                 )
                             findNavController().navigate(action)
                         }
@@ -197,18 +221,19 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
         }
     }
 
-    private fun updateEstimatedTimeIndicator() {
-        if ((viewModel.estimatedTime ?: 0) < viewModel.getProjectWorkTime())
-            binding.estimatedTime.setTextColor(resources.getColor(R.color.design_default_color_error))
-    }
-
-    /**
-     * Update progress bar with interactions of user when he is clicking on tasks.
-     */
-    private fun updateProgressBar(subTasks: List<Task>) {
-        val progressPercentage = viewModel.getProgressRatio()
-        binding.progressText.text = getString(R.string.completion_rate_value, progressPercentage)
-        binding.projectProgress.progress = progressPercentage.toInt()
+    private fun updateProjectInformation(project: ThingToDo) {
+        binding.apply {
+            tvProjectTitle.text = project.taskRelations.mainTask.title
+            tvDescription.text = project.taskRelations.mainTask.description ?: ""
+            estimatedTime.text =
+                TrackingTimeUtility.getFormattedTimeWorked(project.taskRelations.mainTask.estimatedWorkingTime)
+                    ?: getText(R.string.no_information)
+            progressText.text = getString(R.string.completion_rate_value, project.completionRate ?: 0F)
+            projectProgress.progress = project.completionRate?.toInt() ?: 0
+            val projectEstimatedTime = project.taskRelations.mainTask.estimatedWorkingTime
+            if (projectEstimatedTime != null && projectEstimatedTime < viewModel.getProjectWorkTime())
+                estimatedTime.setTextColor(resources.getColor(R.color.design_default_color_error))
+        }
     }
 
     override fun onTaskChecked(thingToDo: ThingToDo, isChecked: Boolean, position: Int) {
@@ -218,8 +243,8 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
         }
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo) {
-        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
+        sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView)
     }
 
     override fun onTaskClick(thingToDo: Task, itemView: View) {
@@ -227,16 +252,7 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
     }
 
     override fun onProjectAddClick(thingToDo: ThingToDo) {
-        setFragmentResult("is_new_sub_task", bundleOf("project_id" to thingToDo.taskRelations.mainTask.id))
-        sharedViewModel.addThingToDo()
-    }
-
-    override fun onSubTaskRightSwipe(thingToDo: Task) {
-        sharedViewModel.deleteSubTask(thingToDo)
-    }
-
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
-        sharedViewModel.updateSubTask(thingToDo)
+        sharedViewModel.addSubThingTodo(thingToDo.taskRelations.mainTask)
     }
 
 }

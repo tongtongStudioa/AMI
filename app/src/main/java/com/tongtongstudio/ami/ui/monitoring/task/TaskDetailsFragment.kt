@@ -1,8 +1,6 @@
 package com.tongtongstudio.ami.ui.monitoring.task
 
 import android.graphics.Color
-import android.icu.text.DateFormat
-import android.icu.util.Calendar
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,24 +10,32 @@ import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.transition.MaterialContainerTransform
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.Type
 import com.tongtongstudio.ami.databinding.FragmentTaskDetailsBinding
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.util.CalendarCustomFunction
 import com.tongtongstudio.ami.util.DateTimePicker
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import java.text.DateFormat
+import java.util.Calendar
 
 
 @AndroidEntryPoint
 class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
 
     lateinit var binding: FragmentTaskDetailsBinding
+    lateinit var dateTimePicker: DateTimePicker
     private val viewModel: TaskDetailsAndTimeTrackerViewModel by lazy {
         if (parentFragment is ViewPagerTrackingAndStatsFragment) { // when inside view pager
             ViewModelProvider(requireParentFragment())[TaskDetailsAndTimeTrackerViewModel::class.java]
@@ -58,7 +64,7 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
             scrimColor = Color.TRANSPARENT
         }
         // Shared transition id
-        ViewCompat.setTransitionName(binding.taskInfo, "shared_element_${viewModel.task?.id}")
+        ViewCompat.setTransitionName(binding.taskInfo, "shared_element_${viewModel.taskId}")
 
         // Postpone transition until layout is ready
         //startPostponedEnterTransition()
@@ -71,41 +77,39 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
             binding.appBar.isVisible = false
         }
 
-        // binding elements layout
-        binding.apply {
-            // task info
-            if (viewModel.name != null) {
-                taskName.text = viewModel.task!!.title
+        dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.uiState.collect {
+                        renderUiState(it)
+                    }
+                }
             }
-            taskCategory.text = viewModel.category
-            taskDescription.text = viewModel.description
-            taskDescription.isVisible = viewModel.description != null
-            taskStartDate.text = Task.getDateFormatted(viewModel.startDate)
-            taskStartDate.isVisible = viewModel.startDate != null
+        }
+
+        binding.btnCompletionDate.setOnClickListener {
+            onCompletionDateBtnClicked()
+        }
+    }
+
+    private fun renderUiState(uiState: TaskDetailsAndTimeTrackerViewModel.DetailUiState) {
+        binding.apply {
+            val mainTask = uiState.thingToDo?.taskRelations?.mainTask
+            // task info
+            taskName.text = mainTask?.title ?: ""
+            taskCategory.text = uiState.thingToDo?.taskRelations?.category?.title ?: ""
+            taskDescription.text = mainTask?.description
+            taskDescription.isVisible = mainTask?.description != null
+            taskStartDate.text = Task.getDateFormatted(mainTask?.startDate)
+            taskStartDate.isVisible = mainTask?.startDate != null
             taskDueDate.text =
-                Task.getDateFormatted(viewModel.dueDate)
-            taskDeadline.text = Task.getDateFormatted(viewModel.deadline)
-            taskDeadline.isVisible = viewModel.deadline != null
+                Task.getDateFormatted(mainTask?.dueDate)
+            taskDeadline.text = Task.getDateFormatted(mainTask?.deadline)
+            taskDeadline.isVisible = mainTask?.deadline != null
 
-            // stats view
-            val showDetailsRecurrenceStats = viewModel.task?.recurrenceInfosId != null
-            statsView.isVisible = showDetailsRecurrenceStats
-            // TODO: change this with function in viewModel to get stats and graph
-            /*tvNbCompleted.text = if (viewModel.task?.successCount != null)
-                viewModel.task?.successCount.toString()
-            else getString(R.string.no_information)
-            tvStreak.text =
-                viewModel.streak.toString()
-            tvMaxStreak.text =
-                if (viewModel.task?.maxStreak != null)
-                    viewModel.task?.maxStreak.toString()
-                else getString(R.string.no_information)
-
-            val completionRate = viewModel.task?.getHabitSuccessRate()
-            tvCompletionRate.text = if (completionRate != null)
-                getString(R.string.completion_rate_value, completionRate)
-            else getString(R.string.no_information)*/
-
+            // total work time
             viewModel.currentTotalWorkTime.observe(viewLifecycleOwner) {
                 totalDurationView.isVisible = it != null
                 tvTotalDuration.text =
@@ -115,36 +119,56 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
 
             // estimated work time view when task is completed
             tvEstimatedWorkTime.text =
-                TrackingTimeUtility.getFormattedEstimatedTime(viewModel.estimatedWorkingTime)
+                TrackingTimeUtility.getFormattedEstimatedTime(mainTask?.estimatedWorkingTime)
                     ?: getString(R.string.no_information)
             estimatedWorkTimeView.isVisible =
-                viewModel.estimatedWorkingTime != null
+                mainTask?.estimatedWorkingTime != null
+
+            // stats view
+            val isRecurrentTask = uiState.thingToDo?.getType() != Type.UNIQUE.name
+            statsView.isVisible = isRecurrentTask
 
             // completion date
-            // TODO: get via repository completion date 
-            val dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())
-            /*val completionDateFormatted = viewModel.task?.getCompletionDateFormatted()
-            completionDate.text = getString(R.string.completion_date, completionDateFormatted)
-            completionDate.isVisible = viewModel.task?.isCompleted == true
-            //completionDate.isVisible = viewModel.task?.isCompleted == true
-            completionDate.setOnClickListener {
-                val constraints =
-                    CalendarCustomFunction.buildConstraintsForStartDate(Calendar.getInstance().run {
-                        set(Calendar.HOUR_OF_DAY, 23)
-                        timeInMillis
-                    })
-                val datePicker = dateTimePicker.showDatePickerMaterial(
-                    constraints,
-                    viewModel.task?.completionDate
-                )
-                datePicker.addOnPositiveButtonClickListener { newCompletionDate ->
-                    viewModel.updateTaskCompletionDate(newCompletionDate)
-                    completionDate.text = getString(
-                        R.string.completion_date,
-                        DateFormat.getDateInstance().format(newCompletionDate)
-                    )
-                }
-            }*/
+            btnCompletionDate.isVisible = uiState.taskCompletion?.isCompleted ?: false
+            // TODO: change this for recurring task : show calendar view where we can update all completions
+            val completionDateFormatted = uiState.taskCompletion?.getCompletionDateFormatted()
+            btnCompletionDate.text =
+                getString(R.string.completion_date, completionDateFormatted)
+        }
+
+        // render recurring elements layout
+        binding.apply {
+            // TODO: change this with function in viewModel to get stats and graph
+            tvNbCompleted.text = if (uiState.successCount != null) uiState.successCount.toString()
+            else getString(R.string.no_information)
+            tvStreak.text = uiState.currentStreak.toString()
+            tvMaxStreak.text =
+                if (uiState.maxStreak != null)
+                    uiState.maxStreak.toString()
+                else getString(R.string.no_information)
+
+            val completionRate = uiState.completionRate
+            tvCompletionRate.text = if (completionRate != null)
+                getString(R.string.completion_rate_value, completionRate)
+            else getString(R.string.no_information)
+        }
+    }
+
+    private fun onCompletionDateBtnClicked() {
+        val constraints =
+            CalendarCustomFunction.buildConstraintsForStartDate(Calendar.getInstance().run {
+                set(Calendar.HOUR_OF_DAY, 23)
+                timeInMillis
+            })
+        val datePicker = dateTimePicker.showDatePickerMaterial(
+            constraints
+        )
+        datePicker.addOnPositiveButtonClickListener { newCompletionDate ->
+            viewModel.updateTaskCompletionDate(newCompletionDate)
+            binding.btnCompletionDate.text = getString(
+                R.string.completion_date,
+                DateFormat.getDateInstance().format(newCompletionDate)
+            )
         }
     }
 

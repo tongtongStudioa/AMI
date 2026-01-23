@@ -1,4 +1,4 @@
-package com.tongtongstudio.ami.ui.edit
+package com.tongtongstudio.ami.ui.edit.thingtodo
 
 import android.Manifest
 import android.app.AlarmManager
@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -17,12 +18,9 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.EditText
 import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
@@ -67,35 +65,32 @@ import com.tongtongstudio.ami.receiver.TASK_NAME_KEY
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
-import com.tongtongstudio.ami.ui.dialog.CURRENT_RECURRING_INFO_REQUEST_KEY
+import com.tongtongstudio.ami.ui.dialog.recurring_task.CURRENT_RECURRING_INFO_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_DIALOG_TAG
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_LISTENER_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_RESULT_KEY
-import com.tongtongstudio.ami.ui.dialog.Period
-import com.tongtongstudio.ami.ui.dialog.RECURRING_REQUEST_KEY
-import com.tongtongstudio.ami.ui.dialog.RECURRING_RESULT_KEY
-import com.tongtongstudio.ami.ui.dialog.RECURRING_SELECTION_DIALOG_TAG
-import com.tongtongstudio.ami.ui.dialog.RecurringChoiceDialogFragment
+import com.tongtongstudio.ami.ui.dialog.recurring_task.Period
+import com.tongtongstudio.ami.ui.dialog.recurring_task.RECURRING_REQUEST_KEY
+import com.tongtongstudio.ami.ui.dialog.recurring_task.RECURRING_RESULT_KEY
+import com.tongtongstudio.ami.ui.dialog.recurring_task.RECURRING_SELECTION_DIALOG_TAG
+import com.tongtongstudio.ami.ui.dialog.recurring_task.EditRecurringDialogFragment
 import com.tongtongstudio.ami.ui.dialog.TimePickerDialogFragment
+import com.tongtongstudio.ami.ui.dialog.blocking_task.BLOCKING_TASK_REQUEST_KEY
+import com.tongtongstudio.ami.ui.dialog.blocking_task.BLOCKING_TASK_RESULT_KEY
 import com.tongtongstudio.ami.ui.dialog.category.CATEGORY_EDIT_TAG
 import com.tongtongstudio.ami.ui.dialog.category.EditCategoryDialogFragment
-import com.tongtongstudio.ami.ui.dialog.linkproject.EditProjectLinkedDialogFragment
-import com.tongtongstudio.ami.ui.dialog.linkproject.PROJECT_ID
-import com.tongtongstudio.ami.ui.dialog.linkproject.PROJECT_LINKED_LISTENER_REQUEST_KEY
-import com.tongtongstudio.ami.ui.dialog.linkproject.PROJECT_LINKED_RESULT_KEY
+import com.tongtongstudio.ami.ui.dialog.parent_project.PROJECT_LINKED_LISTENER_REQUEST_KEY
+import com.tongtongstudio.ami.ui.dialog.parent_project.PROJECT_LINKED_RESULT_KEY
 import com.tongtongstudio.ami.util.CalendarCustomFunction
 import com.tongtongstudio.ami.util.DateTimePicker
 import com.tongtongstudio.ami.util.InputValidation
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.observeOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
@@ -107,7 +102,6 @@ import java.util.Locale
 @AndroidEntryPoint
 class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
-    private var reminders: MutableList<Reminder> = mutableListOf()
     private val viewModel: AddEditTaskViewModel by viewModels()
     private lateinit var sharedViewModel: MainViewModel
     private lateinit var binding: FragmentAddEditTaskBinding
@@ -188,11 +182,18 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         editTextPriority.setText(it.priority?.toString() ?: "" )
                         editTextUserLevel.setText(it.skillLevel?.toString() ?: "")
                         radioGroupChoiceNature.check(if (it.nature == Nature.TASK.name || it.nature == Nature.SUB_TASK.name) rbTask.id else rbProject.id)
+                        autocompleteTextCategory.setText(it.category?.title ?: "")
                     }
             }
 
             autocompleteTextCategory.setOnItemClickListener { parent, view, position, id ->
-                viewModel.updateCategory(categoryAdapter.getCategorySelected(position))
+                val categorySelected = categoryAdapter.getCategorySelected(position)
+                if (categorySelected.id == 0L) {
+                    viewModel.updateCategory(null)
+                    autocompleteTextCategory.setText("")
+                } else {
+                    viewModel.updateCategory(categorySelected)
+                }
             }
         }
 
@@ -215,20 +216,28 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             } else {
                 bundle.getParcelable(RECURRING_RESULT_KEY)
             }
-            viewModel.updateRecurrenceInfos(result?.taskRecurrence,result?.daysOfWeek ?: emptyList())
+            viewModel.updateRecurrenceInfos(result)
             // TODO: update start date by default if no start date is set
         }
 
-        // from dialog edit project linked
+        // from dialog edit parent project
         setFragmentResultListener(PROJECT_LINKED_LISTENER_REQUEST_KEY) { _, bundle ->
             val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 bundle.getParcelable(PROJECT_LINKED_RESULT_KEY,Task::class.java)
             } else {
                 bundle.getParcelable(PROJECT_LINKED_RESULT_KEY)
             }
-            if (result != null) {
-                viewModel.updateParentProject(result)
+            viewModel.updateParentProject(result)
+        }
+
+        // from dialog edit blocking task
+        setFragmentResultListener(BLOCKING_TASK_REQUEST_KEY) { _, bundle ->
+            val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                bundle.getParcelable(BLOCKING_TASK_RESULT_KEY,Task::class.java)
+            } else {
+                bundle.getParcelable(BLOCKING_TASK_RESULT_KEY)
             }
+            viewModel.updateBlockingTask(result)
         }
 
         // from a project
@@ -327,10 +336,13 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         categoryAdapter = AutoCompleteAdapter(requireContext())
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.uiState
-                .map { it.categorySuggestions }
+                .map { it.categorySuggestions.toMutableList() }
                 .collect { suggestions ->
                     if (!suggestions.contains(viewModel.uiState.value.category)) {
                         viewModel.updateCategory(null)
+                    }
+                    if (viewModel.uiState.value.category != null) {
+                        suggestions.add(0, Category(getString(R.string.no_category),null))
                     }
                     categoryAdapter.submitList(suggestions)
                 }
@@ -387,27 +399,30 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 }
             }
 
+            // estimated time
             btnSetEstimatedTime.setOnClickListener {
                 showEstimatedTimeDialog()
             }
-
             removeEstimatedTime.setOnClickListener {
                 viewModel.updateEstimatedWorkTime(null)
             }
+            // attach project
             btnAttachProject.setOnClickListener {
-                showProjectSelectionDialog()
+                viewModel.navigateToEditParentProject()
+                //showProjectSelectionDialog()
             }
             removeProjectLinked.setOnClickListener {
                 viewModel.updateParentProject(null)
             }
-
+            // blocking task
             btnChooseDependency.setOnClickListener {
-                // TODO: show appropriate dialog
+                viewModel.navigateToEditBlockingTaskDialog()
             }
             removeBlockingTask.setOnClickListener {
-                viewModel.updateDependencyTask(null)
+                viewModel.updateBlockingTask(null)
             }
-            // Bindings complexes
+
+            // Bindings
             setupDateBindings()
             setupRecurringTaskBinding()
         }
@@ -476,17 +491,18 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             true
         }
         binding.removeRepeatedChoice.setOnClickListener {
-            viewModel.updateRecurrenceInfos(null, emptyList())
+            viewModel.updateRecurrenceInfos(null)
         }
     }
 
     private fun updateRecurrenceInfos(itemId: Int) {
         when (itemId) {
             R.id.action_every_day -> {
-                viewModel.updateRecurrenceInfos(TaskRecurrence(Period.DAYS.name,1,startDate = null), emptyList())
+                viewModel.updateRecurrenceInfos(TaskRecurrenceWithDays(TaskRecurrence(Period.DAYS.name,1,startDate = null), emptyList()))
             }
             R.id.action_every_week -> {
-                viewModel.updateRecurrenceInfos(TaskRecurrence(Period.WEEKS.name,1, startDate = null), emptyList())
+                viewModel.updateRecurrenceInfos(TaskRecurrenceWithDays(TaskRecurrence(Period.WEEKS.name,1, startDate = null), emptyList()))
+                Log.e("task recurrence value", viewModel.uiState.value.taskRecurrenceWithDays.toString())
             }
             R.id.action_personalized -> {
                 showRecurringTaskDialog()
@@ -499,7 +515,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { observeUiState() }
                 launch { observeEvents() }
-                launch { observeReminders() }
             }
         }
     }
@@ -516,12 +531,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         }
     }
 
-    private suspend fun observeReminders() {
-        viewModel.reminders.collect { reminders ->
-            reminderAdapter.submitList(reminders)
-        }
-    }
-
     private fun renderUiState(state: AddEditTaskViewModel.UiState) {
         binding.apply {
             // skill level
@@ -533,7 +542,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             btnSetDueDate.updateDateButton(removeDueDate, state.dueDate, getString(R.string.set_due_date))
             btnSetDeadline.updateDateButton(removeDeadline, state.deadline, getString(R.string.set_deadline))
 
-            // Complex Update
+            // Complex Updates
             btnRepeatTask.updateSpecificButtonText(
                 removeRepeatedChoice,
                 state.taskRecurrenceWithDays?.getRecurringIntervalReadable(resources),
@@ -563,7 +572,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             btnChooseDependency.updateSpecificButtonText(
                 removeBlockingTask,
                 state.blockingTask?.let {
-                    "Blocking task : $it"
+                    getString(R.string.blocking_task , it.title)
                 },
                 getString(R.string.dependency)
             )
@@ -578,7 +587,24 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 findNavController().popBackStack()
             }
             is AddEditTaskViewModel.AddEditTaskEvent.ShowInvalidInputMessage -> Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_LONG).show()
-            is AddEditTaskViewModel.AddEditTaskEvent.ScheduleReminders -> scheduleReminders(event.reminders)
+            is AddEditTaskViewModel.AddEditTaskEvent.ScheduleReminders -> {
+                Log.e("reminder schedule","event received and function 'schedule reminders' call")
+                scheduleReminders(event.reminders)
+            }
+            is AddEditTaskViewModel.AddEditTaskEvent.NavigateToEditParentProjectDialog -> {
+                val action = AddEditTaskFragmentDirections.actionAddEditTaskFragmentToEditProjectLinkedDialogFragment(
+                    event.taskId ?: -1,
+                    event.parentProject
+                )
+                findNavController().navigate(action)
+            }
+            is AddEditTaskViewModel.AddEditTaskEvent.NavigateToEditBlockingTaskDialog -> {
+                val action = AddEditTaskFragmentDirections.actionAddEditTaskFragmentToEditBlockingTaskDialogFragment (
+                    event.taskId ?: -1,
+                    event.blockingTask
+                        )
+                findNavController().navigate(action)
+            }
         }
     }
 
@@ -761,7 +787,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-
+                Log.e("reminder schedule", viewModel.uiState.value.title + " reminder schedule")
                 (requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager)
                     .setExact(AlarmManager.RTC_WAKEUP, reminder.dueDate, pendingIntent)
             }
@@ -805,21 +831,13 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             .show()
     }
 
-    private fun showProjectSelectionDialog() {
-        val bundle = bundleOf(PROJECT_ID to viewModel.uiState.value.parentProject?.id
-        , "CURRENT_TASK" to viewModel.uiState.value.thingToDo?.taskRelations?.mainTask?.id)
-        setFragmentResult(CURRENT_RECURRING_INFO_REQUEST_KEY, bundle)
-        val editProjectLinkedDialog = EditProjectLinkedDialogFragment()
-        editProjectLinkedDialog.show(parentFragmentManager, "project_linked_tag")
-    }
-
     private fun showCategoryDialog() {
         val newFragment = EditCategoryDialogFragment()
         newFragment.show(parentFragmentManager, CATEGORY_EDIT_TAG)
     }
 
     private fun showRecurringTaskDialog() {
-        val newFragment = RecurringChoiceDialogFragment()
+        val newFragment = EditRecurringDialogFragment()
         val result = Bundle().apply {
             putParcelable("task_recurrence_with_days", viewModel.uiState.value.taskRecurrenceWithDays)
         }

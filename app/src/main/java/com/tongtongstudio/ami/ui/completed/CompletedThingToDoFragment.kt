@@ -94,7 +94,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                         is MainViewModel.SharedEvent.NavigateToTaskDetailsScreen -> {
                             val action =
                                 CompletedThingToDoFragmentDirections.actionCompletedThingToDoFragmentToDetailsFragment(
-                                    event.task
+                                    event.task.id
                                 )
                             val extras =
                                 FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
@@ -107,11 +107,26 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
                             findNavController().navigate(action, extras)
                         }
 
-                        is MainViewModel.SharedEvent.NavigateToLocalProjectStatsScreen -> {
+                        is MainViewModel.SharedEvent.NavigateToProjectDetailsScreen -> {
                             val action =
                                 CompletedThingToDoFragmentDirections.actionCompletedThingToDoFragmentToLocalProjectStatsFragment2(
-                                    event.project
+                                    event.project.taskRelations.mainTask.id
                                 )
+                            findNavController().navigate(action)
+                        }
+
+                        is MainViewModel.SharedEvent.NavigateToAddScreenWithParentTask -> {
+                            val action = CompletedThingToDoFragmentDirections.actionCompletedThingToDoFragmentToAddEditTaskFragment(
+                                title = getString(R.string.fragment_title_add_thing_to_do),
+                                thingToDo = null,
+                                parentTask = event.parentTask
+                            )
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
                             findNavController().navigate(action)
                         }
 
@@ -178,8 +193,9 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo) {
-        sharedViewModel.navigateToTaskComposedInfoScreen(thingToDo)
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
+        sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView
+        )
     }
 
     override fun onTaskClick(thingToDo: Task, itemView: View) {
@@ -187,15 +203,7 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
     }
 
     override fun onProjectAddClick(thingToDo: ThingToDo) {
-        // do nothing
-    }
-
-    override fun onSubTaskRightSwipe(thingToDo: Task) {
-        sharedViewModel.deleteSubTask(thingToDo)
-    }
-
-    override fun onSubTaskLeftSwipe(thingToDo: ThingToDo) {
-        sharedViewModel.updateSubTask(thingToDo)
+        sharedViewModel.addSubThingTodo(thingToDo.taskRelations.mainTask)
     }
 
 }

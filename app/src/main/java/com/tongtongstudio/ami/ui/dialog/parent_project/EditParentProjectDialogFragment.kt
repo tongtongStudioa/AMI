@@ -1,0 +1,115 @@
+package com.tongtongstudio.ami.ui.dialog.parent_project
+
+import android.app.Dialog
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.os.bundleOf
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.setFragmentResult
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.adapter.simple.AttributeListener
+import com.tongtongstudio.ami.adapter.simple.EditAttributesAdapter
+import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.databinding.DialogEditLinkedTaskBinding
+import dagger.hilt.android.AndroidEntryPoint
+
+const val PARENT_PROJECT = "parent_project"
+const val PROJECT_LINKED_LISTENER_REQUEST_KEY = "project_linked_listener_request_key"
+const val PROJECT_LINKED_RESULT_KEY = "project_linked_result_key"
+const val PROJECT_ID = "project_id"
+const val CURRENT_PROJECT_ID_REQUEST_KEY = "current_project_id_request_key"
+
+@AndroidEntryPoint
+class EditParentProjectDialogFragment : DialogFragment() {
+    private lateinit var binding: DialogEditLinkedTaskBinding
+    val args: EditParentProjectDialogFragmentArgs by navArgs()
+    private val viewModel: EditParentProjectViewModel by viewModels()
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        viewModel.updateCurrentTaskId(args.currentTaskId)
+        viewModel.updateParentProject(args.parentProject)
+        super.onViewCreated(view, savedInstanceState)
+    }
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return activity?.let {
+            val dialog = MaterialAlertDialogBuilder(it)
+            // Get the layout inflater
+            val inflater = requireActivity().layoutInflater
+            binding = DialogEditLinkedTaskBinding.inflate(inflater)
+            // Inflate and set the layout for the dialog
+            // Pass null as the parent view because its going in the dialog layout
+            dialog.setView(binding.root)
+                .setTitle(getString(R.string.edit_task_link))
+                // Add action buttons
+                .setNegativeButton(
+                    R.string.cancel
+                ) { _, _ ->
+                    getDialog()?.cancel()
+                }
+            dialog.create()
+        } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+
+        val projectLinkAdapter = EditAttributesAdapter(object : AttributeListener<Task> {
+            override fun onItemClicked(attribute: Task) {
+                viewModel.updateParentProject(attribute)
+                onParentTaskSelected(this@EditParentProjectDialogFragment)
+            }
+
+            override fun onRemoveCrossClick(attribute: Task) {
+                viewModel.removeParentProject()
+            }
+        }) { binding, composedTask ->
+            binding.titleOverview.text = composedTask.title
+        }
+
+        binding.rvProjects.apply {
+            adapter = projectLinkAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+            setHasFixedSize(true)
+        }
+
+        /*setFragmentResultListener(CURRENT_PROJECT_ID_REQUEST_KEY) { _, bundle ->
+            viewModel.changeProjectId(bundle.getLong(PROJECT_ID))
+            binding.rvProjects.apply {
+                adapter = projectLinkAdapter
+                layoutManager = LinearLayoutManager(requireContext())
+                setHasFixedSize(true)
+            }
+        }*/
+
+        viewModel.parentProject.observe(viewLifecycleOwner) {
+            projectLinkAdapter.actionBindView = { binding, task ->
+                binding.titleOverview.text = task.title
+            }
+        }
+
+        viewModel.currentTaskId.observe(viewLifecycleOwner) { taskId ->
+            viewModel.potentialProjects(taskId).observe(viewLifecycleOwner) { listPotentialProjects ->
+                projectLinkAdapter.submitList(listPotentialProjects)
+            }
+        }
+        return binding.root
+    }
+
+    private fun onParentTaskSelected(dialog: EditParentProjectDialogFragment) {
+        val result = viewModel.parentProject.value
+        dialog.setFragmentResult(
+            PROJECT_LINKED_LISTENER_REQUEST_KEY,
+            bundleOf(PROJECT_LINKED_RESULT_KEY to result)
+        )
+        dialog.dismiss()
+    }
+}

@@ -237,7 +237,7 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
 
 
         //collecting the entries with label name
-        val pieDataSet = PieDataSet(pieEntries, "Distribution of time worked")
+        val pieDataSet = PieDataSet(pieEntries, getString(R.string.distribution_of_time_worked))
         //setting text size of the value
         pieDataSet.valueTextSize = 9f
         //providing color list for coloring different entries

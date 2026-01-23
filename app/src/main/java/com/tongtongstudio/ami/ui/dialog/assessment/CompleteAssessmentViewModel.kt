@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.datatables.Assessment
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,26 +24,34 @@ class CompleteAssessmentViewModel @Inject constructor(
     val result: LiveData<Float>
         get() = _result
 
+    private val _comment = MutableLiveData<String?>(null)
+    val comment: LiveData<String?>
+        get() = _comment
     fun saveCompletedAssessment() = viewModelScope.launch {
         assessment?.let {
             repository.updateAssessment(
                 it.copy(
+                    comment = comment.value,
                     score = result.value
                 )
             )
         }
     }
 
+    fun updateComment(comment: String?) {
+        _comment.value = comment
+    }
+
     fun updateResult(result: Float) {
         _result.value = result
     }
 
-    fun remove1() {
+    fun remove_one() {
         if (_result.value!! > 0)
             _result.value = _result.value?.minus(1)
     }
 
-    fun add1() {
+    fun add_one() {
         _result.value = _result.value?.plus(1)
     }
 }

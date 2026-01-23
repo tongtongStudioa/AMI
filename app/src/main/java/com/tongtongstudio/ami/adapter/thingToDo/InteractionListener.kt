@@ -6,9 +6,7 @@ import com.tongtongstudio.ami.data.datatables.ThingToDo
 
 interface InteractionListener {
     fun onTaskChecked(thingToDo: ThingToDo, isChecked: Boolean, position: Int)
-    fun onProjectClick(thingToDo: ThingToDo)
+    fun onProjectClick(thingToDo: ThingToDo, itemView: View)
     fun onTaskClick(thingToDo: Task, itemView: View)
     fun onProjectAddClick(thingToDo: ThingToDo)
-    fun onSubTaskRightSwipe(thingToDo: Task)
-    fun onSubTaskLeftSwipe(thingToDo: ThingToDo)
 }

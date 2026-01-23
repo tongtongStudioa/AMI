@@ -9,9 +9,7 @@ import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.databinding.ItemGoalBinding
 
 class GoalsAdapter(private val context: Context, private val listener: GoalsListener) :
-    RecyclerView.Adapter<ViewHolder<Assessment>>() {
-
-    private val goalsList = mutableListOf<Assessment>()
+    BaseAdapter<Assessment>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder<Assessment> {
         val context = parent.context
@@ -26,7 +24,7 @@ class GoalsAdapter(private val context: Context, private val listener: GoalsList
             binding.root.setOnClickListener {
                 val position = absoluteAdapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    val goal = goalsList[position]
+                    val goal = elementsList[position]
                     listener.onGoalClick(goal, itemView)
                 }
             }
@@ -44,22 +42,7 @@ class GoalsAdapter(private val context: Context, private val listener: GoalsList
         }
     }
 
-    override fun onBindViewHolder(holder: ViewHolder<Assessment>, position: Int) {
-        val element = goalsList[position]
-        holder.bind(element)
-    }
-
-    override fun getItemCount(): Int {
-        return goalsList.size
-    }
-
     fun getGoalsList(): List<Assessment> {
-        return goalsList
-    }
-
-    fun submitList(newGoalsList: List<Assessment>) {
-        goalsList.clear()
-        goalsList.addAll(newGoalsList)
-        notifyDataSetChanged()
+        return elementsList
     }
 }

@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.ViewCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -228,6 +229,11 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
             estimatedTime.text =
                 TrackingTimeUtility.getFormattedTimeWorked(project.taskRelations.mainTask.estimatedWorkingTime)
                     ?: getText(R.string.no_information)
+            val totalEstimatedWorkTime = viewModel.getEstimatedWorkTime()
+            totalEstimatedTime.text = if (totalEstimatedWorkTime != null) "(" + TrackingTimeUtility.getFormattedTimeWorked(viewModel.getEstimatedWorkTime()) + ")"
+            else ""
+            totalEstimatedTime.isVisible = totalEstimatedWorkTime != null
+
             progressText.text = getString(R.string.completion_rate_value, project.completionRate ?: 0F)
             projectProgress.progress = project.completionRate?.toInt() ?: 0
             val projectEstimatedTime = project.taskRelations.mainTask.estimatedWorkingTime

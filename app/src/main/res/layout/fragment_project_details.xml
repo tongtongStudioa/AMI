@@ -57,7 +57,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_project_title"
-            tools:text="This the description." />
+            tools:text="Here is the description." />
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/progress_view"
@@ -65,6 +65,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
+            app:layout_constraintHorizontal_weight="1"
             app:layout_constraintEnd_toStartOf="@id/total_work_time_view"
             app:layout_constraintBottom_toBottomOf="@id/total_work_time_view"
             app:layout_constraintStart_toStartOf="parent"
@@ -118,12 +119,12 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             app:layout_constraintEnd_toEndOf="parent"
-
+            app:layout_constraintHorizontal_weight="1.1"
             app:layout_constraintStart_toEndOf="@id/progress_view"
             app:layout_constraintTop_toBottomOf="@id/tv_description">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="10dp">
 
@@ -166,10 +167,21 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat_medium"
                     android:textAppearance="@style/TextAppearance.Ami.Caption"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/total_estimated_time"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tv_title3"
                     tools:text="18h 00min" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/total_estimated_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_medium"
+                    android:textAppearance="@style/TextAppearance.Ami.Caption"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/estimated_time"
+                    app:layout_constraintTop_toBottomOf="@id/tv_title3"
+                    tools:text="(24h 00min)" />
 
 
             </androidx.constraintlayout.widget.ConstraintLayout>

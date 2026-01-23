@@ -24,6 +24,8 @@ class ProjectDetailsViewModel @Inject constructor(
     data class DetailsProjectUiState(
         val projectId: Long? = null,
         val project: Task? = null,
+        val workTime: Long = 0L,
+        val totalEstimatedWorkTime: Long? = null
     )
     val projectId = state.get<Long>("project_id")
     val project = repository.getThingToDo(projectId)?.asLiveData()
@@ -31,5 +33,9 @@ class ProjectDetailsViewModel @Inject constructor(
 
     fun getProjectWorkTime(): Long = runBlocking{
         return@runBlocking repository.getProjectTimeWorked(projectId!!)
+    }
+
+    fun getEstimatedWorkTime(): Long? = runBlocking {
+        return@runBlocking projectId?.let {repository.getTotalEstimatedWorkTime(it)}
     }
 }

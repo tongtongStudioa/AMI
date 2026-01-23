@@ -213,8 +213,8 @@
     <string name="clear">Clear</string>
     <string name="hours">Hours</string>
     <string name="minutes" translatable="false">Minutes</string>
-    <string name="period">Period</string>
-    <string name="recurring_end">Recurring end :</string>
+    <string name="frequency">Frequency</string>
+    <string name="recurring_end">Recurrence End ?</string>
     <string name="las_due_date">Last due date : %s</string>
     <string name="task_times_missed">%d times missed</string>
     <string name="edit_categories">Edit categories</string>
@@ -283,4 +283,22 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="intermediate_project">Intermediate project</string>
+    <string name="sub_task">Sub task</string>
+    <string name="not_started">Not started</string>
+    <string name="in_progress">In progress</string>
+    <string name="on_review">On review</string>
+    <string name="finished">Finished</string>
+    <string name="abondoned">Abandoned</string>
+    <string name="blocking_task">Blocking task : %1$s</string>
+    <string name="edit_blocking_task">Edit Blocking Task</string>
+    <string name="hint_comment_work_session">Comment your work session here !</string>
+    <string name="secondes" translatable="false">Secondes</string>
+    <string name="fab_pause_content_description">launch or pause chronometer/timer</string>
+    <string name="msg_work_session_updated">Work session updated !</string>
+    <string name="occurrence_limit">Occurrence Limit</string>
+    <string name="no_category">No category</string>
+    <string name="hint_comment_assessment">Insert your comment here !</string>
+    <string name="distribution_of_time_worked">Distribution of time worked</string>
+    <string name="progress_assessment">Progress assessment</string>
 </resources>

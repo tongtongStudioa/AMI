@@ -192,7 +192,7 @@
     <string name="category_description">Description de la catégorie</string>
     <string name="clear">Effacer</string>
     <string name="hours">Heures</string>
-    <string name="period">Périodes</string>
+    <string name="frequency">Fréquence</string>
     <string name="recurring_end">Fin de la récurrence :</string>
     <string name="las_due_date">Dernière échéance : %s</string>
     <string name="task_times_missed">Manquées %d fois</string>
@@ -237,4 +237,20 @@
     <string name="primary_text_tuto_step2_frag1">Ajoute une tâche ici.</string>
     <string name="secondary_text_tuto_step2_frag1">Tu peux ajouter une tâche à faire ou un brouillon à partir de ce bouton.</string>
     <string name="draft_task_created">Brouillon ajouté</string>
+    <string name="fragment_goal_details_title">Détails de l\'objectif</string>
+    <string name="thing_to_do">Chose à faire</string>
+    <string name="settings">Réglages</string>
+    <string name="intermediate_project">Projet intermédiare</string>
+    <string name="sub_task">Sous tâche</string>
+    <string name="not_started">Non commencé</string>
+    <string name="in_progress">En progrés</string>
+    <string name="on_review">À revoir</string>
+    <string name="finished">Terminé</string>
+    <string name="abondoned">Abandonné</string>
+    <string name="blocking_task">Tâche bloquante : %1$s</string>
+    <string name="edit_blocking_task">Éditer la tâche bloquante</string>
+    <string name="hint_comment_work_session">Commente ta session de travail ici !</string>
+    <string name="fab_pause_content_description">Lance ou pause le chronomètre</string>
+    <string name="msg_work_session_updated">Session de travail modifié !</string>
+    <string name="occurrence_limit">Limite d\'occurrence</string>
 </resources>

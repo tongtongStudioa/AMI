@@ -47,10 +47,21 @@
                     android:ellipsize="end"
                     android:gravity="center_vertical"
                     android:textAppearance="@style/TextAppearance.Ami.Subtitle1.Day"
-                    app:layout_constraintEnd_toStartOf="@id/btn_add_sub_task"
+                    app:layout_constraintEnd_toStartOf="@id/tv_nature"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:text="Project" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tv_nature"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Ami.Body2"
+                    app:layout_constraintStart_toEndOf="@id/tv_project_name"
+                    app:layout_constraintTop_toTopOf="@id/tv_project_name"
+                    app:layout_constraintBottom_toBottomOf="@id/tv_project_name"
+                    app:layout_constraintEnd_toStartOf="@id/btn_add_sub_task"
+                    tools:text="Intermediate project" />
 
                 <ImageButton
                     android:id="@+id/btn_add_sub_task"
@@ -90,16 +101,6 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     tools:text="Not started " />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tv_nature"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.Ami.Body2"
-                    app:layout_constraintStart_toEndOf="@id/tv_status"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    tools:text="Intermediate project" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

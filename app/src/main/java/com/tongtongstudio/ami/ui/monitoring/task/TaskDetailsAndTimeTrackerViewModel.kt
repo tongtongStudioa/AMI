@@ -83,14 +83,11 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
     private fun loadInitialData() {
         viewModelScope.launch {
             _uiState.update { uiState ->
-                val thingToDo = repository.getThingToDo(taskId)?.first()
                 uiState.copy(
-                    thingToDo = thingToDo,
                     successCount = taskId.let { repository.getHabitCompletionCount(it) },
                     completionRate = taskId.let { repository.getHabitCompletionRate(it) },
                     maxStreak = taskId.let { repository.getMaxStreak(it) },
                     currentStreak = taskId.let { repository.getCurrentStreak(it) },
-
                     )
             }
         }

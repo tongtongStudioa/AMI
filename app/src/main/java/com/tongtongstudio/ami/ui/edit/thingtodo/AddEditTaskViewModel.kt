@@ -129,7 +129,7 @@ class AddEditTaskViewModel @Inject constructor(
                         title = thingToDo?.taskRelations?.mainTask?.title ?: "",
                         creationDateFormatted = thingToDo?.taskRelations?.mainTask?.getCreationDateFormatted(),
                         priority = thingToDo?.taskRelations?.mainTask?.priority,
-                        nature = getNature(it),
+                        nature = thingToDo?.taskRelations?.mainTask?.nature, // getNature(it),
                         type = thingToDo?.getType(),
                         description = thingToDo?.taskRelations?.mainTask?.description ?: "",
                         startDate = thingToDo?.taskRelations?.mainTask?.startDate,

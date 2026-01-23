@@ -64,6 +64,7 @@ data class ThingToDo(
     }
 
     /**
+     * This function return a string resource to display nature of the task.
      * The Nature of the task describe how it will be show to the user
      * and how it will be treated.
      */

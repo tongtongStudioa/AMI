@@ -181,7 +181,8 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         editTextDescription.setText(it.description)
                         editTextPriority.setText(it.priority?.toString() ?: "" )
                         editTextUserLevel.setText(it.skillLevel?.toString() ?: "")
-                        radioGroupChoiceNature.check(if (it.nature == Nature.TASK.name || it.nature == Nature.SUB_TASK.name) rbTask.id else rbProject.id)
+                        val radBtnChecked = if (it.nature == Nature.TASK.name || it.nature == Nature.SUB_TASK.name) rbTask.id else rbProject.id
+                        radioGroupChoiceNature.check(radBtnChecked)
                         autocompleteTextCategory.setText(it.category?.title ?: "")
                     }
             }

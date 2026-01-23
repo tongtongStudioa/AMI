@@ -1,5 +1,6 @@
 package com.tongtongstudio.ami.data.datatables
 
+import android.util.Log
 import androidx.room.Room
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
@@ -93,9 +94,9 @@ class MigrationTest {
         // Step 2: Migrate to version 3
         val db = helper.runMigrationsAndValidate(TEST_DB, 5, true, MIGRATION_3_5)
 
-        // Step 3: Check if the completion record exists in task_completions
-        val taskCursor = db.query("SELECT * FROM task_completion_table")
-        assert(taskCursor.moveToFirst()) { "Data leak" } // Ensure a record exists
+        // Step 3: Check if data record exists in task_table and are exact
+        val taskCursor = db.query("SELECT * FROM task_table")
+        assert(taskCursor.moveToFirst()) {"Problem cursor: no data in task_table"} // Ensure a record exists
         taskCursor.moveToNext()
         val dueDate = taskCursor.getLong(taskCursor.getColumnIndexOrThrow("task_due_date"))
         assertEquals(1712000000000, dueDate) // Validate the data is transferred correctly
@@ -104,19 +105,21 @@ class MigrationTest {
         taskCursor.close()
         val recurrenceCursor =
             db.query("SELECT * FROM task_recurrence_table tr LEFT JOIN task_recurrence_days_cross_ref cr ON cr.recurrenceId = tr.recurrence_id LEFT JOIN days_of_week_table dt ON dt.day_id = cr.dayId")
-        assert(recurrenceCursor.moveToFirst()) { "Data leak" } // Ensure a record exists
+        assert(recurrenceCursor.moveToFirst()) { "Problem cursor: no data in task_recurrence_table" } // Ensure a record exists
         recurrenceCursor.moveToNext()
         val recurrenceId =
-            recurrenceCursor.getLong(taskCursor.getColumnIndexOrThrow("recurrence_id"))
+            recurrenceCursor.getLong(recurrenceCursor.getColumnIndexOrThrow("recurrence_id"))
+        val isActive = recurrenceCursor.getInt(recurrenceCursor.getColumnIndexOrThrow("is_active"))
         assert(taskRecurrenceId == recurrenceId) { "Problem with foreign key : task_recurrence_id ($taskRecurrenceId) not the same as recurrence_id ($recurrenceId)" }
-        // TODO: test if days are well represented in database (2 and 5 for tuesday and friday (?))     
+        assert(isActive == 1)
+        // TODO: test if days are well represented in database (2 and 5 for tuesday and friday (?))
     }
 
     @Test
     @Throws(IOException::class)
     fun migrateAll() {
         // Create earliest version of the database.
-        helper.createDatabase(TEST_DB, 4).apply {
+        helper.createDatabase(TEST_DB, 2).apply {
             close()
         }
 

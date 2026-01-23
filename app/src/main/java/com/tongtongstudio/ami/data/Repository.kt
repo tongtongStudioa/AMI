@@ -4,23 +4,33 @@ import com.tongtongstudio.ami.data.dao.AssessmentDao
 import com.tongtongstudio.ami.data.dao.CategoryDao
 import com.tongtongstudio.ami.data.dao.RecurrenceInfoDao
 import com.tongtongstudio.ami.data.dao.ReminderDao
+import com.tongtongstudio.ami.data.dao.TaskCompletionDao
 import com.tongtongstudio.ami.data.dao.TaskDao
 import com.tongtongstudio.ami.data.dao.WorkSessionDao
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.Category
+import com.tongtongstudio.ami.data.datatables.DaysOfWeek
+import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.Reminder
+import com.tongtongstudio.ami.data.datatables.Status
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.TaskCompletion
 import com.tongtongstudio.ami.data.datatables.TaskRecurrence
+import com.tongtongstudio.ami.data.datatables.TaskRecurrenceDaysCrossRef
 import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
 import com.tongtongstudio.ami.data.datatables.ThingToDo
+import com.tongtongstudio.ami.data.datatables.ThingToDoDetails
 import com.tongtongstudio.ami.data.datatables.TimeWorkedDistribution
 import com.tongtongstudio.ami.data.datatables.TtdAchieved
 import com.tongtongstudio.ami.data.datatables.TtdStreakInfo
+import com.tongtongstudio.ami.data.datatables.Type
 import com.tongtongstudio.ami.data.datatables.WorkSession
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import java.util.Calendar
 import javax.inject.Inject
 
 class Repository @Inject constructor(
@@ -29,7 +39,8 @@ class Repository @Inject constructor(
     private val reminderDao: ReminderDao,
     private val assessmentDao: AssessmentDao,
     private val workSessionDao: WorkSessionDao,
-    private val recurrenceInfo: RecurrenceInfoDao
+    private val recurrenceInfoDao: RecurrenceInfoDao,
+    private val taskCompletionDao: TaskCompletionDao,
 ) {
 
     fun getThingsToDoToday(
@@ -54,7 +65,7 @@ class Repository @Inject constructor(
         sortOrder: SortOrder? = null,
     ): Flow<List<ThingToDo>> {
         return if (endDayFilter != null) {
-            taskDao.getLaterTasksFilter(endDayDate, endDayFilter)
+            taskDao.getLaterTasks(endDayDate, endDayFilter)
         } else taskDao.getLaterTasks(endDayDate)
     }
 
@@ -67,31 +78,40 @@ class Repository @Inject constructor(
     }
 
     suspend fun insertTask(task: Task): Long {
-        return taskDao.insert(task)
+        val taskId = taskDao.insert(task)
+        task.parentTaskId?.let {
+            updateProject(it)
+        }
+        return taskId
     }
 
     suspend fun updateTask(task: Task) {
         taskDao.update(task)
+        // Mettre à jour la progression du parent
+        task.parentTaskId?.let { parentId ->
+            updateProject(parentId)
+        }
     }
 
     suspend fun deleteTask(task: Task) {
         taskDao.delete(task)
+        task.parentTaskId?.let {
+            updateProject(it)
+        }
     }
 
     fun getProjects(hideCompleted: Boolean): Flow<List<ThingToDo>> {
         return taskDao.getProjects(hideCompleted)
     }
 
-    fun getPotentialProjects(): Flow<List<Task>> {
-        return taskDao.getPotentialProject()
+    fun getPotentialLinkedTasks(taskIdRemoved: Long?): Flow<List<Task>> {
+        return if (taskIdRemoved != null)
+            taskDao.getPotentialParentTasks(taskIdRemoved)
+        else taskDao.getPotentialParentTasks()
     }
 
     suspend fun getMissedRecurringTasks(todayDate: Long): List<ThingToDo> {
         return taskDao.getMissedRecurringTasks(todayDate)
-    }
-
-    suspend fun getComposedTask(parentTaskId: Long): ThingToDo {
-        return taskDao.getParentTask(parentTaskId)
     }
 
     fun getDraftsTasks(): Flow<List<ThingToDo>> {
@@ -144,9 +164,9 @@ class Repository @Inject constructor(
         return assessmentDao.get(id)
     }
 
-    fun getGoalAssessments(taskId: Long?): Flow<MutableList<Assessment>>? {
-        return if (taskId != null)
-            assessmentDao.getIntermediateAssessments(taskId)
+    fun getIntermediateAssessmentsByGoal(parentId: Long?): Flow<MutableList<Assessment>>? {
+        return if (parentId != null)
+            assessmentDao.getIntermediateAssessments(parentId)
         else null
     }
 
@@ -198,11 +218,6 @@ class Repository @Inject constructor(
         return workSessionDao.getWorkSessions(taskId)
     }
 
-    /** ****** Recurrence Infos ******* **/
-    fun getRecurrenceInfos(recurrenceId: Long): Flow<TaskRecurrence?> {
-        return recurrenceInfo.getRecurrenceInfoById(recurrenceId)
-    }
-
     /** ****** Stats ******* **/
     fun getHabits(): Flow<List<ThingToDo>> {
         return taskDao.getRecurringTasks()
@@ -240,7 +255,7 @@ class Repository @Inject constructor(
 
 
     fun getCompletedTasksCount(categoryId: Long? = null): Flow<Int> {
-        return if (categoryId != null) taskDao.getCategoryCompletedTasksCount(categoryId) else taskDao.getCompletedTasksCount()
+        return if (categoryId != null) taskDao.getCompletedTasksCount(categoryId) else taskDao.getCompletedTasksCount()
     }
 
     fun getCompletedTasksCountByPeriod(
@@ -294,14 +309,14 @@ class Repository @Inject constructor(
 
     fun getMaxStreak(categoryId: Long? = null): Flow<TtdStreakInfo> {
         return if (categoryId != null)
-            taskDao.getMaxStreakCategoryTask(categoryId)
-        else taskDao.getMaxStreakTask()
+            taskDao.getTaskMaxStreak(categoryId)
+        else taskDao.getTaskMaxStreak()
     }
 
     fun getCurrentMaxStreak(categoryId: Long? = null): Flow<TtdStreakInfo> {
         return if (categoryId != null)
-            taskDao.getCurrentMaxStreakCategoryTask(categoryId)
-        else taskDao.getCurrentMaxStreakTask()
+            taskDao.getTaskCurrentMaxStreak(categoryId)
+        else taskDao.getTaskCurrentMaxStreak()
     }
 
     fun getHabitCompletionRate(categoryId: Long? = null): Flow<Float?> {
@@ -316,36 +331,217 @@ class Repository @Inject constructor(
         else flowOf(0)
     }
 
+    // TODO: Create a recursive function which emit a flow to automatically change value
+    suspend fun getThingToDoTimeWorked(taskId: Long?): Flow<Long> {
+        if (taskId == null)
+            return flowOf(0L)
+        val taskWorkTime = workSessionDao.getTaskTimeWorked(taskId)
+        val directSubTasks = taskDao.getSubTasks(taskId)
+        var totalWorkTime = taskWorkTime
+        directSubTasks.collect {
+            it.forEach { totalWorkTime = flowOf(totalWorkTime.first() + getThingToDoTimeWorked(it.id).first()) }
+        }
+        return totalWorkTime
+    }
     suspend fun getProjectTimeWorked(mainTaskId: Long?): Long {
         if (mainTaskId == null)
             return 0L
-        val subTasks = taskDao.getSubTasks(mainTaskId).first()
+        val directSubTasks = taskDao.getSubThingTodos(mainTaskId).first()
         var projectWorkTime = 0L
-        subTasks.forEach {
-            projectWorkTime += workSessionDao.getTaskTimeWorked(it.id).first()
+        directSubTasks.forEach {
+            projectWorkTime += workSessionDao.getTaskTimeWorked(it.taskRelations.mainTask.id).first()
         }
         return projectWorkTime
     }
 
-    fun getCurrentStreak(taskId: Long): Int {
-        TODO("Not yet implemented")
-    }
-
     suspend fun getBlockingTask(blockingTaskId: Long): Task {
-            return taskDao.getTask(blockingTaskId)
+        return taskDao.getTask(blockingTaskId)
     }
 
-    suspend fun getTaskRecurrenceWithDays(taskId: Long): TaskRecurrenceWithDays {
-        return taskDao.getTaskRecurrenceInfos(taskId)
+    suspend fun getTaskRecurrenceWithDays(recurrenceId: Long): TaskRecurrenceWithDays? {
+        val taskRecurrence = recurrenceInfoDao.getTaskRecurrenceById(recurrenceId)
+        return if (taskRecurrence != null) {
+            val taskRecurrenceWithDays = recurrenceInfoDao.getTaskRecurrenceWithDays(recurrenceId)
+            //Log.e("repository", taskRecurrenceWithDays.toString())
+            taskRecurrenceWithDays
+        } else null
     }
 
-    suspend fun insertTaskCompletion(completion: TaskCompletion) {
-        TODO("Insert task completion not yet implemented !")
+    suspend fun toggleTaskCompletion(
+        type: String,
+        task: Task,
+        isChecked: Boolean,
+        lastCompletionStatus: Boolean
+    ) {
+        if (type != Type.RECURRING.name) {
+            val newCompletion = TaskCompletion(task.id, isChecked)
+            taskCompletionDao.deleteLastTaskCompletion(task.id)
+            taskCompletionDao.insert(newCompletion)
+        } else {
+            // Get old recurring task's due date
+            val oldDueDate = task.dueDate!!
+            // Get task recurrence informations
+            val taskRecurrenceWithDays = recurrenceInfoDao.getTaskRecurrenceWithDays(task.recurrenceInfosId!!)
+            //Log.e("Inside toggleCompletion", "task recurrence is set : $taskRecurrenceWithDays!")
+            // Insert TaskCompletion not complete for each due date before present day
+            val allDueDates = taskRecurrenceWithDays.calculateAllDueDatesBetween(oldDueDate, Calendar.getInstance().timeInMillis)
+            allDueDates.forEach { dueDate ->
+                if (isChecked && dueDate == oldDueDate) {
+                    val newCompletion = TaskCompletion(task.id, true, completionDate = dueDate)
+                    taskCompletionDao.insert(newCompletion)
+                } else
+                    taskCompletionDao.insert(TaskCompletion(task.id, isCompleted = false, completionDate = dueDate))
+            }
+            if (isChecked) {
+                val newCompletion = TaskCompletion(task.id, true, oldDueDate)
+                taskCompletionDao.insert(newCompletion)
+            }
+            //Log.e("Inside toggleCompletion","all due dates inserted")
+        }
+
+        var updatedTask = task.copy(
+            // TODO: update status for en of recurring task
+            status = if (!lastCompletionStatus && isChecked && type != Type.RECURRING.name) Status.FINISHED.name
+            else if (isChecked) Status.IN_PROGRESS.name else Status.REVIEW.name,
+        )
+        if (type == Type.RECURRING.name) {
+            val taskRecurrenceWithDays = recurrenceInfoDao.getTaskRecurrenceWithDays(task.recurrenceInfosId!!)
+            // Update task with new due date and complete task if new due date > end date or occurrence limit reached
+            val newDueDate = taskRecurrenceWithDays.getNextOccurrenceDay(task.dueDate!!)
+            updatedTask = updatedTask.copy(
+                dueDate = newDueDate
+            )
+        }
+        // trough repository update's method
+        updateTask(updatedTask)
+        //Log.e("Inside toggleCompletion","Task updated : $updatedTask")
     }
 
-    suspend fun updateTaskCompletion(id: Long) {
-        TODO("update task completion not yet implemented")
+    private suspend fun updateProject(parentId: Long) {
+        val project = taskDao.getTask(parentId)
+        val subtasks = taskDao.getSubThingTodos(parentId).first()
+        val totalSubtasks = subtasks.size
+        val completedSubtasks = subtasks.count { it.lastCompletionStatus == true }
+        val isCompleted = totalSubtasks == completedSubtasks
+
+        val status = if (isCompleted)
+            Status.FINISHED.name
+        else if (completedSubtasks > 0)
+            Status.IN_PROGRESS.name
+        else project.status
+
+        val newNature = when {
+            totalSubtasks == 0 && project.parentTaskId != null -> Nature.SUB_TASK.name
+            totalSubtasks == 0 -> Nature.TASK.name
+            project.parentTaskId != null -> Nature.INTERMEDIATE_PROJECT.name
+            else -> Nature.PROJECT.name
+        }
+
+        taskDao.update(project.copy(status = status, nature = newNature))
+        val projectCompletion = TaskCompletion(parentId, isCompleted)
+        if (isCompleted)
+            taskCompletionDao.insert(projectCompletion)
+        else taskCompletionDao.deleteLastTaskCompletion(parentId)
+
+        // Propager la mise à jour vers le parent (récursivement)
+        project.parentTaskId?.let { parentId ->
+            updateProject(parentId)
+        }
     }
 
+    suspend fun updateTaskCompletion(completion: TaskCompletion) {
+        taskCompletionDao.update(completion)
+    }
+
+    suspend fun deleteLastTaskCompletion(id: Long) {
+        taskCompletionDao.deleteLastTaskCompletion(id)
+    }
+
+    suspend fun getThingToDoDetails(id: Long): ThingToDoDetails {
+        return taskDao.getThingToDoDetails(id)
+    }
+
+    fun getSubThingToDo(parentId: Long): Flow<List<ThingToDo>> {
+        return taskDao.getSubThingTodos(parentId)
+    }
+
+    fun getThingToDo(taskId: Long?): Flow<ThingToDo>? {
+        if (taskId == null)
+            return null
+        return taskDao.getThingToDo(taskId)
+    }
+
+    fun getLastTaskCompletion(parentTaskId: Long): Flow<TaskCompletion?> {
+        return taskCompletionDao.getLastTaskCompletion(parentTaskId)
+    }
+
+    suspend fun insertOrUpdateTaskRecurrenceWithDays(taskRecurrenceWithDays: TaskRecurrenceWithDays): Long {
+        val taskRecurrence = taskRecurrenceWithDays.taskRecurrence
+        val alreadyExist =
+            recurrenceInfoDao.getTaskRecurrenceById(taskRecurrence.recurrenceId) != null
+        return if (alreadyExist) {
+            recurrenceInfoDao.updateRecurringInfo(taskRecurrence)
+
+            val crossRefForDays = createCrossRefForDays(taskRecurrenceWithDays)
+            recurrenceInfoDao.insertCrossRefForDays(crossRefForDays)
+            taskRecurrence.recurrenceId
+        } else {
+            val newId = recurrenceInfoDao.insertRecurringInfo(taskRecurrence)
+            val crossRefForDays = createCrossRefForDays(taskRecurrenceWithDays.copy(taskRecurrenceWithDays.taskRecurrence.copy(recurrenceId = newId)))
+            recurrenceInfoDao.insertCrossRefForDays(crossRefForDays)
+            newId
+        }
+    }
+
+    private suspend fun createCrossRefForDays(taskRecurrenceWithDays: TaskRecurrenceWithDays): List<TaskRecurrenceDaysCrossRef> {
+        val recurrenceId = taskRecurrenceWithDays.taskRecurrence.recurrenceId
+        return buildList {
+            for (day in taskRecurrenceWithDays.daysOfWeek) {
+                val crossRef = recurrenceInfoDao.getCrossRefDay(recurrenceId, day.dayId.toLong())
+                if (crossRef != null)
+                    add(crossRef.copy(recurrenceId, day.dayId.toLong()))
+                else
+                    add(TaskRecurrenceDaysCrossRef(recurrenceId, day.dayId.toLong()))
+            }
+        }
+    }
+
+    suspend fun updateTaskRecurrence(taskRecurrence: TaskRecurrence): Long {
+        recurrenceInfoDao.updateRecurringInfo(taskRecurrence)
+        return taskRecurrence.recurrenceId
+    }
+
+    suspend fun updateWorkSession(workSession: WorkSession) {
+        workSessionDao.update(workSession)
+    }
+
+    suspend fun getDaysOfWeek(daysId: List<Int>): List<DaysOfWeek> {
+        return recurrenceInfoDao.getDaysOfWeeks(daysId)
+    }
+
+    suspend fun getHabitCompletionRate(taskId: Long): Float {
+        return taskDao.getHabitCompletionRate(taskId)
+    }
+
+    suspend fun getMaxStreak(taskId: Long): Int {
+        return taskDao.getLongestStreak(taskId)
+    }
+
+    suspend fun getHabitCompletionCount(taskId: Long): Int {
+        return taskDao.getHabitCompletionCount(taskId)
+    }
+
+    suspend fun getCurrentStreak(taskId: Long): Int {
+        return taskDao.getCurrentStreakByTask(taskId)
+    }
+
+    suspend fun updateSubTasksCategory(parentTaskId: Long, categoryId: Long?) {
+        val subTasks = taskDao.getSubThingTodos(parentTaskId)
+        subTasks.collect {
+            it.forEach {
+                taskDao.update(it.taskRelations.mainTask.copy(categoryId = categoryId))
+            }
+        }
+    }
     // ************* //
 }

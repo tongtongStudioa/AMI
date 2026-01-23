@@ -25,5 +25,5 @@ import androidx.room.ForeignKey.Companion.CASCADE
 )
 data class TaskRecurrenceDaysCrossRef(
     @ColumnInfo(name = "recurrenceId") val recurrenceId: Long,
-    @ColumnInfo(name = "dayId") val dayId: Int
+    @ColumnInfo(name = "dayId") val dayId: Long
 )

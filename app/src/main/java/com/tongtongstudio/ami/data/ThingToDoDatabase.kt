@@ -11,6 +11,7 @@ import com.tongtongstudio.ami.data.dao.AssessmentDao
 import com.tongtongstudio.ami.data.dao.CategoryDao
 import com.tongtongstudio.ami.data.dao.RecurrenceInfoDao
 import com.tongtongstudio.ami.data.dao.ReminderDao
+import com.tongtongstudio.ami.data.dao.TaskCompletionDao
 import com.tongtongstudio.ami.data.dao.TaskDao
 import com.tongtongstudio.ami.data.dao.WorkSessionDao
 import com.tongtongstudio.ami.data.datatables.Assessment
@@ -62,7 +63,7 @@ val MIGRATION_4_2 = object : Migration(4, 2) {
                     "timesMissed INTEGER NOT NULL DEFAULT 0, " +
                     "successCount INTEGER NOT NULL DEFAULT 0, " +
                     "comment TEXT DEFAULT NULL, " +
-                    "dependencyId INTEGER DEFAULT NULL, " +
+                    "dependency INTEGER DEFAULT NULL, " +
                     "skillLevel INTEGER DEFAULT NULL, " +
                     "creationDate INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000), " +
                     "task_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
@@ -78,12 +79,12 @@ val MIGRATION_4_2 = object : Migration(4, 2) {
                     "title, priority, task_due_date, startDate, deadline, description, " +
                     "type, importance, urgency, isCompleted, completionDate, completedOnTime, estimatedWorkingTime, " +
                     "currentWorkingTime, isRecurring, currentStreak, maxStreak, repetitionFrequency, totalRepetitionCount, " +
-                    "timesMissed, successCount, comment, dependencyId, skillLevel, creationDate, task_id, categoryId, parent_task_id" +
+                    "timesMissed, successCount, comment, dependency, skillLevel, creationDate, task_id, categoryId, parent_task_id" +
                     ") SELECT " +
                     "title, priority, task_due_date, startDate, deadline, description, " +
                     "type, importance, urgency, isCompleted, completionDate, completedOnTime, estimatedWorkingTime, " +
                     "currentWorkingTime, isRecurring, currentStreak, maxStreak, repetitionFrequency, totalRepetitionCount, " +
-                    "timesMissed, successCount, comment, dependencyId, skillLevel, creationDate, task_id, categoryId, parent_task_id " +
+                    "timesMissed, successCount, comment, dependency, skillLevel, creationDate, task_id, categoryId, parent_task_id " +
                     "FROM task_table"
         )
 
@@ -107,15 +108,6 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
                 day_id INTEGER PRIMARY KEY NOT NULL,
                 name TEXT NOT NULL
             )
-            """
-        )
-
-        // Pré-remplir les jours de la semaine
-        db.execSQL(
-            """
-            INSERT INTO days_of_week_table (day_id, name)
-            VALUES (2, 'Monday'), (3, 'Tuesday'), (4, 'Wednesday'),
-                   (5, 'Thursday'), (6, 'Friday'), (7, 'Saturday'), (1, 'Sunday')
             """
         )
 
@@ -187,24 +179,24 @@ val MIGRATION_3_5 = object : Migration(3, 5) {
                 title TEXT NOT NULL,
                 priority INTEGER,
                 task_due_date INTEGER,
-                startDate INTEGER,
-                deadline INTEGER,
-                description TEXT,
-                type TEXT,
-                status TEXT DEFAULT "not_started",
-                importance INTEGER,
-                urgency INTEGER,
+                startDate INTEGER DEFAULT NULL,
+                deadline INTEGER DEFAULT NULL,
+                description TEXT DEFAULT NULL,
+                nature TEXT NOT NULL DEFAULT 'TASK',
+                status TEXT NOT NULL DEFAULT 'NOT_STARTED',
+                importance INTEGER DEFAULT NULL,
+                urgency INTEGER DEFAULT NULL,
                 isDraft INTEGER NOT NULL DEFAULT 0,
                 estimatedEmotions INTEGER NOT NULL DEFAULT 1,
-                estimatedWorkingTime INTEGER,
-                skillLevel INTEGER,
+                estimatedWorkingTime INTEGER DEFAULT NULL,
+                skillLevel INTEGER DEFAULT NULL,
                 creationDate INTEGER NOT NULL,
-                dependency_task_id INTEGER,
-                task_recurrence_id INTEGER,
-                category_id INTEGER,
-                parent_task_id INTEGER,
+                dependency_task_id INTEGER DEFAULT NULL,
+                task_recurrence_id INTEGER DEFAULT NULL,
+                category_id INTEGER DEFAULT NULL,
+                parent_task_id INTEGER DEFAULT NULL,
                 task_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                FOREIGN KEY(categoryId) REFERENCES Category(category_id) ON DELETE SET NULL,
+                FOREIGN KEY(category_id) REFERENCES Category(category_id) ON DELETE SET NULL,
                 FOREIGN KEY(parent_task_id) REFERENCES task_table(task_id) ON DELETE CASCADE,
                 FOREIGN KEY(task_recurrence_id) REFERENCES task_recurrence_table(recurrence_id) ON DELETE SET NULL,                
                 FOREIGN KEY(dependency_task_id) REFERENCES task_table(task_id) ON DELETE SET NULL
@@ -214,13 +206,13 @@ val MIGRATION_3_5 = object : Migration(3, 5) {
         db.execSQL(
             """
             INSERT INTO new_task_table (
-                title, priority, task_due_date, startDate, deadline, description, type,
+                title, priority, task_due_date, startDate, deadline, description,
                 importance, urgency, isDraft,estimatedWorkingTime, skillLevel,
                 creationDate, category_id, parent_task_id, task_id
             )
-            SELECT title, priority, task_due_date, startDate, deadline, description, type,
+            SELECT title, priority, task_due_date, startDate, deadline, description,
                 importance, urgency, isDraft, estimatedWorkingTime, skillLevel,
-                creationDate, category_id, parent_task_id, task_id
+                creationDate, categoryId, parent_task_id, task_id
             FROM task_table
             """.trimIndent()
         )
@@ -232,13 +224,12 @@ val MIGRATION_3_5 = object : Migration(3, 5) {
         db.execSQL("DROP TABLE task_table")
 
         // Renommer la nouvelle table
-        db.execSQL("ALTER TABLE task_table_new RENAME TO task_table")
+        db.execSQL("ALTER TABLE new_task_table RENAME TO task_table")
     }
 
     fun insertTaskRecurrences(db: SupportSQLiteDatabase) {
         // Récupérer toutes les tâches qui ont une récurrence
-        val cursor = db.query("SELECT task_id, task_due_date, repetitionFrequency FROM task_table WHERE recurrence IS NOT NULL")
-        // TODO: Verify repetitionFrequency is not null
+        val cursor = db.query("SELECT task_id, task_due_date, repetitionFrequency FROM task_table WHERE isRecurring OR repetitionFrequency IS NOT NULL")
         while (cursor.moveToNext()) {
             val taskId = cursor.getLong(cursor.getColumnIndexOrThrow("task_id"))
             val startDate = cursor.getLong(cursor.getColumnIndexOrThrow("task_due_date"))
@@ -280,6 +271,10 @@ val MIGRATION_3_5 = object : Migration(3, 5) {
 
 }
 
+/*val MIGRATION_4_5 = object : Migration(4,5) {
+    
+}*/
+
 @Database(
     entities = [
         Task::class,
@@ -301,6 +296,7 @@ abstract class ThingToDoDatabase : RoomDatabase() {
     abstract fun assessmentDao(): AssessmentDao
     abstract fun workSession(): WorkSessionDao
     abstract fun recurrenceInfoDao(): RecurrenceInfoDao
+    abstract fun taskCompletionDao(): TaskCompletionDao
 
     open class Callback @Inject constructor(
         private val database: Provider<ThingToDoDatabase>,
@@ -313,9 +309,10 @@ abstract class ThingToDoDatabase : RoomDatabase() {
             val taskDao = database.get().taskDao()
             val categoryDao = database.get().categoryDao()
             val assessmentDao = database.get().assessmentDao()
+            val recurrenceDao = database.get().recurrenceInfoDao()
 
             applicationScope.launch {
-                insertInitialTasks(taskDao, categoryDao, assessmentDao)
+                populateDb(taskDao, categoryDao, assessmentDao, recurrenceDao)
             }
         }
 
@@ -330,6 +327,15 @@ abstract class ThingToDoDatabase : RoomDatabase() {
             }
         }
 
+        private val daysOfWeek = listOf(
+            DaysOfWeek(1,"Sunday"),
+            DaysOfWeek(2,"Monday"),
+            DaysOfWeek(3,"Tuesday"),
+            DaysOfWeek(4,"Wednesday"),
+            DaysOfWeek(5,"Thursday"),
+            DaysOfWeek(6,"Friday"),
+            DaysOfWeek(7,"Saturday")
+            )
         private val initialCategories = listOf(
             Category(title = "Work", description = "Tasks related to work."),
             Category(title = "Personal", description = "Personal tasks and reminders."),
@@ -404,10 +410,11 @@ abstract class ThingToDoDatabase : RoomDatabase() {
         )
 
         // Function to populate the database with initial tasks
-        private suspend fun insertInitialTasks(
+        private suspend fun populateDb(
             taskDao: TaskDao,
             categoryDao: CategoryDao,
-            assessmentDao: AssessmentDao
+            assessmentDao: AssessmentDao,
+            recurrenceDao: RecurrenceInfoDao
         ) {
             val arrayCategoriesId = arrayListOf<Long>()
             initialCategories.forEach { category ->
@@ -420,6 +427,9 @@ abstract class ThingToDoDatabase : RoomDatabase() {
 
             initialObjectives.forEach { objective ->
                 assessmentDao.insert(objective)
+            }
+            daysOfWeek.forEach {
+                recurrenceDao.insertDayOfWeek(it)
             }
         }
     }

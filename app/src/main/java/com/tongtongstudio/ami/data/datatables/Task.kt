@@ -11,50 +11,10 @@ import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 import kotlin.math.abs
-
-/* ** juste après isDraft dans l'ordre **
-    @ColumnInfo(defaultValue = "0")
-    val isCompleted: Boolean = false,
-    @ColumnInfo(defaultValue = "NULL")
-    val completionDate: Long? = null,
-    @ColumnInfo(defaultValue = "NULL")
-    val completedOnTime: Boolean? = null,
-    @ColumnInfo(defaultValue = "NULL")
-    val estimatedWorkingTime: Long? = null,
-    @ColumnInfo(defaultValue = "NULL")
-    val currentWorkingTime: Long? = null,
-    @ColumnInfo(defaultValue = "0")
-    val isRecurring: Boolean = false,
-    @ColumnInfo(defaultValue = "0")
-    val currentStreak: Int = 0,
-    @ColumnInfo(defaultValue = "0")
-    val maxStreak: Int = 0,
-    @ColumnInfo(defaultValue = "NULL")
-    val repetitionFrequency: RecurringTaskInterval? = null,
-    @ColumnInfo(defaultValue = "0")
-    val totalRepetitionCount: Int = 0,
-    @ColumnInfo(defaultValue = "0")
-    val timesMissed: Int = 0,
-    @ColumnInfo(defaultValue = "0")
-    val successCount: Int = 0, // achievements number for recurrent tasks
-    @ColumnInfo(defaultValue = "NULL")
-    val comment: String? = null,
-    @ColumnInfo(defaultValue = "NULL")
-    val dependencyId: Boolean? = null, // dependencyId on other people
-    @ColumnInfo(defaultValue = "NULL")
-    val skillLevel: Int? = null, // task mastery level posses
-    @ColumnInfo(defaultValue = "(strftime('%s', 'now') * 1000)")
-    val creationDate: Long = System.currentTimeMillis(),
-    @ColumnInfo(name = "task_id")
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    @ColumnInfo(defaultValue = "NULL")
-    val categoryId: Long? = null,
-    @ColumnInfo(name = "parent_task_id", defaultValue = "NULL")
-    val parentTaskId: Long? = null,
-     */
 
 @Parcelize
 @Entity(
@@ -94,8 +54,9 @@ data class Task(
     val deadline: Long? = null, // to have a vision of the main targetGoal (exam's date, project's end, etc.)
     @ColumnInfo(defaultValue = "NULL")
     val description: String? = null,
+    @ColumnInfo(defaultValue = "TASK")
     val nature: String = Nature.TASK.name,
-    @ColumnInfo(defaultValue = "not_started")
+    @ColumnInfo(defaultValue = "NOT_STARTED")
     val status: String = Status.NOT_STARTED.name,
     @ColumnInfo(defaultValue = "NULL")
     val importance: Int? = null, // task's impact on the smooth running of daily life
@@ -184,69 +145,4 @@ data class Task(
             } else null
         }
     }
-
-    /*
-    /**
-     * This function update the current thing to do depend on recurring info and state state
-     * @param state state
-     * @return updated task
-     */
-    fun updateCheckedState(state: Boolean = true, newCompletionDate: Long? = null): Task {
-        val updatedTask = when {
-            // it is a recurring task
-            isRecurring && repetitionFrequency != null -> repetitionFrequency.updateRecurringTask(
-                this@Task,
-                state
-            )
-            // it is checked
-            state -> {
-                val completedDateInMillis = Calendar.getInstance().timeInMillis
-                val updatedState = this.copy(
-                    isCompleted = true,
-                    completionDate = newCompletionDate ?: completedDateInMillis
-                )
-                updatedState.copy(
-                    completedOnTime = updatedState.hasBeenCompletedOnTime()
-                )
-            }
-            // task is unchecked and it's not a recurring one
-            else -> {
-                this.copy(
-                    isCompleted = false,
-                    completionDate = null,
-                    completedOnTime = null
-                )
-            }
-        }
-        return updatedTask
-    }
-
-    fun getHabitSuccessRate(): Float? {
-        return if (totalRepetitionCount != 0)
-            (successCount.toFloat() / totalRepetitionCount) * 100
-        else null
-    }
-
-    /**
-     * This function decide if a task is completed on time or not.
-     * It compares completionDate and dueDate or completionDate and deadline if it was define
-     * @return boolean
-     */
-    private fun hasBeenCompletedOnTime(): Boolean {
-        return isCompleted && completionDate != null && dueDate != null && (completionDate < dueDate || (deadline != null && completionDate < deadline))
-    }
-
-    fun getCreationDateFormatted(): String {
-        return DateFormat.getDateInstance().format(creationDate)
-    }
-
-    fun isLate(): Boolean {
-        val todayDate = Calendar.getInstance().run {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            timeInMillis
-        }
-        return dueDate != null && dueDate < todayDate && isCompleted
-    }
-     */
 }

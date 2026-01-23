@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.tongtongstudio.ami.data.ThingToDoDatabase
+import com.tongtongstudio.ami.data.dao.TaskCompletionDao
 import com.tongtongstudio.ami.data.dao.TaskDao
 import com.tongtongstudio.ami.util.DataTestUtil
 import junit.framework.Assert.assertEquals
@@ -20,6 +21,7 @@ import kotlin.collections.filter
 internal class TtdTest {
 
     private lateinit var taskDao: TaskDao
+    private lateinit var taskCompletionDao: TaskCompletionDao
     private lateinit var db: ThingToDoDatabase
     private lateinit var dataTestUtil: DataTestUtil
 
@@ -36,6 +38,7 @@ internal class TtdTest {
 
         // retrieve thing_to_do's DAO
         taskDao = db.taskDao()
+        taskCompletionDao = db.taskCompletionDao()
 
         // populate db
         dataTestUtil = DataTestUtil.getInstance(taskDao)
@@ -127,7 +130,7 @@ internal class TtdTest {
             timeInMillis
         }
 
-        val resultedFlow = taskDao.getLaterTasksFilter(endOfDay, endOfDayWeek)
+        val resultedFlow = taskDao.getLaterTasks(endOfDay, endOfDayWeek)
         val result = resultedFlow.first()
 
         println("Result :")
@@ -174,13 +177,27 @@ internal class TtdTest {
     @Test
     fun getEstimationAccuracyRate_allCompletedTasks_correctRate() = runBlocking {
 
-        val resultingRate = taskDao.getAccuracyRateOfEstimatedWorkTime(0.2F)
+        val resultingRate: Float = taskDao.getAccuracyRateOfEstimatedWorkTime(0.2F,1)
 
         // actually rate must be 25.0 (%)
         assertEquals(25.0F, resultingRate)
 
     }
 
+    @Test
+    fun testTaskCompletionStreak() = runBlocking {
+        val task = Task(title = "Task Streak", dueDate = null, priority = 1)
+        val taskId = taskDao.insert(task)
+
+        val today = System.currentTimeMillis()
+        val yesterday = today - (24 * 60 * 60 * 1000)
+
+        taskCompletionDao.insert(TaskCompletion(taskId = taskId, isCompleted = true, completionDate = yesterday))
+        taskCompletionDao.insert(TaskCompletion(taskId = taskId, isCompleted = true, completionDate = today))
+
+        val streak = taskDao.getCurrentStreakByTask(taskId)
+        assertEquals(2, streak)
+    }
 
     @Test
     fun getLaterTasks_tomorrow_listWithoutUnexpectedTasks() = runBlocking {
@@ -200,7 +217,7 @@ internal class TtdTest {
             timeInMillis
         }
 
-        val resultedFlow = taskDao.getLaterTasksFilter(endOfDay, endOfDayTomorrow)
+        val resultedFlow = taskDao.getLaterTasks(endOfDay, endOfDayTomorrow)
         val result = resultedFlow.first()
 
         val list = dataTestUtil.getTasks()

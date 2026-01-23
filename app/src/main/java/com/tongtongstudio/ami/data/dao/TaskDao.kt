@@ -15,6 +15,7 @@ import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
 import com.tongtongstudio.ami.data.datatables.TaskRelations
 import com.tongtongstudio.ami.data.datatables.ThingToDo
+import com.tongtongstudio.ami.data.datatables.ThingToDoDetails
 import com.tongtongstudio.ami.data.datatables.TimeWorkedDistribution
 import com.tongtongstudio.ami.data.datatables.TtdAchieved
 import com.tongtongstudio.ami.data.datatables.TtdStreakInfo
@@ -67,23 +68,39 @@ interface TaskDao {
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query(
-        "SELECT * FROM task_table t " +
-                "LEFT JOIN task_completion_table c ON c.parent_task_id = t.task_id " +
-                "WHERE c.isCompleted == 0 AND NOT isDraft " +
+        "WITH RECURSIVE TaskH AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "JOIN task_table st ON t.task_id = st.task_id " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t " +
+                "JOIN TaskH th ON t.parent_task_id = th.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                "), " +
+                "ThingToDo AS (SELECT t.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM task_table t " +
+                "LEFT JOIN TaskH AS st ON st.task_id = t.task_id " +
+                "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
+                "GROUP by st.rootTtd " +
+                ") " +
+                "SELECT * FROM ThingToDo t " +
+                "WHERE (lastCompletionStatus == 0 OR lastCompletionStatus is NULL OR task_recurrence_id IS NOT NULL) AND NOT isDraft " +
                 "AND (task_due_date > :endOfDay OR startDate > :endOfDay) " +
                 "ORDER BY task_due_date/8640000 ASC, deadline/8640000 ASC, startDate ASC, priority DESC, estimatedWorkingTime DESC"
     )
     fun getLaterTasks(endOfDay: Long): Flow<List<ThingToDo>>
-
-    @Transaction
-    @RewriteQueriesToDropUnusedColumns
-    @Query(
-        "SELECT * FROM task_table t " +
-                "LEFT JOIN task_completion_table c ON c.parent_task_id = t.task_id " +
-                "WHERE c.isCompleted == 0 AND NOT isDraft AND (task_due_date BETWEEN :endOfDay AND :endOfDayFilter OR startDate BETWEEN :endOfDay AND :endOfDayFilter) " +
-                "ORDER BY task_due_date/8640000 ASC, deadline/8640000 ASC, startDate ASC, priority DESC, estimatedWorkingTime DESC"
-    )
-    fun getLaterTasksFilter(endOfDay: Long, endOfDayFilter: Long): Flow<List<ThingToDo>>
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns
@@ -95,32 +112,71 @@ interface TaskDao {
                 "UNION ALL " +
                 "SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t " +
                 "JOIN TaskH th ON t.parent_task_id = th.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
-        "), " +
-        "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
-            "SELECT " +
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
                 "c.parent_task_id, " +
                 "MAX(c.completionDate) AS lastCompletionDate, " +
                 "c.isCompleted " +
-            "FROM task_completion_table c " +
-            "GROUP BY c.parent_task_id " +
-        ") " +
-        "SELECT t.*, " +
-                //"COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
-                "COUNT(case when st.depth >= 1  and st.nature == 'task' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
-                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'intermediate_project' Then st.task_id end) AS nbSubTasksCompleted, " +
-                "lc.isCompleted as lastCompletionStatus " +
-                //"SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'intermediate_project' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
-        "FROM task_table t " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                "), " +
+                "ThingToDo AS (SELECT t.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM task_table t " +
                 "LEFT JOIN TaskH AS st ON st.task_id = t.task_id " +
                 "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
+                "GROUP by st.rootTtd " +
+                ") " +
+                "SELECT * FROM ThingToDo t " +
+                "WHERE (lastCompletionStatus == 0 OR lastCompletionStatus is NULL OR task_recurrence_id IS NOT NULL) AND NOT isDraft AND (task_due_date BETWEEN :endOfDay AND :endOfDayFilter OR startDate BETWEEN :endOfDay AND :endOfDayFilter) " +
+                "ORDER BY task_due_date/8640000 ASC, deadline/8640000 ASC, startDate ASC, priority DESC, estimatedWorkingTime DESC"
+    )
+    fun getLaterTasks(endOfDay: Long, endOfDayFilter: Long): Flow<List<ThingToDo>>
+
+    @Transaction
+    @RewriteQueriesToDropUnusedColumns
+    @Query(
+        "WITH RECURSIVE TaskH AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "JOIN task_table st ON t.task_id = st.task_id " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t " +
+                "JOIN TaskH th ON t.parent_task_id = th.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                "), " +
+                "ThingToDo AS (SELECT t.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM task_table t " +
+                "LEFT JOIN TaskH AS st ON st.task_id = t.task_id " +
+                "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
+                "GROUP by st.rootTtd " +
+                ") " +
+                "SELECT ttd.* " +
+                "FROM ThingToDo ttd " +
                 //"LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0 OR isCompleted IS NULL) AND NOT t.isDraft " +
-                "AND (t.startDate BETWEEN :startOfDay AND :endOfDay " +
-                "OR t.task_due_date BETWEEN :startOfDay AND :endOfDay " +
-                "OR t.task_due_date < :endOfDay AND (isCompleted == 0 OR isCompleted IS NULL) AND NOT :hideLateTasks " +
-                "OR t.deadline BETWEEN :startOfDay AND :endOfDay) " +
-        "GROUP by st.rootTtd " +
-        "ORDER BY isCompleted, priority DESC, importance DESC, urgency DESC, estimatedWorkingTime DESC"
+                "WHERE (lastCompletionStatus != :hideCompleted OR lastCompletionStatus == 0 OR lastCompletionStatus IS NULL OR task_recurrence_id IS NOT NULL) AND NOT ttd.isDraft " +
+                "AND (ttd.startDate BETWEEN :startOfDay AND :endOfDay " +
+                "OR ttd.task_due_date BETWEEN :startOfDay AND :endOfDay " +
+                "OR ttd.task_due_date < :endOfDay AND (lastCompletionStatus == 0 OR lastCompletionStatus IS NULL OR task_recurrence_id IS NOT NULL) AND NOT :hideLateTasks " +
+                "OR ttd.deadline BETWEEN :startOfDay AND :endOfDay) " +
+                "ORDER BY lastCompletionStatus, priority DESC, importance DESC, urgency DESC, estimatedWorkingTime DESC"
     )
     fun getTasksOrderByEisenhowerMatrixSort(
         hideCompleted: Boolean,
@@ -132,16 +188,42 @@ interface TaskDao {
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query(
-        "SELECT * " +
-        "FROM task_table AS t " +
-        "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
-        "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-        "WHERE (isCompleted != :hideCompleted OR isCompleted == 0 AND NOT isDraft) " +
+        "WITH RECURSIVE TaskH AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "JOIN task_table st ON t.task_id = st.task_id " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t " +
+                "JOIN TaskH th ON t.parent_task_id = th.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                "), " +
+                "ThingToDo AS (SELECT t.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM task_table t " +
+                "LEFT JOIN TaskH AS st ON st.task_id = t.task_id " +
+                "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
+                "GROUP by st.rootTtd " +
+                ") " +
+                "SELECT * " +
+                "FROM ThingToDo AS t " +
+                "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
+                "WHERE (lastCompletionStatus != :hideCompleted OR (lastCompletionStatus == 0 OR lastCompletionStatus IS NULL OR task_recurrence_id IS NOT NULL) AND NOT isDraft) " +
                 "AND (startDate BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
-                "OR task_due_date < :endOfDay AND isCompleted == 0 AND NOT :hideLateTasks " +
+                "OR task_due_date < :endOfDay AND (lastCompletionStatus == 0 OR lastCompletionStatus IS NULL OR task_recurrence_id IS NOT NULL) AND NOT :hideLateTasks " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-        "ORDER BY c.isCompleted ASC, estimatedWorkingTime ASC, skillLevel DESC, rt.is_active DESC, priority ASC, urgency DESC, importance DESC"
+                "ORDER BY lastCompletionStatus ASC, estimatedWorkingTime ASC, skillLevel DESC, rt.is_active DESC, priority ASC, urgency DESC, importance DESC"
     )
     fun getTasksOrderBy2minutesRules(
         hideCompleted: Boolean,
@@ -153,15 +235,42 @@ interface TaskDao {
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query(
-        "SELECT * FROM task_table t " +
-                "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
+        "WITH RECURSIVE TaskH AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "JOIN task_table st ON t.task_id = st.task_id " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t " +
+                "JOIN TaskH th ON t.parent_task_id = th.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                "), " +
+                "ThingToDo AS (SELECT t.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM task_table t " +
+                "LEFT JOIN TaskH AS st ON st.task_id = t.task_id " +
+                "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
+                "GROUP by st.rootTtd " +
+                ") " +
+                "SELECT * " +
+                "FROM ThingToDo t " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0 AND NOT isDraft) " +
+                "WHERE (lastCompletionStatus != :hideCompleted OR lastCompletionStatus == 0 OR lastCompletionStatus is NULL) AND NOT isDraft " +
                 "AND (startDate BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
-                "OR task_due_date < :endOfDay AND isCompleted == 0 AND NOT :hideLateTasks " +
+                "OR task_due_date < :endOfDay AND (lastCompletionStatus == 0 OR lastCompletionStatus is NULL OR task_recurrence_id IS NOT NULL) AND NOT :hideLateTasks " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY isCompleted ASC, task_due_date/8640000 ASC, estimatedWorkingTime DESC, priority DESC, importance DESC, deadline ASC, skillLevel ASC"
+                "ORDER BY lastCompletionStatus ASC, task_due_date/8640000 ASC, estimatedWorkingTime DESC, priority DESC, importance DESC, deadline ASC, skillLevel ASC"
     )
     fun getTasksOrderByEatTheFrogSort(
         hideCompleted: Boolean,
@@ -172,15 +281,41 @@ interface TaskDao {
 
     @Transaction
     @Query(
-        "SELECT * FROM task_table t " +
-                "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
+        "WITH RECURSIVE TaskH AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "JOIN task_table st ON t.task_id = st.task_id " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t " +
+                "JOIN TaskH th ON t.parent_task_id = th.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                "), " +
+                "ThingToDo AS (SELECT t.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM task_table t " +
+                "LEFT JOIN TaskH AS st ON st.task_id = t.task_id " +
+                "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
+                "GROUP by st.rootTtd " +
+                ") " +
+                "SELECT * FROM ThingToDo t " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0 AND NOT isDraft) " +
-                "AND (startDate < :endOfDay AND isCompleted == 0 AND is_active == 0 " +    //startDate BETWEEN :startOfDay AND :endOfDay
+                "WHERE (lastCompletionStatus != :hideCompleted OR lastCompletionStatus == 0 OR lastCompletionStatus is NULL) AND NOT isDraft " +
+                "AND (startDate < :endOfDay AND (lastCompletionStatus == 0 OR lastCompletionStatus is NULL) AND is_active == 0 " +    //startDate BETWEEN :startOfDay AND :endOfDay
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
-                "OR task_due_date < :endOfDay AND isCompleted == 0 AND NOT :hideLateTasks " +
+                "OR task_due_date < :endOfDay AND (lastCompletionStatus == 0 OR lastCompletionStatus is NULL OR task_recurrence_id IS NOT NULL) AND NOT :hideLateTasks " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY isCompleted ASC, task_due_date/8640000 ASC, estimatedWorkingTime ASC, priority DESC, skillLevel ASC, urgency DESC, importance DESC, is_active ASC"
+                "ORDER BY lastCompletionStatus ASC, task_due_date/8640000 ASC, estimatedWorkingTime ASC, priority DESC, skillLevel ASC, urgency DESC, importance DESC, is_active ASC"
     )
     fun getTasksOrderByCreatorSort(
         hideCompleted: Boolean,
@@ -202,8 +337,18 @@ interface TaskDao {
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query(
-        "SELECT * FROM task_table t " +
+        "WITH LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(completionDate) AS lastCompletionDate, " +
+                "completionDate," +
+                "isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                ") " +
+                "SELECT * FROM task_table t " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
+                "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
                 "WHERE task_due_date < :todayDate AND is_active AND NOT isDraft ORDER BY task_due_date ASC"
     )
     suspend fun getMissedRecurringTasks(todayDate: Long): List<ThingToDo>
@@ -213,16 +358,48 @@ interface TaskDao {
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query(
-        "SELECT * FROM task_table t " +
-                "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
-                "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
-                "WHERE isCompleted AND NOT is_active ORDER BY completionDate DESC"
+        "WITH RECURSIVE SubTasks AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, st.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = st.task_id) FROM task_table t " +
+                "INNER JOIN SubTasks st ON t.parent_task_id = st.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(completionDate) AS lastCompletionDate, " +
+                "completionDate," +
+                "isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                ") " +
+                "SELECT st.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM SubTasks st " +
+                "LEFT JOIN LatestCompletion AS lc ON st.task_id = lc.parent_task_id " +
+                "LEFT JOIN task_recurrence_table tr ON st.task_recurrence_id = tr.recurrence_id " +
+                "WHERE lastCompletionStatus AND (NOT is_active OR is_active is NULL)" +
+                "GROUP BY st.rootTTd " +
+                "ORDER BY completionDate DESC"
     )
     fun getCompletedTasks(): Flow<List<ThingToDo>>
 
-    @Query(
+    @Query("WITH LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+            "SELECT " +
+            "c.parent_task_id, " +
+            "MAX(completionDate) AS lastCompletionDate, " +
+            "completionDate," +
+            "isCompleted " +
+            "FROM task_completion_table c " +
+            "GROUP BY c.parent_task_id " +
+            ") " +
         "SELECT COUNT(*) FROM task_table t " +
-                "LEFT JOIN task_completion_table AS c ON t.task_id = c.parent_task_id " +
+                "LEFT JOIN LatestCompletion AS c ON t.task_id = c.parent_task_id " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
                 "WHERE isCompleted AND NOT is_active" +
                 ""
@@ -230,8 +407,19 @@ interface TaskDao {
     fun getCompletedTasksCount(): Flow<Int>
 
 
-    @Query("SELECT COUNT(*) FROM task_table WHERE category_id = :categoryId ")
-    fun getCategoryCompletedTasksCount(categoryId: Long): Flow<Int>
+    @Query("WITH LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+            "SELECT " +
+            "c.parent_task_id, " +
+            "MAX(completionDate) AS lastCompletionDate, " +
+            "completionDate," +
+            "isCompleted " +
+            "FROM task_completion_table c " +
+            "GROUP BY c.parent_task_id " +
+            ") " +
+        "SELECT COUNT(*) FROM task_table t " +
+            "LEFT JOIN LatestCompletion c ON t.task_id = c.parent_task_id " +
+            "WHERE isCompleted AND category_id = :categoryId ")
+    fun getCompletedTasksCount(categoryId: Long): Flow<Int>
 
     @Query(
         "SELECT COUNT(*) FROM task_table t " +
@@ -373,7 +561,6 @@ interface TaskDao {
     )
     fun getTimeWorkedPerCategory(): Flow<List<TimeWorkedDistribution>>
 
-    // TODO: Test this function to ensure constituency
     /**
      * Get accuracy rate of estimated work time for all tasks completed.
      * If the current working time is equal to estimated time +- errorPercent so the thingToDo's time work is well estimated.
@@ -436,6 +623,69 @@ WHERE estimatedWorkingTime IS NOT NULL
     )
     fun getAccuracyRateOfEstimatedWorkTime(errorPercent: Float): Flow<Float?>
 
+    // TODO: Test this function to ensure constituency
+    /**
+     * Get accuracy rate of estimated work time for all tasks completed.
+     * If the current working time is equal to estimated time +- errorPercent so the thingToDo's time work is well estimated.
+     */
+    @Query(
+        """WITH task_work_time AS (
+    -- Calcul du temps total passé sur chaque tâche
+    SELECT 
+        parentTaskId,
+        SUM(duration) AS total_work_time
+    FROM worksession
+    GROUP BY parentTaskId
+),
+task_completion_count AS (
+    -- Comptage du nombre de complétions par tâche (utile pour les tâches répétitives)
+    SELECT 
+        parent_task_id,
+        COUNT(*) AS completion_count
+    FROM task_completion_table
+    GROUP BY parent_task_id
+),
+task_avg_work_time AS (
+    -- Calcul du temps moyen passé par session pour les tâches répétitives
+    SELECT 
+        tc.parent_task_id,
+        COALESCE(tw.total_work_time, 0) AS total_work_time,
+        COALESCE(tc.completion_count, 1) AS completion_count,
+        COALESCE(tw.total_work_time, 0) / COALESCE(tc.completion_count, 1) AS avg_work_time
+    FROM task_work_time tw
+    LEFT JOIN task_completion_count tc ON tw.parentTaskId = tc.parent_task_id
+),
+last_completion AS (
+	SELECT 
+		parent_task_id,
+		MAX(completionDate) AS last_completion_date
+	FROM task_completion_table
+	GROUP BY parent_task_id
+),
+accuracy_check AS (
+    -- Comparaison avec le temps estimé
+    SELECT 
+        tt.task_id,
+        tt.category_id,
+        tt.estimatedWorkingTime,
+        ta.avg_work_time,
+        CASE 
+            WHEN ta.avg_work_time BETWEEN tt.estimatedWorkingTime * (1- :errorPercent) AND tt.estimatedWorkingTime * (1 + :errorPercent)
+            THEN 1 ELSE 0 
+        END AS well_estimated,
+		lc.last_completion_date
+    FROM task_table tt
+    LEFT JOIN task_avg_work_time ta ON tt.task_id = ta.parent_task_id
+	LEFT JOIN last_completion lc ON lc.parent_task_id = tt.task_id
+)
+-- Calcul du taux de précision global
+SELECT 
+    COUNT(CASE WHEN well_estimated = 1 THEN 1 END) * 100.0 / COUNT(*) AS estimation_accuracy
+FROM accuracy_check
+WHERE estimatedWorkingTime IS NOT NULL AND task_id = :taskId
+    """
+    )
+    fun getAccuracyRateOfEstimatedWorkTime(errorPercent: Float,taskId: Long): Float
     @Query(
         """WITH task_work_time AS (
     -- Calcul du temps total passé sur chaque tâche
@@ -643,8 +893,10 @@ ORDER BY period ASC
     )
     fun getOnTimeCompletionTasksRate(): Flow<Float?>
 
-    // TODO: get on time completion by week or by month
     // TODO: remove dividing by number and use integrate function
+    /**
+    * Get on time completion by week or by month
+    **/
     @Query(
         "SELECT round(100.0 * COUNT(CASE WHEN completionDate <= task_due_date THEN 1 END) / COUNT(*),1) " +
                 "FROM task_table t " +
@@ -713,7 +965,7 @@ ORDER BY period ASC
     LEFT JOIN task_table t ON t.task_id = s.parent_task_id 
     GROUP BY t.task_id"""
     )
-    fun getMaxStreakTask(): Flow<TtdStreakInfo>
+    fun getTaskMaxStreak(): Flow<TtdStreakInfo>
 
     @Query(
         """WITH ranked_completions AS (
@@ -754,8 +1006,38 @@ ORDER BY period ASC
     LEFT JOIN task_table t ON t.task_id = s.parent_task_id
     WHERE category_id = :categoryId LIMIT 1"""
     )
-    fun getMaxStreakCategoryTask(categoryId: Long): Flow<TtdStreakInfo>
+    fun getTaskMaxStreak(categoryId: Long): Flow<TtdStreakInfo>
 
+    @Query(
+        """WITH completions_task AS (
+            SELECT
+                *
+            FROM task_completion_table
+            WHERE parent_task_id = :taskId
+            ORDER BY completion_id
+        ), 
+        ordered AS (
+            SELECT
+                completion_id,
+                isCompleted,
+                -- cumul des "zéros"
+                (SELECT COUNT(*) FROM completions_task c2 WHERE c2.completion_id <= c1.completion_id AND c2.isCompleted = 0) AS grp
+            FROM completions_task c1
+            ORDER BY completion_id
+        ),
+        only_ones AS (
+            SELECT grp, COUNT(*) AS streak_length
+            FROM ordered
+            WHERE isCompleted = 1
+            GROUP BY grp
+        )
+        SELECT MAX(streak_length) AS longest_streak
+        FROM only_ones;
+    """
+    )
+    suspend fun getLongestStreak(taskId: Long): Int
+
+    // TODO: test to see if query return good value
     @Query(
         """WITH ranked_completions AS (
         SELECT 
@@ -769,7 +1051,8 @@ ORDER BY period ASC
             END AS new_streak
         FROM task_completion_table c
         LEFT JOIN task_table t ON t.task_id = c.parent_task_id
-        RIGHT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_id
+        LEFT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_recurrence_id
+        WHERE t.task_recurrence_id IS NOT NULL
     ),
     streak_groups AS (
         SELECT 
@@ -801,8 +1084,9 @@ ORDER BY period ASC
         MAX(streak_length) as streak
     FROM current_streak cs
     LEFT JOIN task_table t ON t.task_id = cs.parent_task_id
-    """)
-    fun getCurrentMaxStreakTask(): Flow<TtdStreakInfo>
+    """
+    )
+    fun getTaskCurrentMaxStreak(): Flow<TtdStreakInfo>
 
     @Query(
         """WITH ranked_completions AS (
@@ -817,7 +1101,8 @@ ORDER BY period ASC
             END AS new_streak
         FROM task_completion_table c
         LEFT JOIN task_table t ON t.task_id = c.parent_task_id
-        RIGHT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_id
+        LEFT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_recurrence_id
+        WHERE t.task_recurrence_id IS NOT NULL
     ),
     streak_groups AS (
         SELECT 
@@ -850,23 +1135,31 @@ ORDER BY period ASC
     FROM current_streak cs
     LEFT JOIN task_table t ON t.task_id = cs.parent_task_id
     WHERE category_id = :categoryId
-    """)
-    fun getCurrentMaxStreakCategoryTask(categoryId: Long): Flow<TtdStreakInfo>
+    """
+    )
+    fun getTaskCurrentMaxStreak(categoryId: Long): Flow<TtdStreakInfo>
 
     @Query(
         "SELECT ROUND(100.0 * SUM(CASE WHEN c.isCompleted = 1 THEN 1 ELSE 0 END) / COUNT(t.task_id), 2) AS completion_rate " +
                 "FROM task_table t " +
                 "LEFT JOIN task_completion_table c ON t.task_id = c.parent_task_id " +
-                "RIGHT JOIN task_recurrence_table tr ON t.task_recurrence_id = tr.recurrence_id "
+                "LEFT JOIN task_recurrence_table tr ON t.task_recurrence_id = tr.recurrence_id "
     )
     fun getHabitCompletionRate(): Flow<Float?>
+
+    @Query(
+        "SELECT ROUND(100.0 * SUM(CASE WHEN c.isCompleted = 1 THEN 1 ELSE 0 END) / COUNT(t.task_id), 2) AS completion_rate " +
+                "FROM task_table t " +
+                "LEFT JOIN task_completion_table c ON t.task_id = c.parent_task_id " +
+                "WHERE t.task_id = :taskId AND t.task_recurrence_id IS NOT NULL"
+    )
+    suspend fun getHabitCompletionRate(taskId: Long): Float
 
     @Query(    //t.title, SUM(CASE WHEN c.isCompleted = 1 THEN 1 ELSE 0 END) AS times_completed,
         "SELECT ROUND(100.0 * SUM(CASE WHEN c.isCompleted = 1 THEN 1 ELSE 0 END) / COUNT(t.task_id), 2) AS completion_rate " +
                 "FROM task_table t " +
                 "LEFT JOIN task_completion_table c ON t.task_id = c.parent_task_id " +
-                "RIGHT JOIN task_recurrence_table tr ON t.task_recurrence_id = tr.recurrence_id " +
-                "WHERE category_id = :categoryId "
+                "WHERE category_id = :categoryId AND t.task_recurrence_id IS NOT NULL"
     )
     fun getCategoryHabitCompletionRate(categoryId: Long): Flow<Float?>
 
@@ -879,8 +1172,8 @@ ORDER BY period ASC
                 " MAX(completionDate) AS last_completed_date " +
                 "FROM task_completion_table c " +
                 "LEFT JOIN task_table t ON t.task_id = c.parent_task_id " +
-                "RIGHT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_id " +
-                "WHERE isCompleted = 1 " +
+                "LEFT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_recurrence_id " +
+                "WHERE isCompleted = 1 AND t.task_recurrence_id IS NOT NULL " +
                 "GROUP BY c.parent_task_id" +
                 ") " +
                 "SELECT t.title, " +
@@ -918,28 +1211,89 @@ ORDER BY period ASC
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query(
-        "SELECT * FROM task_table t " +
+        "WITH RECURSIVE TaskH AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "JOIN task_table st ON t.task_id = st.task_id " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t " +
+                "JOIN TaskH th ON t.parent_task_id = th.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                "), " +
+                "ThingToDo AS (SELECT t.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM task_table t " +
+                "LEFT JOIN TaskH AS st ON st.task_id = t.task_id " +
+                "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
+                "GROUP by st.rootTtd " +
+                ") " +
+                "SELECT * FROM ThingToDo t " +
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
-                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0) " +
-                "AND t.parent_task_id IS NULL " +
+                "WHERE (isCompleted != :hideCompleted OR isCompleted == 0 OR isCompleted IS NULL) " +
                 "AND nature = 'PROJECT' " +
                 "ORDER BY isCompleted ASC, task_due_date/8640000 ASC, estimatedWorkingTime ASC, priority DESC, skillLevel ASC, urgency DESC, importance DESC"
     )
     fun getProjects(hideCompleted: Boolean): Flow<List<ThingToDo>>
 
-    // TODO: find nice way to show potential project
     @RewriteQueriesToDropUnusedColumns
     @Query(
-        "SELECT * FROM task_table t " +
+        "SELECT t.* FROM task_table t " +
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
-                "WHERE isCompleted == 0"
+                "WHERE (isCompleted == 0 OR isCompleted IS NULL)" +
+                "AND task_id != :taskId"
     )
-    fun getPotentialProject(): Flow<List<Task>>
+    fun getPotentialParentTasks(taskId: Long): Flow<List<Task>>
+
+    @RewriteQueriesToDropUnusedColumns
+    @Query(
+        "SELECT t.* FROM task_table t " +
+                "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
+                "WHERE (isCompleted == 0 OR isCompleted IS NULL)"
+    )
+    fun getPotentialParentTasks(): Flow<List<Task>>
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query(
-        "SELECT * FROM task_table t " +
+        "WITH RECURSIVE TaskH AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "JOIN task_table st ON t.task_id = st.task_id " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t " +
+                "JOIN TaskH th ON t.parent_task_id = th.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                "), " +
+                "ThingToDo AS (SELECT t.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM task_table t " +
+                "LEFT JOIN TaskH AS st ON st.task_id = t.task_id " +
+                "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
+                "GROUP by st.rootTtd " +
+                ") " +
+                "SELECT * FROM ThingToDo t " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
                 "WHERE is_active " +
                 "ORDER BY estimatedWorkingTime ASC, priority ASC, skillLevel ASC, urgency DESC, importance DESC"
@@ -952,44 +1306,232 @@ ORDER BY period ASC
 
     @Transaction
     @Query(
-        "SELECT * FROM task_table " +
+        "WITH RECURSIVE TaskH AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "JOIN task_table st ON t.task_id = st.task_id " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t " +
+                "JOIN TaskH th ON t.parent_task_id = th.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                    "c.parent_task_id, " +
+                    "MAX(c.completionDate) AS lastCompletionDate, " +
+                    "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                "), " +
+                "ThingToDo AS (SELECT t.*, " +
+                    "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                    "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                    "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                    "lc.isCompleted as lastCompletionStatus, " +
+                    "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM task_table t " +
+                "LEFT JOIN TaskH AS st ON st.task_id = t.task_id " +
+                "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
+                "GROUP by st.rootTtd " +
+                ") " +
+                "SELECT * FROM ThingToDo " +
                 "WHERE isDraft"
     )
     fun getDraftTask(): Flow<List<ThingToDo>>
 
     @RewriteQueriesToDropUnusedColumns
     @Query(
-        "SELECT * FROM task_table t " +
+        "WITH RECURSIVE TaskH AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "JOIN task_table st ON t.task_id = st.task_id " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t " +
+                "JOIN TaskH th ON t.parent_task_id = th.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                "), " +
+                "ThingToDo AS (SELECT t.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM task_table t " +
+                "LEFT JOIN TaskH AS st ON st.task_id = t.task_id " +
+                "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
+                "GROUP by st.rootTtd " +
+                ") " +
+                "SELECT * FROM ThingToDo t " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
                 "WHERE isCompleted = 0 AND NOT (is_active OR is_active IS NULL)"
     )
     fun getTasksNotCompleted(): Flow<List<Task>>
 
-    @Query("SELECT * FROM task_table")
-    fun getAllTasks() : Flow<List<Task>>
+    @Query(
+        "WITH RECURSIVE TaskH AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "JOIN task_table st ON t.task_id = st.task_id " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t " +
+                "JOIN TaskH th ON t.parent_task_id = th.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                "), " +
+                "ThingToDo AS (SELECT t.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM task_table t " +
+                "LEFT JOIN TaskH AS st ON st.task_id = t.task_id " +
+                "LEFT JOIN LatestCompletion AS lc ON t.task_id = lc.parent_task_id " +
+                "GROUP by st.rootTtd " +
+                ") " +
+                "SELECT * FROM ThingToDo"
+    )
+    fun getAllTasks(): Flow<List<Task>>
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM task_table t " +
-            "LEFT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_recurrence_id " +
-            "LEFT JOIN task_recurrence_days_cross_ref trdr ON trdr.recurrenceId = tr.recurrence_id " +
-            "LEFT JOIN days_of_week_table dw ON dw.day_id = trdr.dayId " +
-            "WHERE t.task_id = :taskId")
-    suspend fun getTaskRecurrenceInfos(taskId: Long): TaskRecurrenceWithDays
+    @Query(
+        "SELECT tr.* FROM task_table t " +
+                "LEFT JOIN task_recurrence_table tr ON tr.recurrence_id = t.task_recurrence_id " +
+                "WHERE t.task_id = :taskId"
+    )
+    suspend fun getTaskRecurrenceInfos(taskId: Long): TaskRecurrenceWithDays?
 
     // ************ Test Methods *************** //
     @Transaction
-    @Query("WITH LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
-            "SELECT " +
-            "c.parent_task_id, " +
-            "MAX(c.completionDate) AS lastCompletionDate, " +
-            "c.isCompleted " +
-            "FROM task_completion_table c " +
-            "GROUP BY c.parent_task_id " +
-            ") " +
-        "SELECT t.* FROM task_table t " +
-            "LEFT JOIN task_recurrence_table as r ON t.task_recurrence_id = r.recurrence_id " +
-            "LEFT JOIN LatestCompletion as lc ON t.task_id = lc.parent_task_id")
+    @Query(
+        "WITH LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                ") " +
+                "SELECT t.* FROM task_table t " +
+                "LEFT JOIN task_recurrence_table as r ON t.task_recurrence_id = r.recurrence_id " +
+                "LEFT JOIN LatestCompletion as lc ON t.task_id = lc.parent_task_id"
+    )
     fun getTasksRelations(): Flow<List<TaskRelations>>
+
+    @Query(
+        "SELECT * FROM task_table t " +
+                "WHERE t.task_id = :id " +
+                "LIMIT 1"
+    )
+    suspend fun getThingToDoDetails(id: Long): ThingToDoDetails
+
+    @Query(
+        "WITH RECURSIVE SubTasks AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "WHERE t.parent_task_id = :parentId " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, st.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = st.task_id) FROM task_table t " +
+                "INNER JOIN SubTasks st ON t.parent_task_id = st.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "SubTasksInfos AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "INNER JOIN SubTasks st ON t.task_id = st.task_id " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, st.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = st.task_id) " +
+                "FROM task_table t " +
+                "JOIN SubTasksInfos st ON t.parent_task_id = st.task_id " +
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                ") " +
+                "SELECT st.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM SubTasks st " +
+                "LEFT JOIN LatestCompletion AS lc ON st.task_id = lc.parent_task_id " +
+                "GROUP BY st.rootTTd " +
+                //"LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
+                "ORDER BY lastCompletionStatus, priority DESC, importance DESC, urgency DESC, estimatedWorkingTime DESC"
+    )
+    fun getSubThingTodos(parentId: Long): Flow<List<ThingToDo>>
+
+    @Query(
+        "WITH RECURSIVE SubTasks AS (" +
+                "SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight " +
+                "FROM task_table t " +
+                "WHERE t.task_id = :taskId " +
+                "UNION ALL " +
+                "SELECT t.*, depth + 1, st.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = st.task_id) FROM task_table t " +
+                "INNER JOIN SubTasks st ON t.parent_task_id = st.task_id " + // -- Ajoute récursivement les sous-tâches des sous-tâches
+                "), " +
+                "LatestCompletion AS (" + // Sélectionne la dernière complétion pour chaque tâche
+                "SELECT " +
+                "c.parent_task_id, " +
+                "MAX(c.completionDate) AS lastCompletionDate, " +
+                "c.isCompleted " +
+                "FROM task_completion_table c " +
+                "GROUP BY c.parent_task_id " +
+                ") " +
+                "SELECT st.*, " +
+                "COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS totalMainSubTtd, " + // Comptage des sous-tâches de niveau 1 "
+                "COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nbSubTasks, " + // On enlève le projet principal du comptage
+                "COUNT(case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nbSubTasksCompleted, " +
+                "lc.isCompleted as lastCompletionStatus, " +
+                "SUM((case when lc.isCompleted = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.isCompleted * st.weight end) * 100.0 ) AS completionRate " +
+                "FROM SubTasks st " +
+                "LEFT JOIN LatestCompletion AS lc ON st.task_id = lc.parent_task_id " +
+                "GROUP BY st.rootTTd " +
+                "LIMIT 1"
+    )
+    //"LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
+    fun getThingToDo(taskId: Long): Flow<ThingToDo>
+
+    @Query("SELECT COUNT(*) as successCount FROM task_completion_table tc " +
+            "WHERE tc.isCompleted AND tc.parent_task_id = :taskId " +
+            "GROUP BY tc.parent_task_id")
+    suspend fun getHabitCompletionCount(taskId: Long): Int
+
+    @Query(
+        """WITH last_zero AS (
+            SELECT completion_id
+            FROM task_completion_table
+            WHERE isCompleted = 0 AND parent_task_id = :taskId
+            ORDER BY completion_id DESC
+            LIMIT 1
+        ),
+        base AS (
+            SELECT completion_id, isCompleted FROM task_completion_table WHERE parent_task_id = :taskId ORDER BY completion_id DESC
+        )
+        SELECT COUNT(*) AS current_streak
+        FROM base
+        WHERE isCompleted = 1
+        AND completion_id > IFNULL((SELECT completion_id FROM last_zero), 0)
+    """
+    )
+    suspend fun getCurrentStreakByTask(taskId: Long): Int
+
 }

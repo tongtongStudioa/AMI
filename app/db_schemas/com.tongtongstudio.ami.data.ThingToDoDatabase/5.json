@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "a3423f5968ca716ac87561a3ed9659be",
+    "identityHash": "b13bf147181b38e703ee58ffa0c46484",
     "entities": [
       {
         "tableName": "task_table",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`title` TEXT NOT NULL, `priority` INTEGER, `task_due_date` INTEGER, `startDate` INTEGER DEFAULT NULL, `deadline` INTEGER DEFAULT NULL, `description` TEXT DEFAULT NULL, `nature` TEXT NOT NULL, `status` TEXT NOT NULL DEFAULT 'not_started', `importance` INTEGER DEFAULT NULL, `urgency` INTEGER DEFAULT NULL, `isDraft` INTEGER NOT NULL DEFAULT 0, `estimatedEmotions` INTEGER NOT NULL DEFAULT 1, `estimatedWorkingTime` INTEGER DEFAULT NULL, `skillLevel` INTEGER DEFAULT NULL, `creationDate` INTEGER NOT NULL, `dependency_task_id` INTEGER DEFAULT NULL, `task_recurrence_id` INTEGER DEFAULT NULL, `category_id` INTEGER DEFAULT NULL, `parent_task_id` INTEGER DEFAULT NULL, `task_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`category_id`) REFERENCES `Category`(`category_id`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`parent_task_id`) REFERENCES `task_table`(`task_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`task_recurrence_id`) REFERENCES `task_recurrence_table`(`recurrence_id`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`dependency_task_id`) REFERENCES `task_table`(`task_id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`title` TEXT NOT NULL, `priority` INTEGER, `task_due_date` INTEGER, `startDate` INTEGER DEFAULT NULL, `deadline` INTEGER DEFAULT NULL, `description` TEXT DEFAULT NULL, `nature` TEXT NOT NULL DEFAULT 'TASK', `status` TEXT NOT NULL DEFAULT 'NOT_STARTED', `importance` INTEGER DEFAULT NULL, `urgency` INTEGER DEFAULT NULL, `isDraft` INTEGER NOT NULL DEFAULT 0, `estimatedEmotions` INTEGER NOT NULL DEFAULT 1, `estimatedWorkingTime` INTEGER DEFAULT NULL, `skillLevel` INTEGER DEFAULT NULL, `creationDate` INTEGER NOT NULL, `dependency_task_id` INTEGER DEFAULT NULL, `task_recurrence_id` INTEGER DEFAULT NULL, `category_id` INTEGER DEFAULT NULL, `parent_task_id` INTEGER DEFAULT NULL, `task_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`category_id`) REFERENCES `Category`(`category_id`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`parent_task_id`) REFERENCES `task_table`(`task_id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`task_recurrence_id`) REFERENCES `task_recurrence_table`(`recurrence_id`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`dependency_task_id`) REFERENCES `task_table`(`task_id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
         "fields": [
           {
             "fieldPath": "title",
@@ -46,14 +46,15 @@
             "fieldPath": "nature",
             "columnName": "nature",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "'TASK'"
           },
           {
             "fieldPath": "status",
             "columnName": "status",
             "affinity": "TEXT",
             "notNull": true,
-            "defaultValue": "'not_started'"
+            "defaultValue": "'NOT_STARTED'"
           },
           {
             "fieldPath": "importance",
@@ -696,7 +697,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a3423f5968ca716ac87561a3ed9659be')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b13bf147181b38e703ee58ffa0c46484')"
     ]
   }
 }

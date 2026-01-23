@@ -26,9 +26,7 @@ import com.tongtongstudio.ami.data.datatables.TtdStreakInfo
 import com.tongtongstudio.ami.data.datatables.Type
 import com.tongtongstudio.ami.data.datatables.WorkSession
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import java.util.Calendar
 import javax.inject.Inject
@@ -212,10 +210,15 @@ class Repository @Inject constructor(
 
     suspend fun insertWorkSession(workSession: WorkSession) {
         workSessionDao.insert(workSession)
+        updateTaskProgress(workSession.parentTaskId)
     }
 
     fun getWorkSessions(taskId: Long): Flow<List<WorkSession>> {
         return workSessionDao.getWorkSessions(taskId)
+    }
+
+    suspend fun updateWorkSession(workSession: WorkSession) {
+        workSessionDao.update(workSession)
     }
 
     /** ****** Stats ******* **/
@@ -346,12 +349,23 @@ class Repository @Inject constructor(
     suspend fun getProjectTimeWorked(mainTaskId: Long?): Long {
         if (mainTaskId == null)
             return 0L
-        val directSubTasks = taskDao.getSubThingTodos(mainTaskId).first()
+        val directSubTasks = taskDao.getSubTasks(mainTaskId).first()
         var projectWorkTime = 0L
         directSubTasks.forEach {
-            projectWorkTime += workSessionDao.getTaskTimeWorked(it.taskRelations.mainTask.id).first()
+            projectWorkTime += workSessionDao.getTaskTimeWorked(it.id).first()
+            projectWorkTime += getProjectTimeWorked(it.id)
         }
         return projectWorkTime
+    }
+
+    suspend fun getTotalEstimatedWorkTime(parentId: Long): Long? {
+        val directSubTasks = taskDao.getSubTasks(parentId).first()
+        var totalEstimatedWorkTime = 0L
+        directSubTasks.forEach {
+            totalEstimatedWorkTime += it.estimatedWorkingTime ?: 0L
+            totalEstimatedWorkTime += getTotalEstimatedWorkTime(it.id) ?: 0L
+        }
+        return if (totalEstimatedWorkTime == 0L) null else totalEstimatedWorkTime
     }
 
     suspend fun getBlockingTask(blockingTaskId: Long): Task {
@@ -511,10 +525,6 @@ class Repository @Inject constructor(
         return taskRecurrence.recurrenceId
     }
 
-    suspend fun updateWorkSession(workSession: WorkSession) {
-        workSessionDao.update(workSession)
-    }
-
     suspend fun getDaysOfWeek(daysId: List<Int>): List<DaysOfWeek> {
         return recurrenceInfoDao.getDaysOfWeeks(daysId)
     }
@@ -536,12 +546,20 @@ class Repository @Inject constructor(
     }
 
     suspend fun updateSubTasksCategory(parentTaskId: Long, categoryId: Long?) {
-        val subTasks = taskDao.getSubThingTodos(parentTaskId)
-        subTasks.collect {
-            it.forEach {
-                taskDao.update(it.taskRelations.mainTask.copy(categoryId = categoryId))
-            }
+        val directSubTasks = taskDao.getSubTasks(parentTaskId).first()
+        if (directSubTasks.isEmpty())
+            return
+        directSubTasks.forEach {
+            taskDao.update(it.copy(categoryId = categoryId))
+            updateSubTasksCategory(it.id,categoryId)
         }
     }
+
+    suspend fun updateTaskProgress(taskId:Long) {
+        val task = taskDao.getTask(taskId)
+        updateTask(task.copy(status = Status.IN_PROGRESS.name))
+    }
+
+
     // ************* //
 }

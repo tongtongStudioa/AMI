@@ -1,24 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.SettingsFragment"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context=".ui.SettingsFragment">
 
-        <Button
-            android:layout_margin="20dp"
-            android:id="@+id/save_button"
-            android:layout_width="wrap_content"
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Sauvegarder la base de données" />
+            android:fitsSystemWindows="true">
 
-        <Button
-            android:layout_margin="20dp"
-            android:id="@+id/import_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Importer la base de données"
-            android:layout_marginTop="16dp" />
+                <com.google.android.material.appbar.MaterialToolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:title="@string/settings" />
+        </com.google.android.material.appbar.AppBarLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="5dp">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Manage your data"
+                    style="@style/TextAppearance.Ami.TitleMedium"
+                    android:layout_margin="10dp"/>
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+                <Button
+                    android:id="@+id/save_button"
+                    style="@style/Button.EditProperties.AMI.Style"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sauvegarder la base de données" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/import_button"
+                    style="@style/Button.EditProperties.AMI.Style"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Importer la base de données" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/delete_data_button"
+                    style="@style/Button.EditProperties.AMI.Style"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Supprimer vos données" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
 
 </LinearLayout>

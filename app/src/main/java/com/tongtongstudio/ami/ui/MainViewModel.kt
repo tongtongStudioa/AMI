@@ -18,6 +18,7 @@ import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.receiver.ReminderBroadcastReceiver
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -57,14 +58,15 @@ class MainViewModel @Inject constructor(
         preferencesManager.updateLayoutMode(layoutMode)
     }
 
-    fun onCheckBoxChanged(thingToDo: ThingToDo, isChecked: Boolean) = viewModelScope.launch {
+    fun onCheckBoxChanged(thingToDo: ThingToDo, isChecked: Boolean) = viewModelScope.launch(
+        Dispatchers.IO) {
         val lastCompletion: Boolean = thingToDo.lastCompletionStatus ?: false
         //Log.e("OnCheckBoxChanged", "Inside on check box changed !")
         repository.toggleTaskCompletion(thingToDo.getType(), thingToDo.taskRelations.mainTask, isChecked, lastCompletion)
         //Log.e("OnCheckBoxChanged", "toggle task completion finish !")
     }
 
-    fun deleteTask(thingToDo: ThingToDo, context: Context) = viewModelScope.launch {
+    fun deleteTask(thingToDo: ThingToDo, context: Context) = viewModelScope.launch(Dispatchers.IO) {
         /*val reminders = repository.getTaskReminders(thingToDo.taskRelations.mainTask.id)?.collect() { reminders ->
             reminders.forEach {
                 cancelReminder(context, it.id)
@@ -89,11 +91,11 @@ class MainViewModel @Inject constructor(
         alarmManager.cancel(pendingIntent)
     }
 
-    fun updateTask(thingToDo: ThingToDo) = viewModelScope.launch {
+    fun updateTask(thingToDo: ThingToDo) = viewModelScope.launch(Dispatchers.IO) {
         mainEventChannel.send(SharedEvent.NavigateToEditScreen(thingToDo))
     }
 
-    fun addThingToDo() = viewModelScope.launch {
+    fun addThingToDo() = viewModelScope.launch(Dispatchers.IO) {
         mainEventChannel.send(SharedEvent.NavigateToAddScreen)
     }
 
@@ -118,19 +120,22 @@ class MainViewModel @Inject constructor(
         mainEventChannel.send(SharedEvent.ShowUndoDeleteTaskMessage(subTask))
     }
 
-    fun navigateToTaskDetailsAndTrackScreen(thingToDo: Task, sharedView: View) = viewModelScope.launch {
+    fun navigateToTaskDetailsAndTrackScreen(thingToDo: Task, sharedView: View) = viewModelScope.launch(
+        Dispatchers.IO) {
         mainEventChannel.send(SharedEvent.NavigateToTaskViewPager(thingToDo, sharedView))
     }
 
-    fun navigateToProjectDetailsScreen(project: ThingToDo, sharedView: View) = viewModelScope.launch {
+    fun navigateToProjectDetailsScreen(project: ThingToDo, sharedView: View) = viewModelScope.launch(
+        Dispatchers.IO) {
         mainEventChannel.send(SharedEvent.NavigateToProjectDetailsScreen(project,sharedView))
     }
 
-    fun navigateToTaskDetailsScreen(task: Task, sharedView: View) = viewModelScope.launch {
+    fun navigateToTaskDetailsScreen(task: Task, sharedView: View) = viewModelScope.launch(
+        Dispatchers.IO) {
         mainEventChannel.send(SharedEvent.NavigateToTaskDetailsScreen(task, sharedView))
     }
 
-    fun lookForMissedRecurringTasks() = viewModelScope.launch {
+    fun lookForMissedRecurringTasks() = viewModelScope.launch(Dispatchers.IO) {
         val todayDate = Calendar.getInstance().run {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)

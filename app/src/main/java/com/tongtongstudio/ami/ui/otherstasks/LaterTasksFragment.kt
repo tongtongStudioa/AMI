@@ -69,7 +69,7 @@ class LaterTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
 
         sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
-        mainAdapter = ThingToDoAdapter(this, fragmentView = ThingToDoAdapter.FragmentViewType.LATER)
+        mainAdapter = ThingToDoAdapter(this, true)
 
         binding.apply {
             mainRecyclerView.apply {
@@ -280,12 +280,6 @@ class LaterTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             navController,
             appBarConfiguration
         )
-        binding.toolbar.setNavigationOnClickListener {
-            exitTransition = MaterialFadeThrough().apply {
-                duration = resources.getInteger(R.integer.middle_duration).toLong()
-            }
-            navController.navigateUp(appBarConfiguration)
-        }
     }
 
     private fun updateTextExplication(laterFilter: LaterFilter?, tasksCount: Int) {

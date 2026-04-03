@@ -12,6 +12,7 @@ import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.data.datatables.WorkSession
 import com.tongtongstudio.ami.timer.TimerType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,13 +54,13 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.getLastTaskCompletion(taskId).collect { completion ->
                 _uiState.update { it.copy(taskCompletion = completion) }
             }
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.getWorkSessions(taskId).collect { sessions ->
                 _uiState.update {
                     it.copy(
@@ -81,7 +82,7 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
         taskId.let { repository.getWorkSessions(it).asLiveData() }
 
     private fun loadInitialData() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { uiState ->
                 uiState.copy(
                     successCount = taskId.let { repository.getHabitCompletionCount(it) },

@@ -301,4 +301,8 @@
     <string name="hint_comment_assessment">Insert your comment here !</string>
     <string name="distribution_of_time_worked">Distribution of time worked</string>
     <string name="progress_assessment">Progress assessment</string>
+    <string name="maximal_current_streak">Serie maximal en cours</string>
+    <string name="project_achievement_rate">Project Achievement Rate</string>
+    <string name="projects_completed">Projects completed</string>
+    <string name="tasks_achievement_rate">Tasks Achievement Rate</string>
 </resources>

@@ -15,19 +15,16 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
-import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialElevationScale
-import com.google.android.material.transition.MaterialFadeThrough
 import com.google.android.material.transition.MaterialSharedAxis
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.ThingToDoItemCallback
@@ -58,12 +55,25 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     private val viewModel: TasksViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var mainTaskAdapter: ThingToDoAdapter
-    private lateinit var sharedViewModel: MainViewModel
+    private val sharedViewModel: MainViewModel by viewModels()
     private lateinit var soundPlayer: SoundPlayer
     private var menuProvider: MenuProvider? = null
 
     private lateinit var sharedPreferences: SharedPreferences
     private var tutorialTrigger: TutorialTrigger? = null
+
+    private lateinit var recyclerView: RecyclerView
+    private val axisForward by lazy {
+        MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+    }
+
+    private val axisBackward by lazy {
+        MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+            duration = resources.getInteger(R.integer.middle_duration).toLong()
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -72,9 +82,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     override fun onCreate(savedInstanceState: Bundle?) {
         sharedPreferences =
             requireActivity().getSharedPreferences(PREF_TUTORIAL, Context.MODE_PRIVATE)
-        enterTransition = MaterialFadeThrough().apply {
-            duration = resources.getInteger(R.integer.middle_duration).toLong()
-        }
+        exitTransition = axisBackward
+        reenterTransition = axisForward
         super.onCreate(savedInstanceState)
     }
 
@@ -84,6 +93,13 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentMainBinding.inflate(layoutInflater)
+        recyclerView = binding.mainRecyclerView
+
+        /**
+         * The below code is required to animate correctly when the user returns from [DetailFragment].
+         */
+        postponeEnterTransition()
+
         return binding.root
     }
 
@@ -93,9 +109,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         //collapse toolbar
         setUpToolbar()
 
-        //view model, sound player and adapter
-        sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-        mainTaskAdapter = ThingToDoAdapter(this)
+        //Sound player and adapter
+        mainTaskAdapter = ThingToDoAdapter(this, false)
         soundPlayer = SoundPlayer(requireContext())
 
 
@@ -108,8 +123,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             mainRecyclerView.apply {
                 adapter = mainTaskAdapter
                 layoutManager = LinearLayoutManager(requireContext())
-                setHasFixedSize(false)
-                itemAnimator = DefaultItemAnimator()
+                //setHasFixedSize(false)
+                itemAnimator = null
             }
 
             val callback = object : ThingToDoItemCallback<ThingToDoAdapter>(
@@ -120,13 +135,13 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 override fun actionOnRightSwiped(thingToDo: ThingToDo, position: Int) {
                     // delete task
                     sharedViewModel.deleteTask(thingToDo, requireContext())
-                    mainTaskAdapter.notifyItemRemoved(position)
+                    //mainTaskAdapter.notifyItemRemoved(position)
                 }
 
                 override fun actionLeftSwiped(thingToDo: ThingToDo, position: Int) {
                     //update task
                     sharedViewModel.updateTask(thingToDo)
-                    mainTaskAdapter.notifyItemChanged(position)
+                    //mainTaskAdapter.notifyItemChanged(position)
                 }
             }
             ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
@@ -143,6 +158,11 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 mainTaskAdapter.submitList(it)
                 binding.emptyRecyclerView.viewEmptyRecyclerView.isVisible = false
                 binding.mainRecyclerView.isVisible = true
+                (requireView().parent as ViewGroup).viewTreeObserver
+                    .addOnPreDrawListener {
+                        startPostponedEnterTransition()
+                        true
+                    }
             }
         }
 
@@ -152,8 +172,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         }
 
         // respond to event
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 sharedViewModel.mainEvent.collect { event ->
                     when (event) {
                         is MainViewModel.SharedEvent.NavigateToEditScreen -> {
@@ -170,17 +190,6 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                                     getString(R.string.fragment_title_add_thing_to_do),
                                     null
                                 )
-                            //val extras = FragmentNavigatorExtras(binding.fabAddTask to binding.fabAddTask.transitionName)
-                            // Transition de sortie avec MaterialSharedAxis (DIRECTION X pour effet slide)
-                            exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
-                                duration = resources.getInteger(R.integer.middle_duration).toLong()
-                            }
-                            // Transition de retour avec MaterialSharedAxis
-                            reenterTransition =
-                                MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
-                                    duration =
-                                        resources.getInteger(R.integer.middle_duration).toLong()
-                                }
                             findNavController().navigate(action)
                         }
                         is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
@@ -205,33 +214,33 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                                 }.show()
                         }
                         is MainViewModel.SharedEvent.NavigateToTaskViewPager -> {
+                            exitTransition = MaterialElevationScale(false).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
+                            reenterTransition = MaterialElevationScale(true).apply {
+                                duration = resources.getInteger(R.integer.middle_duration).toLong()
+                            }
                             val action =
                                 TodayTasksFragmentDirections.actionTodayTasksFragmentToTabPageTrackingStats(
                                     event.task.id
                                 )
                             val extras =
                                 FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
+                            findNavController().navigate(action, extras)
+                        }
+                        is MainViewModel.SharedEvent.NavigateToProjectDetailsScreen -> {
                             exitTransition = MaterialElevationScale(false).apply {
                                 duration = resources.getInteger(R.integer.middle_duration).toLong()
                             }
                             reenterTransition = MaterialElevationScale(true).apply {
                                 duration = resources.getInteger(R.integer.middle_duration).toLong()
                             }
-                            findNavController().navigate(action, extras)
-                        }
-                        is MainViewModel.SharedEvent.NavigateToProjectDetailsScreen -> {
                             val action =
                                 TodayTasksFragmentDirections.actionTodayTasksFragmentToLocalProjectStatsFragment2(
                                     event.project.taskRelations.mainTask.id
                                 )
                             val extras =
                                 FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
-                            exitTransition = MaterialElevationScale(false).apply {
-                                duration = resources.getInteger(R.integer.middle_duration).toLong()
-                            }
-                            reenterTransition = MaterialElevationScale(true).apply {
-                                duration = resources.getInteger(R.integer.middle_duration).toLong()
-                            }
                             findNavController().navigate(action,extras)
                         }
                         is MainViewModel.SharedEvent.ShowMissedRecurringTaskDialog -> {
@@ -248,12 +257,6 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                                 thingToDo = null,
                                 parentTask = event.parentTask
                             )
-                            exitTransition = MaterialElevationScale(false).apply {
-                                duration = resources.getInteger(R.integer.middle_duration).toLong()
-                            }
-                            reenterTransition = MaterialElevationScale(true).apply {
-                                duration = resources.getInteger(R.integer.middle_duration).toLong()
-                            }
                             findNavController().navigate(action)
                         }
 
@@ -269,16 +272,6 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                 }
             }
         }
-
-        /**
-         * The below code is required to animate correctly when the user returns from [DetailFragment].
-         */
-        postponeEnterTransition()
-        (requireView().parent as ViewGroup).viewTreeObserver
-            .addOnPreDrawListener {
-                startPostponedEnterTransition()
-                true
-            }
 
         // add menu
         (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
@@ -328,7 +321,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                     else -> false
                 }
             }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        }, viewLifecycleOwner, Lifecycle.State.STARTED)
 
         tutorialTrigger?.triggerTutorialFor(this)
     }
@@ -349,12 +342,6 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             navController,
             appBarConfiguration
         )
-        binding.toolbar.setNavigationOnClickListener {
-            exitTransition = MaterialFadeThrough().apply {
-                duration = resources.getInteger(R.integer.middle_duration).toLong()
-            }
-            navController.navigateUp(appBarConfiguration)
-        }
         binding.toolbar.subtitle = "Today's things to do"
         binding.textSup.text =
             SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM).format(viewModel.startOfToday)

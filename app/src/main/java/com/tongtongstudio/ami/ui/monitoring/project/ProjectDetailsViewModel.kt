@@ -10,6 +10,10 @@ import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
@@ -27,15 +31,35 @@ class ProjectDetailsViewModel @Inject constructor(
         val workTime: Long = 0L,
         val totalEstimatedWorkTime: Long? = null
     )
+
     val projectId = state.get<Long>("project_id")
     val project = repository.getThingToDo(projectId)?.asLiveData()
     val subTasks = repository.getSubThingToDo(projectId!!).asLiveData()
 
-    fun getProjectWorkTime(): Long = runBlocking{
-        return@runBlocking repository.getProjectTimeWorked(projectId!!)
+    private val _uiState: MutableStateFlow<DetailsProjectUiState> = MutableStateFlow(
+        DetailsProjectUiState()
+    )
+    val uiState: StateFlow<DetailsProjectUiState>
+        get() = _uiState
+
+    init {
+        getProjectWorkTime()
+        getEstimatedWorkTime()
     }
 
-    fun getEstimatedWorkTime(): Long? = runBlocking {
-        return@runBlocking projectId?.let {repository.getTotalEstimatedWorkTime(it)}
+    private fun getProjectWorkTime() = viewModelScope.launch(Dispatchers.IO) {
+        _uiState.update {
+            it.copy(
+                workTime = repository.getProjectTimeWorked(projectId!!)
+            )
+        }
+    }
+
+    private fun getEstimatedWorkTime() = viewModelScope.launch(Dispatchers.IO) {
+        _uiState.update {
+            it.copy(totalEstimatedWorkTime = projectId?.let { parentId ->
+                repository.getTotalEstimatedWorkTime(parentId)
+            })
+        }
     }
 }

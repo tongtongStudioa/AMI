@@ -56,8 +56,8 @@
         <item name="appBarLayoutStyle">@style/AppBarAmi.Light</item>
         <item name="collapsingToolbarLayoutStyle">@style/CollapsingToolbarAmi.Light</item>
 
-        <item name="android:windowContentTransitions">true</item>
-        <item name="android:windowActivityTransitions">true</item>
+        <!--<item name="android:windowContentTransitions">true</item>
+        <item name="android:windowActivityTransitions">true</item>-->
         <item name="android:fragmentSharedElementEnterTransition">@id/transition_transform</item>
 
     </style>

@@ -15,6 +15,7 @@ import com.tongtongstudio.ami.data.datatables.Type
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.EDIT_TASK_RESULT_OK
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -104,7 +105,7 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     private fun loadInitialData() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
 
             try {
@@ -276,7 +277,7 @@ class AddEditTaskViewModel @Inject constructor(
     ) = viewModelScope.launch {
         _uiState.update { state ->
             if (taskRecurrenceWithDays != null) {
-                val taskRecurrence = taskRecurrenceWithDays.taskRecurrence.copy(
+                taskRecurrenceWithDays.taskRecurrence.copy(
                     startDate = state.startDate,
                     endDate = state.deadline,
                 )
@@ -346,7 +347,7 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     fun saveTask(modeExtent: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
             try {
                 val taskRecurrenceWithDays = _uiState.value.taskRecurrenceWithDays
@@ -370,12 +371,12 @@ class AddEditTaskViewModel @Inject constructor(
                     )
                 )
             }
+            val currentState = _uiState.value
+            val isUpdate = currentState.thingToDo != null
             try {
-                val currentState = _uiState.value
                 val task = buildTaskFromState(currentState, modeExtent)
 
                 // get task id for saving reminders
-                val isUpdate = currentState.thingToDo != null
                 val taskId = if (isUpdate)
                     currentState.thingToDo.taskRelations.mainTask.id
                 else repository.insertTask(task)
@@ -391,9 +392,6 @@ class AddEditTaskViewModel @Inject constructor(
                 updateRemindersList(taskId)
                 _events.send(AddEditTaskEvent.ScheduleReminders(currentState.reminders))
 
-                val result = if (isUpdate) EDIT_TASK_RESULT_OK else ADD_TASK_RESULT_OK
-                _events.send(AddEditTaskEvent.NavigateBackWithResult(result))
-
             } catch (e: Exception) {
                 _events.send(
                     AddEditTaskEvent.ShowInvalidInputMessage(
@@ -402,6 +400,8 @@ class AddEditTaskViewModel @Inject constructor(
                 )
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
+                val result = if (isUpdate) EDIT_TASK_RESULT_OK else ADD_TASK_RESULT_OK
+                _events.send(AddEditTaskEvent.NavigateBackWithResult(result))
             }
         }
     }
@@ -446,7 +446,7 @@ class AddEditTaskViewModel @Inject constructor(
         }
     }
 
-    fun navigateToEditParentProject() = viewModelScope.launch {
+    fun navigateToEditParentProject() = viewModelScope.launch(Dispatchers.IO) {
         _events.send(
             AddEditTaskEvent.NavigateToEditParentProjectDialog(
                 _uiState.value.thingToDo?.taskRelations?.mainTask?.id,

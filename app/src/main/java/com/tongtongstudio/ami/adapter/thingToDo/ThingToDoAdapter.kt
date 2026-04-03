@@ -18,7 +18,7 @@ import com.tongtongstudio.ami.databinding.ItemTaskBinding
 import java.util.Calendar
 
 
-class ThingToDoAdapter(private val listener: InteractionListener, private val fragmentView: FragmentViewType = FragmentViewType.OTHERS) :
+class ThingToDoAdapter(private val listener: InteractionListener, private val showDueDate: Boolean = true ) :
     BaseAdapter<ThingToDo>(), ItemTouchHelperAdapter {
 
     enum class FragmentViewType {LATER, TODAY, COMPLETED, OTHERS}
@@ -115,7 +115,7 @@ class ThingToDoAdapter(private val listener: InteractionListener, private val fr
                         thingToDo.taskRelations.mainTask.priority
                     )
                 tvNumberPriority.isVisible = thingToDo.taskRelations.mainTask.priority != null
-                tvDeadline.isVisible = thingToDo.taskRelations.mainTask.deadline != null
+                //tvDeadline.isVisible = thingToDo.taskRelations.mainTask.deadline != null
                 divider.isVisible = thingToDo.taskRelations.mainTask.dueDate != null || thingToDo.taskRelations.mainTask.priority != null
                 /*if (thingToDo.isLate()) {
                     tvTaskName.setTextColor(
@@ -125,10 +125,10 @@ class ThingToDoAdapter(private val listener: InteractionListener, private val fr
                         )
                     )
                 }*/
-                tvDeadline.text = Task.getDateFormatted(thingToDo.taskRelations.mainTask.deadline)
-                tvStartDate.text = Task.getDateFormatted(thingToDo.taskRelations.mainTask.startDate)
-                tvStartDate.isVisible = thingToDo.taskRelations.mainTask.startDate != null
-                tvDueDate.isVisible = fragmentView == FragmentViewType.LATER || thingToDo.isLate()
+                //tvDeadline.text = Task.getDateFormatted(thingToDo.taskRelations.mainTask.deadline)
+                //tvStartDate.text = Task.getDateFormatted(thingToDo.taskRelations.mainTask.startDate)
+                //tvStartDate.isVisible = thingToDo.taskRelations.mainTask.startDate != null
+                tvDueDate.isVisible = showDueDate || thingToDo.isLate()
                 tvDueDate.text = Task.getDateFormatted(thingToDo.taskRelations.mainTask.dueDate)
             }
         }

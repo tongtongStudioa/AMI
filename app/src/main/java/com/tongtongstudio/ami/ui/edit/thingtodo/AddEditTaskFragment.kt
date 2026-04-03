@@ -65,15 +65,9 @@ import com.tongtongstudio.ami.receiver.TASK_NAME_KEY
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
-import com.tongtongstudio.ami.ui.dialog.recurring_task.CURRENT_RECURRING_INFO_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_DIALOG_TAG
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_LISTENER_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.ESTIMATED_TIME_RESULT_KEY
-import com.tongtongstudio.ami.ui.dialog.recurring_task.Period
-import com.tongtongstudio.ami.ui.dialog.recurring_task.RECURRING_REQUEST_KEY
-import com.tongtongstudio.ami.ui.dialog.recurring_task.RECURRING_RESULT_KEY
-import com.tongtongstudio.ami.ui.dialog.recurring_task.RECURRING_SELECTION_DIALOG_TAG
-import com.tongtongstudio.ami.ui.dialog.recurring_task.EditRecurringDialogFragment
 import com.tongtongstudio.ami.ui.dialog.TimePickerDialogFragment
 import com.tongtongstudio.ami.ui.dialog.blocking_task.BLOCKING_TASK_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.blocking_task.BLOCKING_TASK_RESULT_KEY
@@ -81,6 +75,12 @@ import com.tongtongstudio.ami.ui.dialog.category.CATEGORY_EDIT_TAG
 import com.tongtongstudio.ami.ui.dialog.category.EditCategoryDialogFragment
 import com.tongtongstudio.ami.ui.dialog.parent_project.PROJECT_LINKED_LISTENER_REQUEST_KEY
 import com.tongtongstudio.ami.ui.dialog.parent_project.PROJECT_LINKED_RESULT_KEY
+import com.tongtongstudio.ami.ui.dialog.recurring_task.CURRENT_RECURRING_INFO_REQUEST_KEY
+import com.tongtongstudio.ami.ui.dialog.recurring_task.EditRecurringDialogFragment
+import com.tongtongstudio.ami.ui.dialog.recurring_task.Period
+import com.tongtongstudio.ami.ui.dialog.recurring_task.RECURRING_REQUEST_KEY
+import com.tongtongstudio.ami.ui.dialog.recurring_task.RECURRING_RESULT_KEY
+import com.tongtongstudio.ami.ui.dialog.recurring_task.RECURRING_SELECTION_DIALOG_TAG
 import com.tongtongstudio.ami.util.CalendarCustomFunction
 import com.tongtongstudio.ami.util.DateTimePicker
 import com.tongtongstudio.ami.util.InputValidation
@@ -103,7 +103,7 @@ import java.util.Locale
 class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
     private val viewModel: AddEditTaskViewModel by viewModels()
-    private lateinit var sharedViewModel: MainViewModel
+    private val sharedViewModel: MainViewModel by viewModels()
     private lateinit var binding: FragmentAddEditTaskBinding
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var reminderAdapter: EditAttributesAdapter<Reminder>
@@ -112,9 +112,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //main view model
-        sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-
         // set dateTimePicker object
         dateTimePicker = DateTimePicker(parentFragmentManager, requireContext())
 
@@ -130,7 +127,8 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 }
             } else showPermissionRationale()
         }
-        setupTransitionAnimations()
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true)
+        returnTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
     }
 
     @InternalCoroutinesApi
@@ -166,7 +164,8 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             binding.apply {
                 // Creation date task's
                 textViewCreatedDate.isVisible = state.thingToDo != null
-                textViewCreatedDate.text = getString(R.string.text_created_date, state.creationDateFormatted)
+                textViewCreatedDate.text =
+                    getString(R.string.text_created_date, state.creationDateFormatted)
                 //progressBar.isVisible = state.isLoading
             }
         }.launchIn(lifecycleScope)
@@ -174,14 +173,15 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         binding.apply {
             viewLifecycleOwner.lifecycleScope.launch {
                 viewModel.uiState
-                    .filter { it.title.isNotBlank() && it.thingToDo != null}
+                    .filter { it.title.isNotBlank() && it.thingToDo != null }
                     .take(1)
                     .collect {
                         editTextName.setText(it.title)
                         editTextDescription.setText(it.description)
-                        editTextPriority.setText(it.priority?.toString() ?: "" )
+                        editTextPriority.setText(it.priority?.toString() ?: "")
                         editTextUserLevel.setText(it.skillLevel?.toString() ?: "")
-                        val radBtnChecked = if (it.nature == Nature.TASK.name || it.nature == Nature.SUB_TASK.name) rbTask.id else rbProject.id
+                        val radBtnChecked =
+                            if (it.nature == Nature.TASK.name || it.nature == Nature.SUB_TASK.name) rbTask.id else rbProject.id
                         radioGroupChoiceNature.check(radBtnChecked)
                         autocompleteTextCategory.setText(it.category?.title ?: "")
                     }
@@ -224,7 +224,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         // from dialog edit parent project
         setFragmentResultListener(PROJECT_LINKED_LISTENER_REQUEST_KEY) { _, bundle ->
             val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                bundle.getParcelable(PROJECT_LINKED_RESULT_KEY,Task::class.java)
+                bundle.getParcelable(PROJECT_LINKED_RESULT_KEY, Task::class.java)
             } else {
                 bundle.getParcelable(PROJECT_LINKED_RESULT_KEY)
             }
@@ -234,7 +234,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         // from dialog edit blocking task
         setFragmentResultListener(BLOCKING_TASK_REQUEST_KEY) { _, bundle ->
             val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                bundle.getParcelable(BLOCKING_TASK_RESULT_KEY,Task::class.java)
+                bundle.getParcelable(BLOCKING_TASK_RESULT_KEY, Task::class.java)
             } else {
                 bundle.getParcelable(BLOCKING_TASK_RESULT_KEY)
             }
@@ -244,7 +244,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         // from a project
         setFragmentResultListener("is_new_sub_task") { _, bundle ->
             val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                bundle.getParcelable("project",Task::class.java)
+                bundle.getParcelable("project", Task::class.java)
             } else {
                 bundle.getParcelable("project")
             }
@@ -287,13 +287,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         }, viewLifecycleOwner)
     }
 
-
-    private fun setupTransitionAnimations() {
-        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
-            interpolator = AccelerateDecelerateInterpolator()
-            duration = resources.getInteger(R.integer.middle_duration).toLong()
-        }
-    }
 
     private fun setupAdapters() {
         reminderAdapter =
@@ -343,7 +336,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                         viewModel.updateCategory(null)
                     }
                     if (viewModel.uiState.value.category != null) {
-                        suggestions.add(0, Category(getString(R.string.no_category),null))
+                        suggestions.add(0, Category(getString(R.string.no_category), null))
                     }
                     categoryAdapter.submitList(suggestions)
                 }
@@ -410,7 +403,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             // attach project
             btnAttachProject.setOnClickListener {
                 viewModel.navigateToEditParentProject()
-                //showProjectSelectionDialog()
             }
             removeProjectLinked.setOnClickListener {
                 viewModel.updateParentProject(null)
@@ -433,9 +425,13 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         binding.btnSetStartDate.bindDateSelection(
             viewModel.uiState.value.startDate,
             validateDate = ::validateSelectionStartDate,
-            getConstraints = { CalendarCustomFunction.buildConstraintsForStartDate(viewModel.uiState.value.dueDate ?: viewModel.uiState.value.deadline) },
-            updateFn = {newStartDate -> viewModel.updateStartDate(newStartDate)}
-            )
+            getConstraints = {
+                CalendarCustomFunction.buildConstraintsForStartDate(
+                    viewModel.uiState.value.dueDate ?: viewModel.uiState.value.deadline
+                )
+            },
+            updateFn = { newStartDate -> viewModel.updateStartDate(newStartDate) }
+        )
 
         binding.removeStartDate.setOnClickListener {
             viewModel.updateStartDate(null)
@@ -444,8 +440,12 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         binding.btnSetDueDate.bindDateSelection(
             viewModel.uiState.value.dueDate,
             validateDate = ::validateSelectionDueDate,
-            getConstraints = { CalendarCustomFunction.buildConstraintsForDueDate(viewModel.uiState.value.startDate ?: 0L, viewModel.uiState.value.deadline) },
-            updateFn = {newDueDate -> viewModel.updateDueDate(newDueDate)}
+            getConstraints = {
+                CalendarCustomFunction.buildConstraintsForDueDate(
+                    viewModel.uiState.value.startDate ?: 0L, viewModel.uiState.value.deadline
+                )
+            },
+            updateFn = { newDueDate -> viewModel.updateDueDate(newDueDate) }
         )
 
         binding.removeDueDate.setOnClickListener {
@@ -455,8 +455,12 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         binding.btnSetDeadline.bindDateSelection(
             viewModel.uiState.value.deadline,
             validateDate = ::validateSelectionDeadline,
-            getConstraints = { CalendarCustomFunction.buildConstraintsForDeadline(viewModel.uiState.value.dueDate ?: viewModel.uiState.value.startDate ?: 0L) } ,
-            updateFn = {newDeadline -> viewModel.updateDeadline(newDeadline)}
+            getConstraints = {
+                CalendarCustomFunction.buildConstraintsForDeadline(
+                    viewModel.uiState.value.dueDate ?: viewModel.uiState.value.startDate ?: 0L
+                )
+            },
+            updateFn = { newDeadline -> viewModel.updateDeadline(newDeadline) }
         )
 
         binding.removeDeadline.setOnClickListener {
@@ -499,12 +503,33 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     private fun updateRecurrenceInfos(itemId: Int) {
         when (itemId) {
             R.id.action_every_day -> {
-                viewModel.updateRecurrenceInfos(TaskRecurrenceWithDays(TaskRecurrence(Period.DAYS.name,1,startDate = null), emptyList()))
+                viewModel.updateRecurrenceInfos(
+                    TaskRecurrenceWithDays(
+                        TaskRecurrence(
+                            Period.DAYS.name,
+                            1,
+                            startDate = null
+                        ), emptyList()
+                    )
+                )
             }
+
             R.id.action_every_week -> {
-                viewModel.updateRecurrenceInfos(TaskRecurrenceWithDays(TaskRecurrence(Period.WEEKS.name,1, startDate = null), emptyList()))
-                Log.e("task recurrence value", viewModel.uiState.value.taskRecurrenceWithDays.toString())
+                viewModel.updateRecurrenceInfos(
+                    TaskRecurrenceWithDays(
+                        TaskRecurrence(
+                            Period.WEEKS.name,
+                            1,
+                            startDate = null
+                        ), emptyList()
+                    )
+                )
+                Log.e(
+                    "task recurrence value",
+                    viewModel.uiState.value.taskRecurrenceWithDays.toString()
+                )
             }
+
             R.id.action_personalized -> {
                 showRecurringTaskDialog()
             }
@@ -521,7 +546,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     }
 
     private suspend fun observeUiState() {
-        viewModel.uiState.collect() { state ->
+        viewModel.uiState.collect { state ->
             renderUiState(state)
         }
     }
@@ -539,9 +564,21 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 inputLayoutUserLevel.editText?.setText(state.skillLevel.toString())
 
             // Mise à jour des dates
-            btnSetStartDate.updateDateButton(removeStartDate, state.startDate, getString(R.string.set_start_date))
-            btnSetDueDate.updateDateButton(removeDueDate, state.dueDate, getString(R.string.set_due_date))
-            btnSetDeadline.updateDateButton(removeDeadline, state.deadline, getString(R.string.set_deadline))
+            btnSetStartDate.updateDateButton(
+                removeStartDate,
+                state.startDate,
+                getString(R.string.set_start_date)
+            )
+            btnSetDueDate.updateDateButton(
+                removeDueDate,
+                state.dueDate,
+                getString(R.string.set_due_date)
+            )
+            btnSetDeadline.updateDateButton(
+                removeDeadline,
+                state.deadline,
+                getString(R.string.set_deadline)
+            )
 
             // Complex Updates
             btnRepeatTask.updateSpecificButtonText(
@@ -573,7 +610,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             btnChooseDependency.updateSpecificButtonText(
                 removeBlockingTask,
                 state.blockingTask?.let {
-                    getString(R.string.blocking_task , it.title)
+                    getString(R.string.blocking_task, it.title)
                 },
                 getString(R.string.dependency)
             )
@@ -587,23 +624,33 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 sharedViewModel.showConfirmationMessage(event.result)
                 findNavController().popBackStack()
             }
-            is AddEditTaskViewModel.AddEditTaskEvent.ShowInvalidInputMessage -> Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_LONG).show()
+
+            is AddEditTaskViewModel.AddEditTaskEvent.ShowInvalidInputMessage -> Snackbar.make(
+                requireView(),
+                event.msg,
+                Snackbar.LENGTH_LONG
+            ).show()
+
             is AddEditTaskViewModel.AddEditTaskEvent.ScheduleReminders -> {
-                Log.e("reminder schedule","event received and function 'schedule reminders' call")
+                Log.e("reminder schedule", "event received and function 'schedule reminders' call")
                 scheduleReminders(event.reminders)
             }
+
             is AddEditTaskViewModel.AddEditTaskEvent.NavigateToEditParentProjectDialog -> {
-                val action = AddEditTaskFragmentDirections.actionAddEditTaskFragmentToEditProjectLinkedDialogFragment(
-                    event.taskId ?: -1,
-                    event.parentProject
-                )
+                val action =
+                    AddEditTaskFragmentDirections.actionAddEditTaskFragmentToEditProjectLinkedDialogFragment(
+                        event.taskId ?: -1,
+                        event.parentProject
+                    )
                 findNavController().navigate(action)
             }
+
             is AddEditTaskViewModel.AddEditTaskEvent.NavigateToEditBlockingTaskDialog -> {
-                val action = AddEditTaskFragmentDirections.actionAddEditTaskFragmentToEditBlockingTaskDialogFragment (
-                    event.taskId ?: -1,
-                    event.blockingTask
-                        )
+                val action =
+                    AddEditTaskFragmentDirections.actionAddEditTaskFragmentToEditBlockingTaskDialogFragment(
+                        event.taskId ?: -1,
+                        event.blockingTask
+                    )
                 findNavController().navigate(action)
             }
         }
@@ -612,10 +659,11 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     private fun validateSelectionStartDate(newStartDate: Long): Boolean {
         val state = viewModel.uiState.value
         return when {
-            state.dueDate != null && newStartDate > state.dueDate ||state.deadline != null && newStartDate > state.deadline-> {
+            state.dueDate != null && newStartDate > state.dueDate || state.deadline != null && newStartDate > state.deadline -> {
                 viewModel.setError(getString(R.string.msg_invalid_start_date))
                 false
             }
+
             else -> true
         }
     }
@@ -623,10 +671,11 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     private fun validateSelectionDueDate(newDueDate: Long): Boolean {
         val state = viewModel.uiState.value
         return when {
-            state.startDate != null && newDueDate < state.startDate ||state.deadline != null && newDueDate > state.deadline-> {
+            state.startDate != null && newDueDate < state.startDate || state.deadline != null && newDueDate > state.deadline -> {
                 viewModel.setError(getString(R.string.msg_invalid_start_date))
                 false
             }
+
             else -> true
         }
     }
@@ -634,10 +683,11 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     private fun validateSelectionDeadline(newDeadline: Long): Boolean {
         val state = viewModel.uiState.value
         return when {
-            state.startDate != null && newDeadline < state.startDate ||state.dueDate != null && newDeadline < state.dueDate-> {
+            state.startDate != null && newDeadline < state.startDate || state.dueDate != null && newDeadline < state.dueDate -> {
                 viewModel.setError(getString(R.string.msg_invalid_start_date))
                 false
             }
+
             else -> true
         }
     }
@@ -646,7 +696,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     // Extensions.kt
     private fun EditText.bindTextTo(updateFn: (String) -> Unit) {
         doAfterTextChanged { text ->
-                updateFn(text?.toString() ?: "")
+            updateFn(text?.toString() ?: "")
         }
     }
 
@@ -688,14 +738,19 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             true
         }
     }
-    private fun MaterialButton.updateDateButton(removeButton: View, date: Long?, defaultText: String) {
+
+    private fun MaterialButton.updateDateButton(
+        removeButton: View,
+        date: Long?,
+        defaultText: String
+    ) {
         if (date != null) {
             text = SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(date)
-            setTextColor(MaterialColors.getColor(context, R.attr.colorPrimary,""))
+            setTextColor(MaterialColors.getColor(context, R.attr.colorPrimary, ""))
             removeButton.isVisible = true
         } else {
             text = defaultText
-            setTextColor(MaterialColors.getColor(context, R.attr.colorPrimaryInverse,""))
+            setTextColor(MaterialColors.getColor(context, R.attr.colorPrimaryInverse, ""))
             removeButton.isVisible = false
         }
     }
@@ -704,7 +759,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         removeButton: View,
         valueText: String?,
         defaultText: String
-    ){
+    ) {
         if (InputValidation.isValidText(valueText)) {
             setTextColor(MaterialColors.getColor(requireView(), R.attr.colorPrimary))
             removeButton.isVisible = true
@@ -840,7 +895,10 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     private fun showRecurringTaskDialog() {
         val newFragment = EditRecurringDialogFragment()
         val result = Bundle().apply {
-            putParcelable("task_recurrence_with_days", viewModel.uiState.value.taskRecurrenceWithDays)
+            putParcelable(
+                "task_recurrence_with_days",
+                viewModel.uiState.value.taskRecurrenceWithDays
+            )
         }
         setFragmentResult(CURRENT_RECURRING_INFO_REQUEST_KEY, result)
         newFragment.show(parentFragmentManager, RECURRING_SELECTION_DIALOG_TAG)
@@ -862,13 +920,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             navController,
             appBarConfiguration
         )
-        binding.toolbar.setNavigationOnClickListener {
-            exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
-                interpolator = AccelerateDecelerateInterpolator()
-                duration = resources.getInteger(R.integer.middle_duration).toLong()
-            }
-            navController.navigateUp(appBarConfiguration)
-        }
     }
 }
 

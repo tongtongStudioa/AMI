@@ -10,14 +10,15 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
+        android:fitsSystemWindows="true"
         android:layout_height="wrap_content"
         android:visibility="visible">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            tools:title="@string/fragment_task_details_title" />
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                tools:title="@string/fragment_task_details_title" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

@@ -78,7 +78,8 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
                 R.id.habitsFragment,
                 R.id.completedThingToDoFragment,
                 R.id.projectFragment,
-                R.id.globalObjectivesFragment
+                R.id.globalObjectivesFragment,
+                R.id.settingsFragment
             ), drawerLayout
         )
         navView.setupWithNavController(navController)

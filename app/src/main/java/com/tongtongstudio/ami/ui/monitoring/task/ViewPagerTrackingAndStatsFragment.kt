@@ -30,6 +30,11 @@ class ViewPagerTrackingAndStatsFragment : Fragment(R.layout.fragment_view_pager)
             duration = resources.getInteger(R.integer.long_duration).toLong()
             scrimColor = Color.TRANSPARENT
         }
+        sharedElementReturnTransition =  MaterialContainerTransform().apply {
+            duration = resources.getInteger(R.integer.long_duration).toLong()
+            scrimColor = Color.TRANSPARENT
+        }
+
         super.onCreate(savedInstanceState)
     }
 

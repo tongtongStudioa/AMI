@@ -632,10 +632,10 @@ WHERE estimatedWorkingTime IS NOT NULL
         """WITH task_work_time AS (
     -- Calcul du temps total passé sur chaque tâche
     SELECT 
-        parentTaskId,
+        parentTaskId as task_id,
         SUM(duration) AS total_work_time
     FROM worksession
-    GROUP BY parentTaskId
+    GROUP BY task_id
 ),
 task_completion_count AS (
     -- Comptage du nombre de complétions par tâche (utile pour les tâches répétitives)
@@ -653,7 +653,7 @@ task_avg_work_time AS (
         COALESCE(tc.completion_count, 1) AS completion_count,
         COALESCE(tw.total_work_time, 0) / COALESCE(tc.completion_count, 1) AS avg_work_time
     FROM task_work_time tw
-    LEFT JOIN task_completion_count tc ON tw.parentTaskId = tc.parent_task_id
+    LEFT JOIN task_completion_count tc ON tw.task_id = tc.parent_task_id
 ),
 last_completion AS (
 	SELECT 
@@ -891,7 +891,7 @@ ORDER BY period ASC
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
                 "WHERE isCompleted"
     )
-    fun getOnTimeCompletionTasksRate(): Flow<Float?>
+    fun getOnTimeCompletionTasksRate(): Float?
 
     // TODO: remove dividing by number and use integrate function
     /**
@@ -912,7 +912,7 @@ ORDER BY period ASC
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
                 "WHERE isCompleted AND category_id = :categoryId"
     )
-    fun getOnTimeCompletionCategoryTasksRate(categoryId: Long): Flow<Float?>
+    fun getOnTimeCompletionCategoryTasksRate(categoryId: Long): Float?
 
     @Query(
         "SELECT round(100.0 * COUNT(CASE WHEN completionDate <= task_due_date THEN 1 END) / COUNT(*),1) " +

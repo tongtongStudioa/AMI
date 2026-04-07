@@ -2,93 +2,71 @@ package com.tongtongstudio.ami.util
 
 import com.tongtongstudio.ami.data.dao.TaskDao
 import com.tongtongstudio.ami.data.datatables.Task
+import com.tongtongstudio.ami.data.datatables.TaskCompletion
+import com.tongtongstudio.ami.data.datatables.TaskRelations
+import com.tongtongstudio.ami.data.datatables.ThingToDo
+import com.tongtongstudio.ami.data.datatables.WorkSession
 import java.util.Calendar
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 class DataTestUtil(private val ttdDao: TaskDao) {
 
     val util = Util()
 
-    private val tasks = listOf(
-        Task(
-            "Faire les courses",
-            4,
-            util.getRdDate(),
-            importance = 4,
-            urgency = 8,
-            estimatedWorkingTime = util.getTimeInMillis(1, 30),
-            skillLevel = 10
-        ),
-        Task(
-            "Examen de python",
-            1,
-            util.getRdDate(),
-            importance = 9,
-            urgency = 2,
-            estimatedWorkingTime = util.getTimeInMillis(4, 0),
-            skillLevel = 4
-        ),
-        Task(
-            "Rdv dentiste",
-            2,
-            util.getRdDate(),
-            importance = 6,
-            urgency = 10,
-            estimatedWorkingTime = util.getTimeInMillis(0, 30),
-        ),
-        Task(
-            "Aller voir un pote",
-            4,
-            util.getRdDate(),
-            importance = 4,
-            urgency = 8,
-            estimatedWorkingTime = util.getTimeInMillis(2, 30),
-            skillLevel = 10,
-            dependencyId = 2
-        ),
-        Task(
-            "Créer un test pour la base de donnée",
-            4,
-            util.getRdPastDate(),
-            importance = 4,
-            urgency = 8,
-            estimatedWorkingTime = util.getTimeInMillis(1, 30),
-            skillLevel = 10,
-        ),
-        Task(
-            "Ajouter une tâche enfant",
-            6,
-            util.getRdDate(),
-            parentTaskId = 5
-        ),
-        Task(
-            "Examen de math",
-            1,
-            util.getRdPastDate(),
-            importance = 9,
-            urgency = 2,
-            estimatedWorkingTime = util.getTimeInMillis(4, 0),
-            skillLevel = 4
-        ),
-        Task(
-            "Faire une lessive",
-            2,
-            util.getRdPastDate(),
-            importance = 6,
-            urgency = 10,
-            estimatedWorkingTime = util.getTimeInMillis(0, 30),
-        ),
-        Task(
-            "Boire de l'eau",
-            4,
-            util.getRdPastDate(),
-            importance = 4,
-            urgency = 8,
-            estimatedWorkingTime = util.getTimeInMillis(2, 30),
-            skillLevel = 10
-        )
-
+    fun createRdTask(index: Int) = Task(
+        "Task $index",
+        Random.nextInt(1, 10),
+        util.getRdDate(),
+        importance = Random.nextInt(1, 10),
+        urgency = Random.nextInt(1, 10),
+        estimatedWorkingTime = util.getTimeInMillis(Random.nextInt(0, 5), 30),
+        skillLevel = 10,
+        id = index.toLong()
     )
 
+    fun createTaskCompletion(taskId: Long, taskDueDate: Long): TaskCompletion {
+        val isCompleted = Random.nextBoolean()
+        val completionDate = Calendar.getInstance().run {
+            timeInMillis = taskDueDate
+            add(Calendar.DAY_OF_MONTH,Random.nextInt(-5,5))
+            timeInMillis
+        }
+        return TaskCompletion(
+            taskId = taskId,
+            isCompleted = isCompleted,
+            completionDate = completionDate
+        )
+    }
+
+    fun createWorkSession(taskId: Long, taskDueDate: Long, taskEstimatedTime: Long) = WorkSession(
+        parentTaskId = taskId,
+        duration = taskEstimatedTime + (Random.nextInt(-1..1) * taskEstimatedTime).toLong(),
+        comment = null,
+        date = Calendar.getInstance().run {
+            timeInMillis = taskDueDate
+            add(Calendar.DAY_OF_MONTH, Random.nextInt(-3,0))
+            timeInMillis
+        }
+    )
+
+    private val tasks = buildList {
+        for (i in 1..10) {
+            add(createRdTask(i))
+        }
+    }
+
+    val taskCompletions: List<TaskCompletion> = buildList {
+        for (task in tasks) {
+            add(createTaskCompletion(task.id,task.dueDate!!))
+        }
+    }
+
+    val workSessions: List<WorkSession> = buildList {
+        for (task in tasks){
+            add(createWorkSession(task.id, task.dueDate!!, task.estimatedWorkingTime!!))
+        }
+    }
     val startOfDay: Long = Calendar.getInstance().run {
         set(Calendar.HOUR, 0)
         set(Calendar.MINUTE, 0)
@@ -105,6 +83,23 @@ class DataTestUtil(private val ttdDao: TaskDao) {
 
     fun getTasks(): List<Task> = tasks
     fun getTasksListSize(): Int = tasks.size
+
+    fun getThingsToDo(): List<ThingToDo> = buildList {
+        tasks.forEachIndexed { index, task ->
+            add(ThingToDo(
+                TaskRelations(
+                    mainTask = task, taskDependency = null, category = null,
+                    parentProject = null
+                ),
+                totalMainSubTtd = 0,
+                nbSubTasks = 0,
+                nbSubTasksCompleted = 0,
+                lastCompletionStatus = taskCompletions[index].isCompleted,
+                completionRate = 0f,
+            )
+            )
+        }
+    }
 
     suspend fun insertTestTasks() {
         ttdDao.insertTasks(tasks)

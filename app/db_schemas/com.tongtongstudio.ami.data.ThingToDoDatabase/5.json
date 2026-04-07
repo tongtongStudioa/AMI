@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "b13bf147181b38e703ee58ffa0c46484",
+    "identityHash": "f5f10407ce8dd17ef2dd23dd262d3bfe",
     "entities": [
       {
         "tableName": "task_table",
@@ -137,6 +137,26 @@
             "task_id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_task_table_parent_task_id",
+            "unique": false,
+            "columnNames": [
+              "parent_task_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_task_table_parent_task_id` ON `${TABLE_NAME}` (`parent_task_id`)"
+          },
+          {
+            "name": "index_task_table_task_recurrence_id",
+            "unique": false,
+            "columnNames": [
+              "task_recurrence_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_task_table_task_recurrence_id` ON `${TABLE_NAME}` (`task_recurrence_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "Category",
@@ -695,9 +715,19 @@
         ]
       }
     ],
+    "views": [
+      {
+        "viewName": "latest_completion_view",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT\n            parent_task_id,\n            MAX(completionDate) as last_completion_date,\n            isCompleted as is_completed \n        FROM task_completion_table\n        GROUP BY parent_task_id"
+      },
+      {
+        "viewName": "thing_to_do_view",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS WITH RECURSIVE TaskH AS (\n            SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight \n            FROM task_table t \n            JOIN task_table st ON t.task_id = st.task_id \n            UNION ALL \n            SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t \n            JOIN TaskH th ON t.parent_task_id = th.task_id  -- Ajoute récursivement les sous-tâches des sous-tâches\n        )\n        SELECT t.*, \n            COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS total_main_sub_ttd,  -- Comptage des sous-tâches de niveau 1 \n            COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nb_sub_tasks,  -- On enlève le projet principal du comptage\n            COUNT(case when lc.is_completed = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nb_sub_tasks_completed, \n            lc.is_completed as last_completion_status, \n            SUM((case when lc.is_completed = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.is_completed * st.weight end) * 100.0 ) AS completion_rate \n        FROM task_table t \n        LEFT JOIN TaskH AS st ON st.task_id = t.task_id \n        LEFT JOIN latest_completion_view AS lc ON t.task_id = lc.parent_task_id \n        GROUP by st.rootTtd"
+      }
+    ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b13bf147181b38e703ee58ffa0c46484')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f5f10407ce8dd17ef2dd23dd262d3bfe')"
     ]
   }
 }

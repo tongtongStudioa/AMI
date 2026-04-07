@@ -7,6 +7,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.StrictMode
+import android.util.AttributeSet
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -32,6 +35,9 @@ import com.tongtongstudio.ami.util.TutorialTrigger
 import dagger.hilt.android.AndroidEntryPoint
 import hotchemi.android.rate.AppRate
 import androidx.core.net.toUri
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
@@ -52,6 +58,12 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
         appTutorial = AppTutorial(this, this, prefs)
         setContentView(R.layout.activity_main)
 
+
+        val policy = StrictMode.ThreadPolicy.Builder()
+            .detectAll()
+            .penaltyLog()
+            .build()
+        StrictMode.setThreadPolicy(policy)
 
         AppRate.with(this)
             .setInstallDays(10) // 0 means install day.
@@ -113,7 +125,9 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
                 }
             }
         }
+    }
 
+    override fun onCreateView(name: String, context: Context, attrs: AttributeSet): View? {
         showWelcomeDialog(this)
 
         // Check at the opening of the app
@@ -128,6 +142,8 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
                 showCompleteAssessmentDialog(intent)
             }
         }
+
+        return super.onCreateView(name, context, attrs)
     }
 
     private fun showWelcomeDialog(context: Context) {

@@ -1,11 +1,13 @@
 package com.tongtongstudio.ami.data.datatables
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.tongtongstudio.ami.data.ThingToDoDatabase
 import com.tongtongstudio.ami.data.dao.TaskCompletionDao
 import com.tongtongstudio.ami.data.dao.TaskDao
+import com.tongtongstudio.ami.data.dao.WorkSessionDao
 import com.tongtongstudio.ami.util.DataTestUtil
 import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.flow.first
@@ -22,6 +24,7 @@ internal class TtdTest {
 
     private lateinit var taskDao: TaskDao
     private lateinit var taskCompletionDao: TaskCompletionDao
+    private lateinit var workSessionDao: WorkSessionDao
     private lateinit var db: ThingToDoDatabase
     private lateinit var dataTestUtil: DataTestUtil
 
@@ -39,10 +42,16 @@ internal class TtdTest {
         // retrieve thing_to_do's DAO
         taskDao = db.taskDao()
         taskCompletionDao = db.taskCompletionDao()
-
+        workSessionDao = db.workSession()
         // populate db
         dataTestUtil = DataTestUtil.getInstance(taskDao)
         dataTestUtil.insertTestTasks()
+        dataTestUtil.taskCompletions.forEach {
+            taskCompletionDao.insert(it)
+        }
+        dataTestUtil.workSessions.forEach {
+            workSessionDao.insert(it)
+        }
     }
 
     @After
@@ -57,11 +66,10 @@ internal class TtdTest {
         val subTasks = dataTestUtil.getTasks().filter {
             it.parentTaskId != null
         }
-        print("Sub tasks : ")
-        subTasks.forEach { print(it.title+ ", ") }
 
         val result = taskDao.getSubTasks(5).first()
-        assert(result.size == subTasks.size) {"Problem : not same size list; result list size = ${result.size} / subtasks test data = ${subTasks.size}"}
+        assertEquals("Problem : not same size list; result list size = ${result.size} / subtasks test data = ${subTasks.size}",
+            subTasks.size,result.size)
 
     }
 
@@ -80,18 +88,24 @@ internal class TtdTest {
     @Test
     @Throws(IOException::class)
     fun getAllTasks_EisenhowerMatrixSort_returnSortedList() = runBlocking {
-
         println("Data inserted:")
-        val tasks = dataTestUtil.getTasks().filter {
-            it.startDate?.let {
+        val thingsToDo = dataTestUtil.getThingsToDo().filterIndexed { index, thingToDo ->
+            thingToDo.taskRelations.mainTask.startDate?.let {
                 it > dataTestUtil.startOfDay && it < dataTestUtil.endOfDay
-            } == true || it.dueDate?.let {
-                it < dataTestUtil.endOfDay
-            } == true || it.deadline?.let {
+            } == true || thingToDo.taskRelations.mainTask.dueDate?.let {
+                it < dataTestUtil.endOfDay && it > dataTestUtil.startOfDay
+            } == true || thingToDo.taskRelations.mainTask.dueDate?.let {
+                it < dataTestUtil.endOfDay && !dataTestUtil.taskCompletions[index].isCompleted
+            } == true || thingToDo.taskRelations.mainTask.deadline?.let {
                 it > dataTestUtil.startOfDay && it < dataTestUtil.endOfDay
             } == true
-        }
-        tasks.forEach { print(it.title + ", ") }
+        }.sortedWith(
+            compareByDescending <ThingToDo> { it.taskRelations.mainTask.priority }
+                .thenByDescending { it.taskRelations.mainTask.importance }
+                .thenByDescending { it.taskRelations.mainTask.urgency }
+                .thenByDescending { it.taskRelations.mainTask.estimatedWorkingTime })
+
+        thingsToDo.forEach { print(it.taskRelations.mainTask.title + ", ") }
         val resultedFlow = taskDao.getTasksOrderByEisenhowerMatrixSort(
             false,
             false,
@@ -103,13 +117,8 @@ internal class TtdTest {
         println("Sorted data:")
         result.forEach { println(it) }
 
-        assert(tasks.size == result.size) {" Not same size list : result list size = ${result.size} / tasks test data = ${tasks.size}"}
-        assertEquals(result, result.sortedWith(
-            compareByDescending <ThingToDo> { it.taskRelations.mainTask.priority }
-                .thenByDescending { it.taskRelations.mainTask.importance }
-                .thenByDescending { it.taskRelations.mainTask.urgency }
-                .thenByDescending { it.taskRelations.mainTask.estimatedWorkingTime })
-        )
+        assert(thingsToDo.size == result.size) {" Not same size list : result list size = ${result.size} / tasks test data = ${thingsToDo.size}"}
+        assertEquals(thingsToDo.map { it.taskRelations.mainTask.title }, result.map { it.taskRelations.mainTask.title })
     }
 
     @Test
@@ -133,25 +142,30 @@ internal class TtdTest {
         val resultedFlow = taskDao.getLaterTasks(endOfDay, endOfDayWeek)
         val result = resultedFlow.first()
 
-        println("Result :")
-        result.forEach { println(it.taskRelations.mainTask.title + " " + it.taskRelations.mainTask.dueDate) }
+        val thingsToDoRef = dataTestUtil.getThingsToDo()
+            .filter { it.taskRelations.mainTask.dueDate!! < endOfDayWeek && it.taskRelations.mainTask.dueDate > endOfDay}
+            .filter { it.lastCompletionStatus == false }
+            .sortedWith(
+                compareBy<ThingToDo> { it.taskRelations.mainTask.dueDate }
+                    .thenBy { it.taskRelations.mainTask.deadline }
+                    .thenBy { it.taskRelations.mainTask.startDate }
+                    .thenBy { it.taskRelations.mainTask.priority }
+                    .thenByDescending { it.taskRelations.mainTask.estimatedWorkingTime }
+            ).map { it.taskRelations.mainTask.title }
 
-        assertEquals(result, result.sortedWith(
-            compareBy<ThingToDo> { it.taskRelations.mainTask.dueDate }
-                .thenBy { it.taskRelations.mainTask.deadline }
-                .thenBy { it.taskRelations.mainTask.startDate }
-                .thenBy { it.taskRelations.mainTask.priority }
-                .thenByDescending { it.taskRelations.mainTask.estimatedWorkingTime }
-        ))
+        println("Result :")
+        result.forEach { println(it.taskRelations.mainTask.title) }
+
+        assertEquals(thingsToDoRef, result.map { it.taskRelations.mainTask.title },
+            )
     }
 
     @Test
     fun getAchievementRate_allTasks_correctRate() = runBlocking {
 
         val resultingRate = taskDao.getAchievementRate()
-
-        // actually rate must be 50.0 (%)
-        assertEquals(50.0F, resultingRate)
+        val rateRef = dataTestUtil.taskCompletions.count { it.isCompleted }.toFloat() / dataTestUtil.taskCompletions.count() * 100
+        assertEquals(rateRef, resultingRate,0.01f)
 
     }
 
@@ -159,9 +173,14 @@ internal class TtdTest {
     fun getHabitCompletionRate_allRecurringTasks_correctRate() = runBlocking {
 
         val resultingRate = taskDao.getHabitCompletionRate()
+        val countRecurrentTask = dataTestUtil.getTasks().count { it.recurrenceInfosId != null }
+        val rateRef = dataTestUtil.getTasks().filter { it.recurrenceInfosId != null }.map { task ->
+            val count = dataTestUtil.taskCompletions.count { it.id == task.recurrenceInfosId }
+            dataTestUtil.taskCompletions.filter { it.id ==  task.recurrenceInfosId }.count {it.isCompleted}.toDouble() / if (count != 0) count else 1
 
-        // actually rate must be 66.7 (%)
-        assertEquals(66.7F, resultingRate)
+        }.sumOf { it }.toFloat() / if (countRecurrentTask != 0) countRecurrentTask else 1
+
+        assertEquals(rateRef, resultingRate,0.01f)
 
     }
 
@@ -169,23 +188,25 @@ internal class TtdTest {
     fun getOnTimeCompletionRate_allCompletedTasks_correctRate() = runBlocking {
 
         val resultingRate = taskDao.getOnTimeCompletionTasksRate()
+        val rateRef = dataTestUtil.getTasks().filterIndexed { index, task ->
+            Log.i("ON TIME COMPLETION RATE", (dataTestUtil.taskCompletions[index].isCompleted && task.dueDate!! >= dataTestUtil.taskCompletions[index].completionDate).toString())
+            dataTestUtil.taskCompletions[index].isCompleted && task.dueDate!! >= dataTestUtil.taskCompletions[index].completionDate
+        }.count() / dataTestUtil.getTasks().filterIndexed {index, task -> dataTestUtil.taskCompletions[index].isCompleted }.count().toFloat() * 100
 
-        // actually rate must be 25.0 (%)
-        assertEquals(25.0F, resultingRate)
+        assertEquals(rateRef, resultingRate,0.0002f)
     }
 
     @Test
     fun getEstimationAccuracyRate_allCompletedTasks_correctRate() = runBlocking {
 
-        val resultingRate: Float = taskDao.getAccuracyRateOfEstimatedWorkTime(0.2F,1)
-
-        // actually rate must be 25.0 (%)
-        assertEquals(25.0F, resultingRate)
+        val resultingRate: Float = taskDao.getAccuracyRateOfEstimatedWorkTime(0.2F)
+        val rateRef = dataTestUtil.getTasks().map { it.estimatedWorkingTime }.filterIndexed { index, estimatedTime -> dataTestUtil.workSessions[index].duration < estimatedTime!! * 1.2 && dataTestUtil.workSessions[index].duration >  estimatedTime * 0.8 }.count() / dataTestUtil.getTasksListSize().toFloat() * 100
+        assertEquals(rateRef, resultingRate,0.001f)
 
     }
 
     @Test
-    fun testTaskCompletionStreak() = runBlocking {
+    fun taskCompletionStreak_correctRate() = runBlocking {
         val task = Task(title = "Task Streak", dueDate = null, priority = 1)
         val taskId = taskDao.insert(task)
 
@@ -220,14 +241,10 @@ internal class TtdTest {
         val resultedFlow = taskDao.getLaterTasks(endOfDay, endOfDayTomorrow)
         val result = resultedFlow.first()
 
-        val list = dataTestUtil.getTasks()
-        val tasksList = ArrayList<Task>()
-        for (task in list) {
-            if ((task.dueDate != null && task.dueDate!! < endOfDayTomorrow || task.startDate != null && task.startDate!! < endOfDayTomorrow) && task.dueDate != null && task.dueDate!! > endOfDay && task.startDate != null && task.startDate!! > endOfDay) {
-                tasksList.add(task)
-            }
+        val thingsToDoRef = dataTestUtil.getTasks().filterIndexed {index,  task ->
+            !dataTestUtil.taskCompletions[index].isCompleted && ((task.dueDate != null && task.dueDate < endOfDayTomorrow && task.dueDate > endOfDay) || (task.startDate != null && task.startDate > endOfDay && task.startDate < endOfDayTomorrow))
         }
 
-        assertEquals(result.size, tasksList.size)
+        assertEquals(thingsToDoRef.size, result.size)
     }
 }

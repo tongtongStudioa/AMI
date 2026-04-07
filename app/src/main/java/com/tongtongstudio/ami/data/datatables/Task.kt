@@ -7,6 +7,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.ForeignKey.Companion.SET_NULL
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 import java.text.DateFormat
@@ -41,7 +42,11 @@ import kotlin.math.abs
             parentColumns = ["task_id"],
             childColumns = ["dependency_task_id"],
             onDelete = SET_NULL
-        )]
+        )],
+    indices = [
+        Index("parent_task_id"),
+        Index("task_recurrence_id")
+    ]
 )
 data class Task(
     val title: String,
@@ -124,11 +129,15 @@ data class Task(
             priority: Int?,
             importance: Int? = null,
             urgency: Int? = null
-        ): Int? {
-            return if (importance != null && urgency != null)
-                (importance * urgency) / 10
-            else
-                priority
+        ): Int {
+            return when {
+                importance != null && urgency != null ->
+                    (importance + urgency) / 2
+                priority != null -> priority
+                importance != null -> importance
+                urgency != null -> urgency
+                else -> 5
+            }
         }
 
         fun getDateFormatted(date: Long?): String? {

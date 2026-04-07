@@ -28,6 +28,9 @@ import com.tongtongstudio.ami.data.datatables.TaskRecurrence
 import com.tongtongstudio.ami.data.datatables.TaskRecurrenceDaysCrossRef
 import com.tongtongstudio.ami.data.datatables.Unit
 import com.tongtongstudio.ami.data.datatables.WorkSession
+import com.tongtongstudio.ami.data.view.LATEST_COMPLETION_VIEW
+import com.tongtongstudio.ami.data.view.LatestCompletionView
+import com.tongtongstudio.ami.data.view.ThingToDoView
 import com.tongtongstudio.ami.dependenciesInjection.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -225,6 +228,71 @@ val MIGRATION_3_5 = object : Migration(3, 5) {
 
         // Renommer la nouvelle table
         db.execSQL("ALTER TABLE new_task_table RENAME TO task_table")
+
+        // Add indexes
+        db.execSQL(
+            """
+            CREATE INDEX IF NOT EXISTS index_task_table_parent_task_id 
+            ON task_table(parent_task_id)
+        """
+        )
+        db.execSQL(
+            """
+            CREATE INDEX IF NOT EXISTS index_task_table_task_recurrence_id
+            ON task_table(task_recurrence_id)
+        """
+        )
+
+        // Create thing to do view
+        //db.execSQL("DROP VIEW thing_to_do_view")
+        //db.execSQL("DROP VIEW IF EXISTS latest_completion_view")
+
+        db.execSQL(
+            "CREATE VIEW IF NOT EXISTS latest_completion_view AS $LATEST_COMPLETION_VIEW"
+        )
+
+        db.execSQL(
+            """
+            CREATE VIEW thing_to_do_view AS
+            WITH RECURSIVE TaskH AS (
+                SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0 AS weight 
+                FROM task_table t 
+                JOIN task_table st ON t.task_id = st.task_id 
+
+                UNION ALL 
+
+                SELECT t.*, depth + 1, th.rootTtd, 
+                       weight / (
+                           SELECT count(*) 
+                           FROM task_table 
+                           WHERE parent_task_id = th.task_id
+                       )
+                FROM task_table t 
+                JOIN TaskH th ON t.parent_task_id = th.task_id
+            )
+
+            SELECT t.*, 
+                COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS total_main_sub_ttd,
+                COUNT(CASE WHEN st.depth >= 1 AND st.nature = 'SUB_TASK' THEN st.task_id END) AS nb_sub_tasks,
+                COUNT(CASE WHEN lc.is_completed = 1 AND st.depth >= 1 AND st.nature != 'INTERMEDIATE_PROJECT' THEN st.task_id END) AS nb_sub_tasks_completed,
+                lc.is_completed AS last_completion_status,
+                SUM(
+                    CASE 
+                        WHEN lc.is_completed = 1 
+                        AND st.depth >= 1 
+                        AND st.nature != 'INTERMEDIATE_PROJECT'
+                        THEN st.weight 
+                        ELSE 0 
+                    END
+                ) * 100.0 AS completion_rate
+
+            FROM task_table t
+            LEFT JOIN TaskH st ON st.task_id = t.task_id
+            LEFT JOIN latest_completion_view lc ON t.task_id = lc.parent_task_id
+
+            GROUP BY st.rootTtd
+        """.trimIndent()
+        )
     }
 
     fun insertTaskRecurrences(db: SupportSQLiteDatabase) {
@@ -285,6 +353,7 @@ val MIGRATION_3_5 = object : Migration(3, 5) {
         PomodoroSession::class,
         TaskRecurrence::class, TaskRecurrenceDaysCrossRef::class,
         DaysOfWeek::class, TaskCompletion::class],
+    views = [LatestCompletionView::class,ThingToDoView::class],
     version = 5,  exportSchema = true
 )//autoMigrations = [AutoMigration(4,2), AutoMigration(2,3)],
 @TypeConverters(RecurringConverters::class)

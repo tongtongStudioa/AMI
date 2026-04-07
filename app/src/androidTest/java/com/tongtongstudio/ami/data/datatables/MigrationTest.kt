@@ -79,7 +79,6 @@ class MigrationTest {
 
     @Test
     fun migrate3To5_correctlyTransfersTaskCompletionData() {
-        // Step 1: Create database in version 2 and insert a sample task with a completion timestamp
         helper.createDatabase(TEST_DB, 3).apply {
             execSQL(
                 """
@@ -91,7 +90,7 @@ class MigrationTest {
             close()
         }
 
-        // Step 2: Migrate to version 3
+        // Step 2: Migrate to version 5
         val db = helper.runMigrationsAndValidate(TEST_DB, 5, true, MIGRATION_3_5)
 
         // Step 3: Check if data record exists in task_table and are exact

@@ -8,7 +8,11 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
@@ -18,31 +22,9 @@ class InsightsViewModel @Inject constructor(
     val repository: Repository,
 ) : ViewModel() {
 
-    private val _categoryId = MutableLiveData<Long?>(null)
-    val categoryId: LiveData<Long?>
-        get() = _categoryId
-
-    val tasksAchievementRate =
-        categoryId.asFlow().flatMapLatest { repository.getTasksAchievementRate(it) }.asLiveData()
-    val completedTasksCount =
-        categoryId.asFlow().flatMapLatest { repository.getCompletedTasksCount(it) }.asLiveData()
-    val projectsAchievementRate =
-        categoryId.asFlow().flatMapLatest { repository.getProjectsAchievementRate(it) }.asLiveData()
-    val completedProjectsCount =
-        categoryId.asFlow().flatMapLatest { repository.getCompletedProjectsCount(it) }.asLiveData()
-    val timeWorked = categoryId.asFlow().flatMapLatest { repository.getTimeWorked(it) }.asLiveData()
-    val ttdMaxStreak =
-        categoryId.asFlow().flatMapLatest { repository.getMaxStreak(it) }.asLiveData()
-    val ttdCurrentMaxStreak =
-        categoryId.asFlow().flatMapLatest { repository.getCurrentMaxStreak(it) }.asLiveData()
-    val accuracyRateEstimation =
-        categoryId.asFlow().flatMapLatest { repository.getAccuracyRateEstimation(it) }.asLiveData()
-    val onTimeCompletionRate =
-        categoryId.asFlow().flatMapLatest { repository.getOnTimeCompletionRate(it) }.asLiveData()
-    val habitCompletionRate =
-        categoryId.asFlow().flatMapLatest { repository.getHabitCompletionRate(it) }.asLiveData()
-    val timeWorkedDistribution =
-        categoryId.asFlow().flatMapLatest { repository.getTimeWorkedGrouped(it) }.asLiveData()
+    private val _uiState: MutableStateFlow<InsightsUiState> = MutableStateFlow(InsightsUiState())
+    val uiState: StateFlow<InsightsUiState>
+        get() = _uiState
 
     val startDate: Long = Calendar.getInstance().run {
         set(Calendar.HOUR_OF_DAY, 0)
@@ -51,15 +33,60 @@ class InsightsViewModel @Inject constructor(
         add(Calendar.DAY_OF_MONTH, -7)
         timeInMillis
     }
+
     val endDate: Long = Calendar.getInstance().run {
         timeInMillis
     }
 
-    val achievementsByPeriod =
-        categoryId.asFlow()
-            .flatMapLatest { repository.getCompletedTasksCountByPeriod(it, startDate, endDate) }
-            .asLiveData()
+    private val _categoryId = MutableLiveData<Long?>(null)
+    val categoryId: LiveData<Long?>
+        get() = _categoryId
 
+    init {
+        viewModelScope.launch {
+            repository.getCategories().collect { categories ->
+                _uiState.update {
+                    it.copy(categories = categories)
+                }
+            }
+        }
+        loadInsights()
+    }
+
+    fun loadInsights(categoryId: Long? = null) = viewModelScope.launch(Dispatchers.IO) {
+
+        val tasksAchievementRate =  repository.getTasksAchievementRate(categoryId)
+        val completedTasksCount = repository.getCompletedTasksCount(categoryId)
+        val projectsAchievementRate = repository.getProjectsAchievementRate(categoryId)
+        val completedProjectsCount = repository.getCompletedProjectsCount(categoryId)
+        val timeWorked = repository.getTimeWorked(categoryId)
+        val ttdMaxStreak =
+            repository.getMaxStreak(categoryId)
+        val ttdCurrentMaxStreak =
+            repository.getCurrentMaxStreak(categoryId)
+        val accuracyRateEstimation =
+            repository.getAccuracyRateEstimation(categoryId)
+        val onTimeCompletionRate =
+            repository.getOnTimeCompletionRate(categoryId)
+        val habitCompletionRate = repository.getHabitCompletionRate(categoryId)
+        val timeWorkedDistribution =  repository.getTimeWorkedGrouped(categoryId)
+
+        _uiState.update {
+            it.copy(
+                tasksAchievementRate = tasksAchievementRate,
+                completedTasksCount = completedTasksCount,
+                completedProjectsCount = completedProjectsCount,
+                projectsAchievementRate = projectsAchievementRate,
+                timeWorked = timeWorked,
+                ttdMaxStreak = ttdMaxStreak,
+                ttdCurrentMaxStreak = ttdCurrentMaxStreak,
+                accuracyRateEstimation = accuracyRateEstimation,
+                onTimeCompletionRate = onTimeCompletionRate,
+                habitCompletionRate = habitCompletionRate,
+                timeWorkedDistribution = timeWorkedDistribution
+            )
+        }
+    }
     fun updateCategoryId(title: String) = viewModelScope.launch {
         val category = repository.getCategoryByTitle(title)
         _categoryId.value = category?.id
@@ -69,6 +96,4 @@ class InsightsViewModel @Inject constructor(
         val category = repository.getCategoryById(id)
         _categoryId.value = category.id
     }
-
-    val categories = repository.getCategories().asLiveData()
 }

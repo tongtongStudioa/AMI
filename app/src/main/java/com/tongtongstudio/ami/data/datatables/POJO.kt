@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.Parcelable
 import android.util.Log
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
@@ -47,11 +48,16 @@ data class TaskRelations(
 data class ThingToDo(
     @Embedded
     val taskRelations: TaskRelations,
-    val nbSubTasks: Int?,
+    @ColumnInfo(name = "total_main_sub_ttd")
     val totalMainSubTtd: Int?,
+    @ColumnInfo(name = "nb_sub_tasks")
+    val nbSubTasks: Int?,
+    @ColumnInfo(name = "nb_sub_tasks_completed")
     val nbSubTasksCompleted: Int?,
-    val completionRate: Float?,
-    val lastCompletionStatus: Boolean?// True if completed already or False or null if not
+    @ColumnInfo(name = "last_completion_status")
+    val lastCompletionStatus: Boolean?, // True if completed already or False or null if not
+    @ColumnInfo(name = "completion_rate")
+    val completionRate: Float?
 ) : Parcelable {
 
     /**

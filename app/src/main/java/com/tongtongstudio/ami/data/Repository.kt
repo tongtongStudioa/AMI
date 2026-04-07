@@ -232,97 +232,97 @@ class Repository @Inject constructor(
         else taskDao.getUpcomingTasksCount(endDate)
     }
 
-    fun getTasksAchievementRate(categoryId: Long? = null): Flow<Float> {
+    suspend fun getTasksAchievementRate(categoryId: Long? = null): Float {
         return if (categoryId != null) taskDao.getAchievementRateByCategory(categoryId) else taskDao.getAchievementRate()
     }
 
-    fun getProjectsAchievementRate(categoryId: Long? = null): Flow<Float> {
+    suspend fun getProjectsAchievementRate(categoryId: Long? = null): Float {
         return if (categoryId != null) taskDao.getProjectsAchievementRateByCategory(categoryId) else taskDao.getProjectsAchievementRate()
     }
 
-    fun getCompletedProjectsCount(categoryId: Long? = null): Flow<Int> {
+    suspend fun getCompletedProjectsCount(categoryId: Long? = null): Int {
         return if (categoryId != null)
             taskDao.getCategoryCompletedProjectsCount(categoryId)
         else taskDao.getCompletedProjectsCount()
     }
 
-    fun getCompletedProjectsCountByPeriod(
+    suspend fun getCompletedProjectsCountByPeriod(
         categoryId: Long? = null,
         startDate: Long,
         endDate: Long
-    ): Flow<List<TtdAchieved?>?> {
+    ): List<TtdAchieved> {
         return if (categoryId != null)
-            taskDao.getCompletedTasksByPeriodAndCategory(categoryId, startDate, endDate)
+            taskDao.getCompletedTasksByPeriod(categoryId, startDate, endDate)
         else taskDao.getCompletedTasksByPeriod(startDate, endDate)
     }
 
 
-    fun getCompletedTasksCount(categoryId: Long? = null): Flow<Int> {
+    suspend fun getCompletedTasksCount(categoryId: Long? = null): Int {
         return if (categoryId != null) taskDao.getCompletedTasksCount(categoryId) else taskDao.getCompletedTasksCount()
     }
 
-    fun getCompletedTasksCountByPeriod(
+    suspend fun getCompletedTasksCountByPeriod(
         categoryId: Long? = null,
         startDate: Long,
         endDate: Long
-    ): Flow<List<TtdAchieved?>?> {
-        return if (categoryId != null) taskDao.getCompletedTasksByPeriodAndCategory(
+    ): List<TtdAchieved?> {
+        return if (categoryId != null) taskDao.getCompletedTasksByPeriod(
             categoryId,
             startDate,
             endDate
         ) else taskDao.getCompletedTasksByPeriod(startDate, endDate)
     }
 
-    fun getTimeWorkedGrouped(categoryId: Long? = null): Flow<List<TimeWorkedDistribution>> {
+    suspend fun getTimeWorkedGrouped(categoryId: Long? = null): List<TimeWorkedDistribution> {
         return if (categoryId != null)
             getTimeWorkedByTask(categoryId)
         else getTimeWorkedByCategory()
     }
 
-    private fun getTimeWorkedByCategory(): Flow<List<TimeWorkedDistribution>> {
+    private suspend fun getTimeWorkedByCategory(): List<TimeWorkedDistribution> {
         return taskDao.getTimeWorkedPerCategory()
     }
 
-    private fun getTimeWorkedByTask(categoryId: Long): Flow<List<TimeWorkedDistribution>> {
+    private suspend fun getTimeWorkedByTask(categoryId: Long): List<TimeWorkedDistribution> {
         return taskDao.getTimeWorkedPerTask(categoryId)
     }
 
-    fun getAccuracyRateEstimation(
+    suspend fun getAccuracyRateEstimation(
         categoryId: Long? = null,
         errorPercent: Float = 0.3F
-    ): Flow<Float?> {
+    ): Float {
         return if (categoryId != null)
             taskDao.getCategoryAccuracyRateOfEstimatedWorkTime(categoryId, errorPercent)
         else taskDao.getAccuracyRateOfEstimatedWorkTime(errorPercent)
     }
 
-    fun getOnTimeCompletionRate(
+    suspend fun getOnTimeCompletionRate(
         categoryId: Long? = null,
-    ): Flow<Float?> {
+    ): Float? {
         return if (categoryId != null)
             taskDao.getOnTimeCompletionCategoryTasksRate(categoryId)
         else taskDao.getOnTimeCompletionTasksRate()
     }
 
-    fun getTimeWorked(categoryId: Long? = null): Flow<Long> {
+    suspend fun getTimeWorked(categoryId: Long? = null): Long {
         return if (categoryId != null)
-            taskDao.getSumCategoryTimeWorked(categoryId)
+            taskDao.getTotalTimeWorked(categoryId)
         else taskDao.getTotalTimeWorked()
     }
 
-    fun getMaxStreak(categoryId: Long? = null): Flow<TtdStreakInfo> {
+    suspend fun getMaxStreak(categoryId: Long? = null): TtdStreakInfo {
         return if (categoryId != null)
             taskDao.getTaskMaxStreak(categoryId)
         else taskDao.getTaskMaxStreak()
     }
 
-    fun getCurrentMaxStreak(categoryId: Long? = null): Flow<TtdStreakInfo> {
+    suspend fun getCurrentMaxStreak(categoryId: Long? = null): TtdStreakInfo {
         return if (categoryId != null)
             taskDao.getTaskCurrentMaxStreak(categoryId)
         else taskDao.getTaskCurrentMaxStreak()
     }
 
-    fun getHabitCompletionRate(categoryId: Long? = null): Flow<Float?> {
+    suspend fun getHabitCompletionRate(categoryId: Long? = null): Float {
         return if (categoryId != null)
             taskDao.getCategoryHabitCompletionRate(categoryId)
         else taskDao.getHabitCompletionRate()

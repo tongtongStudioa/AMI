@@ -9,6 +9,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.github.mikephil.charting.animation.Easing
@@ -29,6 +32,8 @@ import com.github.mikephil.charting.formatter.PercentFormatter
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.transition.MaterialFadeThrough
 import com.tongtongstudio.ami.R
+import com.tongtongstudio.ami.data.dao.CategoryDao
+import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.PATTERN_FORMAT_DATE
 import com.tongtongstudio.ami.data.datatables.TimeWorkedDistribution
 import com.tongtongstudio.ami.data.datatables.TtdAchieved
@@ -36,6 +41,7 @@ import com.tongtongstudio.ami.databinding.FragmentInsightsBinding
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -60,82 +66,77 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
 
         setUpToolbar()
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.uiState.collect {
+                    updateUi(it)
+                }
+            }
+        }
+
+        viewModel.categoryId.observe(viewLifecycleOwner) {
+            viewModel.loadInsights(it)
+        }
+
+
         initCombinedChart()
         initPieChart()
-
-        initPopUpMenuCategory(binding.btnChangeCategory1)
-        initPopUpMenuCategory(binding.btnChangeCategory2)
-
-        viewModel.tasksAchievementRate.observe(viewLifecycleOwner) {
-            binding.tvTaskAchievementRate.text = getString(
-                    R.string.completion_rate_value,
-                    it
-            )
-        }
-        viewModel.completedTasksCount.observe(viewLifecycleOwner) {
-            binding.tvNbTasksCompleted.text = it.toString()
-        }
-        viewModel.projectsAchievementRate.observe(viewLifecycleOwner) {
-            binding.tvProjectsAchievementRate.text = getString(
-                    R.string.completion_rate_value,
-                    it
-            )
-        }
-        viewModel.completedProjectsCount.observe(viewLifecycleOwner) {
-            binding.tvNbProjectsCompleted.text = it.toString()
-        }
-        viewModel.timeWorked.observe(viewLifecycleOwner) {
-            binding.tvTimeWorked.text = TrackingTimeUtility.getFormattedTimeWorked(it)
-        }
-        viewModel.accuracyRateEstimation.observe(viewLifecycleOwner) {
-            binding.tvEstimationTimeAccuracy.text = if (it != null)
-                getString(
-                    R.string.completion_rate_value,
-                    it
-                ) else getString(R.string.no_information)
-        }
-        viewModel.onTimeCompletionRate.observe(viewLifecycleOwner) {
-            binding.tvOnTimeCompletionTime.text = if (it != null)
-                getString(
-                    R.string.completion_rate_value,
-                    it
-                ) else getString(R.string.no_information)
-        }
-        viewModel.ttdCurrentMaxStreak.observe(viewLifecycleOwner) {
-            binding.tvCurrentMaxStreak.text =
-                it?.streak?.toString() ?: getString(R.string.no_information)
-        }
-        viewModel.ttdMaxStreak.observe(viewLifecycleOwner) {
-            binding.tvMaxStreak.text =
-                it?.streak?.toString() ?: getString(R.string.no_information)
-        }
-        viewModel.habitCompletionRate.observe(viewLifecycleOwner) {
-            binding.tvHabitCompletionRate.text = if (it != null)
-                getString(
-                    R.string.completion_rate_value,
-                    it
-                ) else getString(R.string.no_information)
-        }
-        viewModel.achievementsByPeriod.observe(viewLifecycleOwner) {
-            binding.achievementCombinedChart.isVisible = it?.isNotEmpty() == true
-            if (it != null) {
-                showCombinedChart(it)
-            }
-        }
-        viewModel.timeWorkedDistribution.observe(viewLifecycleOwner) {
-            binding.pieChart.isVisible = it.isNotEmpty()
-            showPieChart(it)
-        }
     }
 
-    private fun initPopUpMenuCategory(button: ImageButton) {
-        val dropDownMenu = PopupMenu(context, button)
-        viewModel.categories.observe(viewLifecycleOwner) {
-            dropDownMenu.menu.clear()
-            dropDownMenu.menu.add(getString(R.string.all))
-            for (category in it) {
-                dropDownMenu.menu.add(category.title)
+    fun updateUi(uiState: InsightsUiState) {
+        binding.apply {
+            initPopUpMenuCategory(btnChangeCategory1,uiState.categories)
+            initPopUpMenuCategory(btnChangeCategory2,uiState.categories)
+            tvTaskAchievementRate.text = getString(
+                R.string.completion_rate_value,
+                uiState.tasksAchievementRate
+            )
+
+            tvNbTasksCompleted.text = uiState.completedTasksCount.toString()
+            tvProjectsAchievementRate.text = getString(
+                R.string.completion_rate_value,
+                uiState.projectsAchievementRate
+            )
+            tvNbProjectsCompleted.text = uiState.completedProjectsCount.toString()
+            tvTimeWorked.text = TrackingTimeUtility.getFormattedTimeWorked(uiState.timeWorked)
+
+            tvEstimationTimeAccuracy.text = if (uiState.accuracyRateEstimation != null)
+                getString(
+                    R.string.completion_rate_value,
+                    uiState.accuracyRateEstimation
+                ) else getString(R.string.no_information)
+            tvOnTimeCompletionTime.text = if (uiState.onTimeCompletionRate != null)
+                getString(
+                    R.string.completion_rate_value,
+                    uiState.onTimeCompletionRate
+                ) else getString(R.string.no_information)
+
+            tvCurrentMaxStreak.text =
+                uiState.ttdCurrentMaxStreak?.streak?.toString() ?: getString(R.string.no_information)
+            tvMaxStreak.text =
+                uiState.ttdMaxStreak?.streak?.toString() ?: getString(R.string.no_information)
+
+            tvHabitCompletionRate.text = if (uiState.habitCompletionRate != null)
+                getString(
+                    R.string.completion_rate_value,
+                    uiState.habitCompletionRate
+                ) else getString(R.string.no_information)
+
+            achievementCombinedChart.isVisible = uiState.achievementsByPeriod.isNotEmpty()
+            if (uiState.achievementsByPeriod.isNotEmpty()) {
+                showCombinedChart(uiState.achievementsByPeriod)
             }
+            pieChart.isVisible = uiState.timeWorkedDistribution.isNotEmpty()
+            showPieChart(uiState.timeWorkedDistribution)
+
+        }
+    }
+    private fun initPopUpMenuCategory(button: ImageButton, categories: List<Category>) {
+        val dropDownMenu = PopupMenu(context, button)
+        dropDownMenu.menu.clear()
+        dropDownMenu.menu.add(getString(R.string.all))
+        for (category in categories) {
+            dropDownMenu.menu.add(category.title)
         }
         button.setOnClickListener {
             dropDownMenu.show()

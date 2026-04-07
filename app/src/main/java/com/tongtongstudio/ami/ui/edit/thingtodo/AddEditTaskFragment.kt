@@ -15,7 +15,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.EditText
 import android.widget.PopupMenu
 import androidx.activity.result.ActivityResultLauncher
@@ -30,11 +29,9 @@ import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.button.MaterialButton
@@ -43,7 +40,7 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.transition.MaterialSharedAxis
+import com.google.android.material.transition.MaterialElevationScale
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.adapter.AutoCompleteAdapter
 import com.tongtongstudio.ami.adapter.simple.AttributeListener
@@ -86,12 +83,8 @@ import com.tongtongstudio.ami.util.DateTimePicker
 import com.tongtongstudio.ami.util.InputValidation
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -108,7 +101,9 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var reminderAdapter: EditAttributesAdapter<Reminder>
     private lateinit var dateTimePicker: DateTimePicker
-    private lateinit var categoryAdapter: AutoCompleteAdapter
+    private lateinit var categoryAdapter: AutoCompleteAdapter<Category>
+    private lateinit var emotionsList: List<String>
+    private lateinit var emotionsAdapter: AutoCompleteAdapter<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,8 +122,8 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 }
             } else showPermissionRationale()
         }
-        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true)
-        returnTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
+        enterTransition = MaterialElevationScale(true) //MaterialSharedAxis(MaterialSharedAxis.X, true)
+        returnTransition = MaterialElevationScale(false) //MaterialSharedAxis(MaterialSharedAxis.X, false)
     }
 
     @InternalCoroutinesApi
@@ -158,43 +153,26 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             }
         }*/
 
-        // Pour les éléments non-editables
-        viewModel.uiState.onEach()
-        { state ->
-            binding.apply {
-                // Creation date task's
-                textViewCreatedDate.isVisible = state.thingToDo != null
-                textViewCreatedDate.text =
-                    getString(R.string.text_created_date, state.creationDateFormatted)
-                //progressBar.isVisible = state.isLoading
-            }
-        }.launchIn(lifecycleScope)
-
+        emotionsList = listOf(getString(R.string.emotion_bad),
+            getString(R.string.emotion_okay), getString(R.string.emotion_excellent))
         binding.apply {
             viewLifecycleOwner.lifecycleScope.launch {
                 viewModel.uiState
                     .filter { it.title.isNotBlank() && it.thingToDo != null }
                     .take(1)
-                    .collect {
+                    .first().let {
                         editTextName.setText(it.title)
                         editTextDescription.setText(it.description)
-                        editTextPriority.setText(it.priority?.toString() ?: "")
-                        editTextUserLevel.setText(it.skillLevel?.toString() ?: "")
+                        if (it.importance != null)
+                            editTextImportance.setText(it.importance.toString())
+                        if (it.skillLevel != null)
+                            editTextUserLevel.setText(it.skillLevel.toString())
                         val radBtnChecked =
                             if (it.nature == Nature.TASK.name || it.nature == Nature.SUB_TASK.name) rbTask.id else rbProject.id
                         radioGroupChoiceNature.check(radBtnChecked)
                         autocompleteTextCategory.setText(it.category?.title ?: "")
+                        autoCompleteTextEmotions.setText(emotionsList[it.estimatedEmotions])
                     }
-            }
-
-            autocompleteTextCategory.setOnItemClickListener { parent, view, position, id ->
-                val categorySelected = categoryAdapter.getCategorySelected(position)
-                if (categorySelected.id == 0L) {
-                    viewModel.updateCategory(null)
-                    autocompleteTextCategory.setText("")
-                } else {
-                    viewModel.updateCategory(categorySelected)
-                }
             }
         }
 
@@ -266,6 +244,11 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
+
+                    R.id.action_edit_informations -> {
+                        showInformationDialog()
+                        true
+                    }
                     R.id.action_create_new_category -> {
                         showCategoryDialog()
                         true
@@ -312,36 +295,34 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                     reminder.getTimeFormatted()
                 )
             }
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.uiState
-                .map { it.reminders }
-                .distinctUntilChanged()
-                .collect { reminders ->
-                    reminderAdapter.submitList(reminders)
-                }
-        }
 
         binding.rvReminders.apply {
             adapter = reminderAdapter
             layoutManager = LinearLayoutManager(requireContext())
-            setHasFixedSize(false)
-        }
+            setHasFixedSize(false)        }
 
         categoryAdapter = AutoCompleteAdapter(requireContext())
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.uiState
-                .map { it.categorySuggestions.toMutableList() }
-                .collect { suggestions ->
-                    if (!suggestions.contains(viewModel.uiState.value.category)) {
-                        viewModel.updateCategory(null)
-                    }
-                    if (viewModel.uiState.value.category != null) {
-                        suggestions.add(0, Category(getString(R.string.no_category), null))
-                    }
-                    categoryAdapter.submitList(suggestions)
+        binding.apply {
+            autocompleteTextCategory.setAdapter(categoryAdapter)
+            autocompleteTextCategory.setOnItemClickListener { parent, view, position, id ->
+                val categorySelected = categoryAdapter.getItemSelected(position)
+                if (categorySelected.id == 0L) {
+                    viewModel.updateCategory(null)
+                    autocompleteTextCategory.setText("")
+                } else {
+                    viewModel.updateCategory(categorySelected)
                 }
+            }
         }
-        binding.autocompleteTextCategory.setAdapter(categoryAdapter)
+        emotionsAdapter = AutoCompleteAdapter(requireContext())
+        emotionsAdapter.submitList(emotionsList)
+        binding.apply {
+            autoCompleteTextEmotions.setAdapter(emotionsAdapter)
+            autoCompleteTextEmotions.setOnItemClickListener { parent, view, position, id ->
+                val emotionIdSelected = emotionsAdapter.getItemId(position)
+                viewModel.updateEstimatedEmotions(emotionIdSelected.toInt())
+            }
+        }
     }
 
     private fun setupUiBindings() {
@@ -373,9 +354,12 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             }
 
             // edit Priority
-            editTextPriority.bindTextTo { text ->
-                if (InputValidation.isValidPriority(text)) {
-                    viewModel.updatePriority(text.toInt())
+            editTextImportance.bindTextTo { text ->
+                Log.i("EDIT IMPORTANCE", text)
+                Log.i("EDIT IMPORTANCE", InputValidation.isValidDigit(text).toString())
+                if (InputValidation.isValidDigit(text)) {
+                    Log.i("EDIT IMPORTANCE", "update text to int")
+                    viewModel.updateImportance(text.toInt())
                 }
             }
 
@@ -413,6 +397,12 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             }
             removeBlockingTask.setOnClickListener {
                 viewModel.updateBlockingTask(null)
+            }
+
+            // edit skills
+            editTextUserLevel.bindTextTo { text ->
+                if (InputValidation.isValidDigit(text))
+                    viewModel.updateSkillLevel(text.toInt())
             }
 
             // Bindings
@@ -465,17 +455,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
         binding.removeDeadline.setOnClickListener {
             viewModel.updateDeadline(null)
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.uiState
-                .map { it.error }
-                .distinctUntilChanged()
-                .collect { error ->
-                    error?.let {
-                        Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
-                    }
-                }
         }
     }
 
@@ -557,11 +536,31 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         }
     }
 
-    private fun renderUiState(state: AddEditTaskViewModel.UiState) {
+    private fun renderUiState(state: AddEditUiState) {
+        val suggestions = state.categorySuggestions.toMutableList()
         binding.apply {
+            if (!suggestions.contains(viewModel.uiState.value.category)) {
+                viewModel.updateCategory(null)
+            }
+            if (viewModel.uiState.value.category != null) {
+                suggestions.add(0, Category(getString(R.string.no_category), null))
+            }
+            categoryAdapter.submitList(suggestions)
+
+            reminderAdapter.submitList(state.reminders)
+
+            state.error?.let {
+                Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
+            }
+            // Creation date task's
+            textViewCreatedDate.isVisible = state.thingToDo != null
+            textViewCreatedDate.text =
+                getString(R.string.text_created_date, state.creationDateFormatted)
+            //progressBar.isVisible = state.isLoading
+
             // skill level
-            if (state.skillLevel != null)
-                inputLayoutUserLevel.editText?.setText(state.skillLevel.toString())
+            //if (state.skillLevel != null)
+            //    inputLayoutUserLevel.editText?.setText(state.skillLevel.toString())
 
             // Mise à jour des dates
             btnSetStartDate.updateDateButton(
@@ -622,7 +621,7 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
             is AddEditTaskViewModel.AddEditTaskEvent.NavigateBackWithResult -> {
                 clearFocus()
                 sharedViewModel.showConfirmationMessage(event.result)
-                findNavController().popBackStack()
+                findNavController().navigateUp()
             }
 
             is AddEditTaskViewModel.AddEditTaskEvent.ShowInvalidInputMessage -> Snackbar.make(
@@ -630,11 +629,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
                 event.msg,
                 Snackbar.LENGTH_LONG
             ).show()
-
-            is AddEditTaskViewModel.AddEditTaskEvent.ScheduleReminders -> {
-                Log.e("reminder schedule", "event received and function 'schedule reminders' call")
-                scheduleReminders(event.reminders)
-            }
 
             is AddEditTaskViewModel.AddEditTaskEvent.NavigateToEditParentProjectDialog -> {
                 val action =
@@ -796,17 +790,13 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
     private fun clearFocus() {
         binding.editTextName.clearFocus()
-        binding.editTextPriority.clearFocus()
+        binding.editTextImportance.clearFocus()
         binding.editTextDescription.clearFocus()
     }
 
     private fun showEstimatedTimeDialog() {
         val newFragment = TimePickerDialogFragment(getString(R.string.set_estimated_time))
         newFragment.show(parentFragmentManager, ESTIMATED_TIME_DIALOG_TAG)
-    }
-
-    private fun getStringFromLong(long: Long): String {
-        return SimpleDateFormat(PATTERN_FORMAT_DATE, Locale.getDefault()).format(long)
     }
 
     private fun setUpButtonDetails(layoutMode: LayoutMode) {
@@ -825,29 +815,6 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         if (InputValidation.isValidText(binding.editTextName.text))
             viewModel.saveTask(modeExtent)
         else binding.inputLayoutName.error = getString(R.string.error_no_title)
-    }
-
-    private fun scheduleReminders(reminders: List<Reminder>) {
-        reminders.forEach { reminder ->
-            if (!reminder.isPassed()) {
-                val intent = Intent(requireContext(), ReminderBroadcastReceiver::class.java).apply {
-                    putExtra(TASK_NAME_KEY, viewModel.uiState.value.title)
-                    putExtra(REMINDER_DUE_DATE, reminder.dueDate)
-                    putExtra(REMINDER_ID, reminder.id)
-                    putExtra(REMINDER_CUSTOM_INTERVAL, reminder.repetitionFrequency)
-                }
-
-                val pendingIntent = PendingIntent.getBroadcast(
-                    requireContext(),
-                    reminder.id.toInt(),
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-                Log.e("reminder schedule", viewModel.uiState.value.title + " reminder schedule")
-                (requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager)
-                    .setExact(AlarmManager.RTC_WAKEUP, reminder.dueDate, pendingIntent)
-            }
-        }
     }
 
     fun isNotificationPermissionGranted(): Boolean {
@@ -890,6 +857,17 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
     private fun showCategoryDialog() {
         val newFragment = EditCategoryDialogFragment()
         newFragment.show(parentFragmentManager, CATEGORY_EDIT_TAG)
+    }
+
+    private fun showInformationDialog() {
+        val dialogFragment = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.help))
+            .setMessage(
+                getString(R.string.edit_helper_text))
+            .setPositiveButton("OK") {dialog,_ ->
+                dialog.cancel()
+            }
+        dialogFragment.show()
     }
 
     private fun showRecurringTaskDialog() {

@@ -368,7 +368,14 @@ data class TaskRecurrenceWithDays(
     }
 }
 
-class RepeatProcess(val newDueDate: Long, val timesSkipped: Int = 0)
+data class ReminderNotification(
+    @ColumnInfo(name = "reminder_id")
+    val reminderId: Long,
+    val dueDate: Long,
+    val taskTitle: String
+)
+
+data class RepeatProcess(val newDueDate: Long, val timesSkipped: Int = 0)
 
 data class IndicatorRateByPeriod(val period: String, val rate: Float)
 

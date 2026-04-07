@@ -14,8 +14,8 @@ class InputValidation {
                 .matches(incompleteDecimalRegex)
         }
 
-        fun <T> isValidPriority(input: T?): Boolean {
-            return input?.toString() != "" && input.toString() != "null" && input.toString()
+        fun <T> isValidDigit(input: T?): Boolean {
+            return input.toString().isNotBlank() && input.toString() != "null" && input.toString()
                 .isDigitsOnly()
         }
 

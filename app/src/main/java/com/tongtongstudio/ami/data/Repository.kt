@@ -1,5 +1,10 @@
 package com.tongtongstudio.ami.data
 
+import android.util.Log
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.tongtongstudio.ami.data.dao.AssessmentDao
 import com.tongtongstudio.ami.data.dao.CategoryDao
 import com.tongtongstudio.ami.data.dao.RecurrenceInfoDao
@@ -12,6 +17,7 @@ import com.tongtongstudio.ami.data.datatables.Category
 import com.tongtongstudio.ami.data.datatables.DaysOfWeek
 import com.tongtongstudio.ami.data.datatables.Nature
 import com.tongtongstudio.ami.data.datatables.Reminder
+import com.tongtongstudio.ami.data.datatables.ReminderNotification
 import com.tongtongstudio.ami.data.datatables.Status
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.TaskCompletion
@@ -25,10 +31,12 @@ import com.tongtongstudio.ami.data.datatables.TtdAchieved
 import com.tongtongstudio.ami.data.datatables.TtdStreakInfo
 import com.tongtongstudio.ami.data.datatables.Type
 import com.tongtongstudio.ami.data.datatables.WorkSession
+import com.tongtongstudio.ami.notification.ReminderWorker
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import java.util.Calendar
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class Repository @Inject constructor(
@@ -560,6 +568,8 @@ class Repository @Inject constructor(
         updateTask(task.copy(status = Status.IN_PROGRESS.name))
     }
 
-
+    suspend fun getReminder(reminderId: Long): ReminderNotification? {
+        return reminderDao.getReminder(reminderId)
+    }
     // ************* //
 }

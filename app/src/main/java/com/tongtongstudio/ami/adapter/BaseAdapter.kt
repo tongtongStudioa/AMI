@@ -20,9 +20,9 @@ abstract class BaseAdapter<T>() :
         return elementsList.toList()
     }
 
-    fun submitList(newGoalsList: List<T>) {
+    fun submitList(newList: List<T>) {
         elementsList.clear()
-        elementsList.addAll(newGoalsList)
+        elementsList.addAll(newList)
         notifyDataSetChanged()
     }
 }

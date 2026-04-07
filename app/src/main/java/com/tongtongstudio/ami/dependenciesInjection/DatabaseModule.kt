@@ -1,15 +1,18 @@
 package com.tongtongstudio.ami.dependenciesInjection
 
 import android.app.Application
+import android.content.Context
 import androidx.room.Room
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import com.tongtongstudio.ami.data.MIGRATION_2_3
 import com.tongtongstudio.ami.data.MIGRATION_3_5
 import com.tongtongstudio.ami.data.MIGRATION_4_2
 import com.tongtongstudio.ami.data.ThingToDoDatabase
+import com.tongtongstudio.ami.domain.usecase.ScheduleRemindersUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -56,6 +59,11 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideApplicationScope() = CoroutineScope(SupervisorJob())
+
+    @Provides
+    fun provideScheduleRemindersUseCase(
+        @ApplicationContext context: Context
+    ) = ScheduleRemindersUseCase(context)
 }
 
 @Retention(AnnotationRetention.RUNTIME)

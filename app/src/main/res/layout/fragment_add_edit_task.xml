@@ -44,13 +44,14 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/nested_scrool_view"
+        android:id="@+id/nested_scroll_view"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingBottom="20dp">
+            android:orientation="vertical"
+            android:paddingBottom="100dp">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_view_created_date"
@@ -149,22 +150,23 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/input_layout_priority"
+                android:id="@+id/input_layout_importance"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-                android:layout_width="170dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="15dp"
-                android:hint="@string/priority"
+                android:hint="@string/importance"
                 android:orientation="horizontal"
                 app:endIconMode="clear_text"
-                app:helperText="@string/importance_priority_1_9"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                app:helperText="@string/importance_scale"
                 app:layout_constraintEnd_toStartOf="@id/input_layout_category"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/input_layout_description"
-                app:startIconDrawable="@drawable/ic_priority_high_24">
+                app:layout_constraintTop_toTopOf="parent"
+                app:startIconDrawable="@drawable/outline_weight_24">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edit_text_priority"
+                    android:id="@+id/edit_text_importance"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:digits="123456789"
@@ -176,13 +178,12 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_category"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="15dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="15dp"
                 android:hint="@string/category"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/input_layout_priority"
-                app:layout_constraintTop_toBottomOf="@+id/input_layout_description"
                 app:startIconDrawable="@drawable/baseline_category_24">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -195,14 +196,11 @@
 
             <com.google.android.material.divider.MaterialDivider
                 android:id="@+id/divider_1"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="20dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/input_layout_priority" />
+                android:layout_marginEnd="20dp" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/start_date_selection_group"
@@ -238,7 +236,7 @@
 
             <com.google.android.material.divider.MaterialDivider
                 android:id="@+id/divider_2"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
@@ -281,7 +279,7 @@
 
             <com.google.android.material.divider.MaterialDivider
                 android:id="@+id/divider_3"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
@@ -323,7 +321,7 @@
 
             <com.google.android.material.divider.MaterialDivider
                 android:id="@+id/divider_4"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
@@ -366,7 +364,7 @@
 
             <com.google.android.material.divider.MaterialDivider
                 android:id="@+id/divider_5"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
@@ -409,7 +407,7 @@
 
             <com.google.android.material.divider.MaterialDivider
                 android:id="@+id/divider_6"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
@@ -449,6 +447,16 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <com.google.android.material.divider.MaterialDivider
+                android:id="@+id/divider_7"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/reminder_selection_group" />
+
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/project_selection_group"
                 android:layout_width="match_parent"
@@ -482,20 +490,60 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- TODO: add emotions feeling about this task (is it hard to complete ? boring ?) -->
+            <com.google.android.material.divider.MaterialDivider
+                android:id="@+id/divider_8"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/reminder_selection_group" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/dependency_selection_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/input_layout_user_level">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_choose_dependency"
+                    android:layout_width="0dp"
+                    style="@style/Button.EditProperties.AMI.Style"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dependency"
+                    app:icon="@drawable/ic_project_24"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/remove_blocking_task"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <ImageButton
+                    android:id="@+id/remove_blocking_task"
+                    style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/baseline_clear_24"
+                    app:layout_constraintStart_toEndOf="@id/btn_choose_dependency"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_layout_user_level"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
-                android:layout_width="0dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="15dp"
+                app:layout_constraintHorizontal_weight="4"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="15dp"
                 android:hint="@string/mastery_level"
                 android:visibility="visible"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:startIconDrawable="@drawable/baseline_bolt_24"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/project_selection_group">
+                app:helperText="On scale on 1 to 9, to what extent do you possess the skills to accomplish this task ?"
+                app:startIconDrawable="@drawable/baseline_bolt_24">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/edit_text_user_level"
@@ -508,38 +556,30 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/dependency_selection_group"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/input_layout_user_level">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_choose_dependency"
-                android:layout_width="0dp"
-                style="@style/Button.EditProperties.AMI.Style"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/input_layout_emotions"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                app:layout_constraintHorizontal_weight="3"
                 android:layout_height="wrap_content"
-                android:text="@string/dependency"
-                app:icon="@drawable/ic_project_24"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/remove_blocking_task"
-                app:layout_constraintStart_toStartOf="parent" />
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="15dp"
+                android:hint="@string/feelings"
+                app:helperText="What inspires you about the idea of accomplishing this task?"
+                android:visibility="visible"
+                app:startIconDrawable="@drawable/baseline_emoji_emotions_24">
 
-            <ImageButton
-                android:id="@+id/remove_blocking_task"
-                style="@style/ImageButtonRemoveSelection.EditTask.AMI.Style"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/baseline_clear_24"
-                app:layout_constraintStart_toEndOf="@id/btn_choose_dependency"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/auto_complete_text_emotions"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:inputType="none"
+                    android:paddingStart="48dp" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 

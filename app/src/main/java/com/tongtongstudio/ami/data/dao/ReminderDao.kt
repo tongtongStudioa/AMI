@@ -2,6 +2,7 @@ package com.tongtongstudio.ami.data.dao
 
 import androidx.room.*
 import com.tongtongstudio.ami.data.datatables.Reminder
+import com.tongtongstudio.ami.data.datatables.ReminderNotification
 import com.tongtongstudio.ami.data.datatables.Task
 import kotlinx.coroutines.flow.Flow
 
@@ -13,7 +14,7 @@ interface ReminderDao {
     @Query("SELECT * FROM Reminder WHERE reminder_id = :id LIMIT 1")
     suspend fun get(id: Long): Reminder
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(reminder: Reminder): Long
 
     @Update
@@ -27,4 +28,10 @@ interface ReminderDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertReminders(reminders: List<Reminder>)
+
+    @Query("SELECT reminder_id, dueDate, title as taskTitle " +
+            "FROM reminder " +
+            "LEFT JOIN task_table ON parent_id = task_id " +
+            "WHERE reminder_id = :reminderId ")
+    suspend fun getReminder(reminderId: Long): ReminderNotification?
 }

@@ -10,15 +10,15 @@ import android.widget.Filterable
 import android.widget.TextView
 import com.tongtongstudio.ami.data.datatables.Category
 
-class AutoCompleteAdapter(
+class AutoCompleteAdapter<T>(
     private val context: Context,
 
     ) : BaseAdapter(), Filterable {
 
-    var data = mutableListOf<Category>()
-    private var filteredCategories: List<String> = data.map { it.title }
+    var data = mutableListOf<T>()
+    private var suggestions: List<String> = data.map { it.anyToString() }
 
-    fun submitList(categories: List<Category>) {
+    fun submitList(categories: List<T>) {
         data.clear()
         data.addAll(categories)
         notifyDataSetChanged()
@@ -29,10 +29,10 @@ class AutoCompleteAdapter(
     }
 
     override fun getItem(position: Int): String {
-        return data[position].title
+        return data[position].anyToString()
     }
 
-    fun getCategorySelected(position: Int): Category {
+    fun getItemSelected(position: Int): T {
         return data[position]
     }
 
@@ -45,8 +45,8 @@ class AutoCompleteAdapter(
             ?: LayoutInflater.from(context)
                 .inflate(android.R.layout.simple_dropdown_item_1line, parent, false)
 
-        val categoryTextView: TextView = view.findViewById(android.R.id.text1)
-        categoryTextView.text = data[position].title
+        val textView: TextView = view.findViewById(android.R.id.text1)
+        textView.text = data[position].anyToString()
 
         return view
     }
@@ -56,24 +56,29 @@ class AutoCompleteAdapter(
             override fun performFiltering(constraint: CharSequence?): FilterResults {
                 val results = FilterResults()
 
-                filteredCategories = if (constraint.isNullOrBlank()) {
-                    data.map { it.title }
+                suggestions = if (constraint.isNullOrBlank()) {
+                    data.map { it.anyToString() }
                 } else {
-                    val filteredList = data.map { it.title }.filter {
+                    val filteredList = data.map { it.anyToString() }.filter {
                         it.contains(constraint.toString(), ignoreCase = true)
                     }
                     filteredList
                 }
 
-                results.values = filteredCategories
-                results.count = filteredCategories.size
+                results.values = suggestions
+                results.count = suggestions.size
                 return results
             }
 
             override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-                filteredCategories = results?.values as? List<String> ?: emptyList()
+                suggestions = results?.values as? List<String> ?: emptyList()
                 notifyDataSetChanged()
             }
         }
+    }
+
+    fun T.anyToString() = when (this) {
+        is Category -> (this as Category).title
+        else -> this.toString()
     }
 }

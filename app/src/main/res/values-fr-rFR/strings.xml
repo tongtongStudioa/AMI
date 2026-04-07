@@ -44,7 +44,7 @@
     <string name="thing_to_do_deleted">%$s supprimé</string>
     <string name="thing_to_do_added">%$s ajouté</string>
     <string name="thing_to_do_updated">%$s modifié</string>
-    <string name="importance_thing_to_do">Priorité : %d</string>
+    <string name="thing_to_do_priority">Priorité : %d</string>
     <string name="text_created_date">Date de création : %s</string>
     <string name="each_days">Chaque jour</string>
     <string name="each_weeks">Chaque semaines</string>
@@ -85,7 +85,7 @@
     <string name="sub_pages_title">Sous pages</string>
     <string name="menu_title_achievements">Achèvements</string>
     <string name="menu_title_principals">Principaux</string>
-    <string name="importance_priority_1_9">Echelle de prioritée de 1–9</string>
+    <string name="importance_scale">De 1 à 9, quelle est l\'importance de cette tâche ?</string>
     <string name="text_explication_no_tasks_today">Rien à faire aujourd\'hui</string>
     <string name="text_action_no_tasks_later">Ajoute quelque chose à faire plus tard ou va faire la sieste !</string>
     <string name="text_action_no_tasks_completed">Ajoute des tâches pour plus tard ou va travailler !</string>
@@ -206,7 +206,7 @@
     <string name="by_2_minutes_rules">"Régles des 2 minutes "</string>
     <string name="creator_sort">Trie du créateur :)</string>
     <string name="objective_description">Description spécifique de l\'objectif</string>
-    <string name="share_message">Hey, jetez un coup d\'œil à cette application géniale que j\'ai développée ! C\'est une application de liste de tâches amusante et intelligente qui t\'aidera à rester organisé et motivé. Essaie-la ! %s</string>
+    <string name="share_message">Hey, jetez un coup d\'œil à cette amiApplication géniale que j\'ai développée ! C\'est une amiApplication de liste de tâches amusante et intelligente qui t\'aidera à rester organisé et motivé. Essaie-la ! %s</string>
     <string name="assessment_completed">Evaluation complétée !</string>
     <string name="target_goal">Objectif cible : %1.2f %2s</string>
     <string name="estimated_time">Temps estimé</string>
@@ -219,7 +219,7 @@
     <string name="assessment_informations_overview">%1s le %2s</string>
     <string name="recurring_tasks_missed">Tâches récurrentes manquées</string>
     <string name="permission_needed">Permission demandée</string>
-    <string name="this_app_requires_notification_permission_to_send_you_reminders">Cette application nécessite une autorisation de notification pour vous envoyer des rappels.  Cliquez sur Ok pour accéder aux paramètres de l\'application.</string>
+    <string name="this_app_requires_notification_permission_to_send_you_reminders">Cette amiApplication nécessite une autorisation de notification pour vous envoyer des rappels.  Cliquez sur Ok pour accéder aux paramètres de l\'amiApplication.</string>
     <string name="completion_date">Complétée le %s</string>
     <string name="all">Tous</string>
     <string name="text_explication_no_habits">Pas de tâches répétable</string>
@@ -227,7 +227,7 @@
     <string name="hide_late_tasks">Cacher tâches en retard</string>
     <string name="draft_fragment_title">Tâches brouillons</string>
     <string name="welcom_msg">Je suis ravis de t\'accueillir :) Pour commencer, je te propose un rapide tutoriel pour découvrir les principales fonctionnalités. \nPrêt à découvrir tout cela ?</string>
-    <string name="welcome_title_msg">Bienvenue dans l\'application AMI !</string>
+    <string name="welcome_title_msg">Bienvenue dans l\'amiApplication AMI !</string>
     <string name="skip">Passer</string>
     <string name="start_the_tutorial">Démarrer le tutoriel</string>
     <string name="primary_text_tuto_step1_frag1">Qu\'as tu à faire aujourd\'hui ?</string>
@@ -253,4 +253,20 @@
     <string name="fab_pause_content_description">Lance ou pause le chronomètre</string>
     <string name="msg_work_session_updated">Session de travail modifié !</string>
     <string name="occurrence_limit">Limite d\'occurrence</string>
+    <string name="tasks_achievement_rate">Taux d\'achévement des tâches</string>
+    <string name="importance">Importance</string>
+    <string name="no_category">Pas de catégorie</string>
+    <string name="hint_comment_assessment">Insérer un commmentaire ici !</string>
+    <string name="distribution_of_time_worked">Distribution du temps travaillé par catégorie our par tâche</string>
+    <string name="progress_assessment">Evolution des évaluations</string>
+    <string name="maximal_current_streak">Plus longue série en cours</string>
+    <string name="project_achievement_rate">Taux d\'achévement des projets</string>
+    <string name="projects_completed">Projets complétés</string>
+    <string name="feelings">Émotions</string>
+    <string name="emotion_bad">Mauvais</string>
+    <string name="emotion_okay">Normal</string>
+    <string name="emotion_excellent">Excellent !</string>
+    <string name="help">Aide</string>
+    <string name="search">Recherche</string>
+    <string name="edit_helper_text">Ici vous retrouvez tous les attributs d\'une chose à faire !\\n\\nLa priorité d\'une tâche est calculé comme la moyenne arithmétique entre l\'importance et l\'urgence. C\'est pour cela que vous pouvez avoir des différences entre la valeur de l\'importance et de la priorité.\\nLe degré d\'urgence est calculé par une diminution linéaire basée sur la différence, le cas échéant, entre la date limite et la date d\'échéance, ou entre la date d\'échéance et la date actuelle.</string>
 </resources>

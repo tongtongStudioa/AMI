@@ -96,7 +96,7 @@ class ProjectAdapter(private val listener: InteractionListener) :
                 tvStartDate.isVisible =
                     Task.getDateFormatted(data.taskRelations.mainTask.startDate) != null
                 tvNumberPriority.text = itemView.context.getString(
-                    R.string.importance_thing_to_do,
+                    R.string.thing_to_do_priority,
                     data.taskRelations.mainTask.priority
                 )
                 tvNbSubTasks.text = itemView.context.getString(

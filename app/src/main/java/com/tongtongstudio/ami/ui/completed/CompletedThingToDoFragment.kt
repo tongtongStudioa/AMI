@@ -1,8 +1,14 @@
 package com.tongtongstudio.ami.ui.completed
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
-import androidx.core.view.doOnPreDraw
+import android.widget.ImageView
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -141,8 +147,8 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         /**
          * The below code is required to animate correctly when the user returns from [TaskDetailsFragment].
          */
-        postponeEnterTransition()
-        view.doOnPreDraw { startPostponedEnterTransition() }
+        //postponeEnterTransition()
+        //view.doOnPreDraw { startPostponedEnterTransition() }
 
         viewModel.thingsToDoCompleted.observe(viewLifecycleOwner) {
             if (it.isEmpty()) {
@@ -161,7 +167,43 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
             }
         }
 
+        viewModel.filteredTasks.observe(viewLifecycleOwner) {
+            if (it.isNotEmpty())
+                completedAdapter.submitList(it)
+        }
 
+
+        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.completed_tasks_menu, menu)
+                setupSearch(menu.findItem(R.id.action_search).actionView as SearchView)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return true
+            }
+
+        }, viewLifecycleOwner)
+    }
+
+    private fun setupSearch(searchView: SearchView) {
+        searchView.queryHint = "Rechercher une tâche..."
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.filterTasks(newText.orEmpty())
+                return true
+            }
+        })
+
+        searchView.findViewById<ImageView>(R.id.search_close_btn).setOnClickListener {
+            searchView.isIconified = true
+            searchView.clearFocus()
+        }
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout

@@ -15,7 +15,6 @@ import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.data.datatables.Type
 import com.tongtongstudio.ami.databinding.ItemProjectMinimizedBinding
 import com.tongtongstudio.ami.databinding.ItemTaskBinding
-import java.util.Calendar
 
 
 class ThingToDoAdapter(private val listener: InteractionListener, private val showDueDate: Boolean = true ) :
@@ -111,7 +110,7 @@ class ThingToDoAdapter(private val listener: InteractionListener, private val sh
                 tvRecurrentInfos.isVisible = thingToDo.getType() != Type.UNIQUE.name
                 tvNumberPriority.text =
                     this@TaskViewHolder.itemView.context.getString(
-                        R.string.importance_thing_to_do,
+                        R.string.thing_to_do_priority,
                         thingToDo.taskRelations.mainTask.priority
                     )
                 tvNumberPriority.isVisible = thingToDo.taskRelations.mainTask.priority != null
@@ -177,7 +176,7 @@ class ThingToDoAdapter(private val listener: InteractionListener, private val sh
                 tvStartDate.isVisible =
                     Task.getDateFormatted(data.taskRelations.mainTask.startDate) != null
                 tvNumberPriority.text = itemView.context.getString(
-                    R.string.importance_thing_to_do,
+                    R.string.thing_to_do_priority,
                     data.taskRelations.mainTask.priority
                 )
                 progressText.text = itemView.context.getString(

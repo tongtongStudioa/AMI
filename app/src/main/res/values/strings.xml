@@ -35,7 +35,7 @@
     <string name="project">Project</string>
     <string name="event">Event</string>
     <string name="task">Task</string>
-    <string name="importance_priority_1_9">Priority scale 1–9</string>
+    <string name="importance_scale">Importance in scale 1 to 9, what is the importance of this task ?</string>
     <string name="repeat">Repeat</string>
     <string name="event_is_spread">Is event spread ?</string>
     <string name="validate_updates">Validate updates</string>
@@ -57,7 +57,7 @@
     <string name="text_validate_link_subtask">Sub task linked to selected project</string>
     <string name="invalidate_text_link_subtask">Project not selected</string>
     <string name="estimated_time_info">%s estimated</string>
-    <string name="importance_thing_to_do">Priority : %d</string>
+    <string name="thing_to_do_priority">Priority : %d</string>
     <string-array name="period_list">
         <item>@string/day</item>
         <item>@string/week</item>
@@ -254,7 +254,7 @@
     <string name="hide_late_tasks">Hide late tasks</string>
     <string name="draft_fragment_title">Draft tasks</string>
     <string name="welcom_msg">I\'m delighted to welcome you :) To get you started, we\'ll give you a quick tutorial on the main features. \\nReady to find out all about it?</string>
-    <string name="welcome_title_msg">Welcome to the AMI (everyday) application!</string>
+    <string name="welcome_title_msg">Welcome to the AMI (everyday) amiApplication!</string>
     <string name="skip">Skip</string>
     <string name="start_the_tutorial">Start the tutorial</string>
     <string name="text_action_no_drafts">Tasks that don\'t have any priority or due date will be here.</string>
@@ -266,23 +266,7 @@
     <string name="draft_task_created">Draft task created</string>
     <string name="fragment_goal_details_title">Goal details</string>
     <string name="thing_to_do">thingToDo</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="settings">Settings</string>
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
-
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="intermediate_project">Intermediate project</string>
     <string name="sub_task">Sub task</string>
     <string name="not_started">Not started</string>
@@ -301,8 +285,16 @@
     <string name="hint_comment_assessment">Insert your comment here !</string>
     <string name="distribution_of_time_worked">Distribution of time worked</string>
     <string name="progress_assessment">Progress assessment</string>
-    <string name="maximal_current_streak">Serie maximal en cours</string>
+    <string name="maximal_current_streak">Longest current streak</string>
     <string name="project_achievement_rate">Project Achievement Rate</string>
     <string name="projects_completed">Projects completed</string>
     <string name="tasks_achievement_rate">Tasks Achievement Rate</string>
+    <string name="importance">Importance</string>
+    <string name="feelings">Feelings</string>
+    <string name="emotion_bad">Bad</string>
+    <string name="emotion_okay">Okay</string>
+    <string name="emotion_excellent">Excellent !</string>
+    <string name="help">Help</string>
+    <string name="search">Search</string>
+    <string name="edit_helper_text">Here you have all attributes of a thing to do !\n\nPriority of a task is calculate like the arithmetic mean between importance and urgency. It\'s why you can have difference between priority and importance.\nThe degree of urgency is calculated with a linear decrease based on the difference, if any, between the deadline and the due date, or between the due date and the current date.</string>
 </resources>

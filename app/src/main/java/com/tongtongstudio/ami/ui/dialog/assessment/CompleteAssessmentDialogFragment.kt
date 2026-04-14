@@ -77,10 +77,10 @@ class CompleteAssessmentDialogFragment : DialogFragment() {
 
         binding.apply {
             btnMinus.setOnClickListener {
-                viewModel.remove_one()
+                viewModel.removeOne()
             }
             btnPlus.setOnClickListener {
-                viewModel.add_one()
+                viewModel.addOne()
             }
         }
         viewModel.assessment = args.assessment

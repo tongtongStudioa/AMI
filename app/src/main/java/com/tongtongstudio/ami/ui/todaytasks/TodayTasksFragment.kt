@@ -1,7 +1,5 @@
 package com.tongtongstudio.ami.ui.todaytasks
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -39,9 +37,7 @@ import com.tongtongstudio.ami.ui.ADD_DRAFT_TASK_OK
 import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
-import com.tongtongstudio.ami.ui.PREF_TUTORIAL
 import com.tongtongstudio.ami.ui.todaytasks.TodayTasksFragmentDirections.Companion.actionTodayTasksFragmentToAddEditTaskFragment
-import com.tongtongstudio.ami.util.TutorialTrigger
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -59,8 +55,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     private lateinit var soundPlayer: SoundPlayer
     private var menuProvider: MenuProvider? = null
 
-    private lateinit var sharedPreferences: SharedPreferences
-    private var tutorialTrigger: TutorialTrigger? = null
+    //private lateinit var sharedPreferences: SharedPreferences
+    //private var tutorialTrigger: TutorialTrigger? = null
 
     private lateinit var recyclerView: RecyclerView
     private val axisForward by lazy {
@@ -75,15 +71,24 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         }
     }
 
-    override fun onAttach(context: Context) {
+    /*override fun onAttach(context: Context) {
         super.onAttach(context)
         tutorialTrigger = context as? TutorialTrigger
-    }
+    }*/
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        sharedPreferences =
-            requireActivity().getSharedPreferences(PREF_TUTORIAL, Context.MODE_PRIVATE)
+        //sharedPreferences = requireActivity().getSharedPreferences(PREF_TUTORIAL, Context.MODE_PRIVATE)
         exitTransition = axisBackward
         reenterTransition = axisForward
+
+        /**
+         * The below code is required to animate correctly when the user returns from [DetailFragment].
+         */
+        postponeEnterTransition()
+        //Sound player and adapter
+        mainTaskAdapter = ThingToDoAdapter(this, false)
+        soundPlayer = SoundPlayer(requireContext())
+
         super.onCreate(savedInstanceState)
     }
 
@@ -95,57 +100,6 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         binding = FragmentMainBinding.inflate(layoutInflater)
         recyclerView = binding.mainRecyclerView
 
-        /**
-         * The below code is required to animate correctly when the user returns from [DetailFragment].
-         */
-        postponeEnterTransition()
-
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        //collapse toolbar
-        setUpToolbar()
-
-        //Sound player and adapter
-        mainTaskAdapter = ThingToDoAdapter(this, false)
-        soundPlayer = SoundPlayer(requireContext())
-
-
-        // implement UI
-        binding.apply {
-            fabAddTask.setOnClickListener {
-                sharedViewModel.addThingToDo()
-            }
-
-            mainRecyclerView.apply {
-                adapter = mainTaskAdapter
-                layoutManager = LinearLayoutManager(requireContext())
-                //setHasFixedSize(false)
-                itemAnimator = null
-            }
-
-            val callback = object : ThingToDoItemCallback<ThingToDoAdapter>(
-                mainTaskAdapter,
-                ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
-                requireContext()
-            ) {
-                override fun actionOnRightSwiped(thingToDo: ThingToDo, position: Int) {
-                    // delete task
-                    sharedViewModel.deleteTask(thingToDo, requireContext())
-                    //mainTaskAdapter.notifyItemRemoved(position)
-                }
-
-                override fun actionLeftSwiped(thingToDo: ThingToDo, position: Int) {
-                    //update task
-                    sharedViewModel.updateTask(thingToDo)
-                    //mainTaskAdapter.notifyItemChanged(position)
-                }
-            }
-            ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
-        }
         // adapt data in recycler view
         viewModel.todayThingsToDo.observe(viewLifecycleOwner) {
             if (it.isEmpty()) {
@@ -173,12 +127,12 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
 
         // respond to event
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 sharedViewModel.mainEvent.collect { event ->
                     when (event) {
                         is MainViewModel.SharedEvent.NavigateToEditScreen -> {
                             val action =
-                                TodayTasksFragmentDirections.actionTodayTasksFragmentToAddEditTaskFragment(
+                                actionTodayTasksFragmentToAddEditTaskFragment(
                                     getString(R.string.fragment_title_edit_thing_to_do),
                                     event.thingToDo
                                 )
@@ -222,7 +176,8 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                             }
                             val action =
                                 TodayTasksFragmentDirections.actionTodayTasksFragmentToTabPageTrackingStats(
-                                    event.task.id
+                                    event.task.id,
+
                                 )
                             val extras =
                                 FragmentNavigatorExtras(event.sharedView to event.sharedView.transitionName)
@@ -323,7 +278,49 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             }
         }, viewLifecycleOwner, Lifecycle.State.STARTED)
 
-        tutorialTrigger?.triggerTutorialFor(this)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        //collapse toolbar
+        setUpToolbar()
+
+        // implement UI
+        binding.apply {
+            fabAddTask.setOnClickListener {
+                sharedViewModel.addThingToDo()
+            }
+
+            mainRecyclerView.apply {
+                adapter = mainTaskAdapter
+                layoutManager = LinearLayoutManager(requireContext())
+                //setHasFixedSize(false)
+                itemAnimator = null
+            }
+
+            val callback = object : ThingToDoItemCallback<ThingToDoAdapter>(
+                mainTaskAdapter,
+                ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT,
+                requireContext()
+            ) {
+                override fun actionOnRightSwiped(thingToDo: ThingToDo, position: Int) {
+                    // delete task
+                    sharedViewModel.deleteTask(thingToDo, requireContext())
+                    //mainTaskAdapter.notifyItemRemoved(position)
+                }
+
+                override fun actionLeftSwiped(thingToDo: ThingToDo, position: Int) {
+                    //update task
+                    sharedViewModel.updateTask(thingToDo)
+                    //mainTaskAdapter.notifyItemChanged(position)
+                }
+            }
+            ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
+        }
+
+        //tutorialTrigger?.triggerTutorialFor(this)
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout
@@ -354,12 +351,12 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         }
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
-        sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView)
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View, position: Int) {
+        sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView, position)
     }
 
-    override fun onTaskClick(thingToDo: Task, itemView: View) {
-        sharedViewModel.navigateToTaskDetailsAndTrackScreen(thingToDo, itemView)
+    override fun onTaskClick(thingToDo: Task, itemView: View, position: Int) {
+        sharedViewModel.navigateToTaskDetailsAndTrackScreen(thingToDo, itemView, position)
     }
 
     override fun onProjectAddClick(thingToDo: ThingToDo) {

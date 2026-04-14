@@ -45,7 +45,7 @@ class EditRecurringTaskViewModel @Inject constructor(
     }
 
     fun updateInterval(interval: Int) {
-        _uiState.update { it.copy(interval = interval,) }
+        _uiState.update { it.copy(interval = interval) }
     }
     fun updateFrequency(listSelection: Int) {
         val newFrequency = when (listSelection) {
@@ -56,7 +56,7 @@ class EditRecurringTaskViewModel @Inject constructor(
             else -> Period.DAYS.name
         }
         _uiState.update {
-            it.copy(newFrequency,)
+            it.copy(newFrequency)
         }
     }
 

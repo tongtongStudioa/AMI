@@ -130,7 +130,7 @@ interface TaskDao {
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND (last_completion_status == 0 OR last_completion_status is NULL OR task_recurrence_id IS NOT NULL) AND NOT :hideLateTasks " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY last_completion_status ASC, task_due_date/8640000 ASC, estimatedWorkingTime DESC, priority DESC, importance DESC, deadline ASC, skillLevel ASC"
+                "ORDER BY last_completion_status ASC, task_due_date/8640000 ASC, estimatedWorkingTime DESC, estimatedEmotions ASC, priority DESC, importance DESC, deadline ASC, skillLevel ASC"
     )
     fun getTasksOrderByEatTheFrogSort(
         hideCompleted: Boolean,
@@ -147,7 +147,7 @@ interface TaskDao {
                 "OR task_due_date BETWEEN :startOfDay AND :endOfDay " +
                 "OR task_due_date < :endOfDay AND (last_completion_status == 0 OR last_completion_status is NULL OR task_recurrence_id IS NOT NULL) AND NOT :hideLateTasks " +
                 "OR deadline BETWEEN :startOfDay AND :endOfDay) " +
-                "ORDER BY last_completion_status ASC, task_due_date/8640000 ASC, estimatedWorkingTime ASC, priority DESC, skillLevel ASC, urgency DESC, importance DESC, is_active ASC"
+                "ORDER BY last_completion_status ASC, task_due_date/8640000 ASC, estimatedWorkingTime ASC, estimatedEmotions DESC, priority DESC, skillLevel ASC, urgency DESC, importance DESC, is_active ASC"
     )
     fun getTasksOrderByCreatorSort(
         hideCompleted: Boolean,

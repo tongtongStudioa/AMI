@@ -13,11 +13,7 @@ import com.tongtongstudio.ami.databinding.ItemMissedTaskBinding
 class MissedTaskAdapter(private val context: Context) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    val data: MutableList<ThingToDo>
-
-    init {
-        data = ArrayList()
-    }
+    val data: MutableList<ThingToDo> = ArrayList()
 
     fun swapData(newData: List<ThingToDo>) {
         data.clear()

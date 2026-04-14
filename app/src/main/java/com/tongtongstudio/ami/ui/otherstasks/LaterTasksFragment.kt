@@ -123,10 +123,6 @@ class LaterTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
             }
         }
 
-        setFragmentResultListener("add_edit_request") { _, bundle ->
-            val result = bundle.getInt("add_edit_result")
-        }
-
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 sharedViewModel.mainEvent.collect { event ->
@@ -300,11 +296,11 @@ class LaterTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View, position: Int) {
         sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView)
     }
 
-    override fun onTaskClick(thingToDo: Task, itemView: View) {
+    override fun onTaskClick(thingToDo: Task, itemView: View, position: Int) {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 

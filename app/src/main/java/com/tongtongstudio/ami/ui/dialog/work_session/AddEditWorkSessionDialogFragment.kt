@@ -24,7 +24,6 @@ import java.util.Locale
 
 const val WORK_SESSION_LISTENER_REQUEST_KEY = "WORK_SESSION_LISTENER_REQUEST_KEY"
 const val WORK_SESSION_RESULT_KEY = "WORK_SESSION_RESULT_KEY"
-const val WORK_SESSION_COMMENT_RESULT_KEY = "WORK_SESSION_COMMENT_RESULT_KEY"
 
 @AndroidEntryPoint
 class AddEditWorkSessionDialogFragment : DialogFragment() {

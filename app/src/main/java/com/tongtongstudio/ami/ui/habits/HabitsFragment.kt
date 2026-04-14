@@ -238,11 +238,11 @@ class HabitsFragment : Fragment(R.layout.fragment_main), InteractionListener {
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View, position: Int) {
         sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView)
     }
 
-    override fun onTaskClick(thingToDo: Task, itemView: View) {
+    override fun onTaskClick(thingToDo: Task, itemView: View, position: Int) {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 

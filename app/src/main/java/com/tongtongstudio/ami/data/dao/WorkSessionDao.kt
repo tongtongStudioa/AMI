@@ -33,4 +33,7 @@ interface WorkSessionDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertWorkSessions(workSessions: List<WorkSession>)
+
+    @Query("SELECT COUNT(work_session_id) FROM worksession WHERE parentTaskId =:taskId")
+    suspend fun getWorkSessionsCountByTaskId(taskId: Long): Int
 }

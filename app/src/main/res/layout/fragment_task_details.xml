@@ -10,23 +10,23 @@
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:fitsSystemWindows="true"
         android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
         android:visibility="visible">
 
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                tools:title="@string/fragment_task_details_title" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:title="@string/fragment_task_details_title" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
         android:clipToPadding="false"
+        android:fillViewport="true"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
         <com.google.android.material.card.MaterialCardView
@@ -36,75 +36,90 @@
             app:cardCornerRadius="0dp"
             app:strokeWidth="0dp">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:orientation="vertical"
                 android:padding="10dp"
                 app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/task_name"
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.Ami.Body1"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/task_name"
+                        android:layout_width="0dp"
+                        android:layout_weight="10"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.Ami.Subtitle1.Day"
+                        tools:text="task name example"
+                        android:layout_gravity="start"/>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/task_nature"
+                        android:layout_width="0dp"
+                        android:layout_weight="2"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:textAppearance="@style/TextAppearance.Ami.Body2"
+                        tools:text="Nature" />
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/task_category"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="start"
+                        android:paddingEnd="10dp"
+                        android:textAppearance="@style/TextAppearance.Ami.Body1"
+                        app:layout_constraintStart_toStartOf="@+id/task_name"
+                        app:layout_constraintTop_toBottomOf="@+id/task_name"
+                        tools:text="Category" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/task_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="start"
+                        android:textAppearance="@style/TextAppearance.Ami.Body2"
+                        app:layout_constraintStart_toEndOf="@+id/task_type"
+                        app:layout_constraintTop_toBottomOf="@+id/task_name"
+                        tools:text="Status"
+                        android:layout_marginEnd="15dp"/>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/task_type"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.Ami.Body2"
+                        tools:text="Type"
+                        android:layout_marginEnd="10dp"/>
+                </LinearLayout>
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textAppearance="@style/TextAppearance.Ami.Subtitle2.Day"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:text="task name example" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/task_category"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:layout_marginTop="3dp"
-                    android:paddingEnd="7dp"
-                    android:textAppearance="@style/TextAppearance.Ami.Body2"
-                    app:layout_constraintStart_toStartOf="@+id/task_name"
-                    app:layout_constraintTop_toBottomOf="@+id/task_name"
-                    tools:text="Category" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/task_nature"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:paddingEnd="6dp"
-                    android:layout_marginTop="3dp"
-                    android:textAppearance="@style/TextAppearance.Ami.Body2"
-                    app:layout_constraintStart_toEndOf="@+id/task_category"
-                    app:layout_constraintTop_toBottomOf="@+id/task_name"
-                    tools:text="Nature" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/task_type"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:paddingEnd="7dp"
-                    android:layout_marginTop="3dp"
-                    android:textAppearance="@style/TextAppearance.Ami.Body2"
-                    app:layout_constraintStart_toEndOf="@+id/task_nature"
-                    app:layout_constraintTop_toBottomOf="@+id/task_name"
-                    tools:text="Type" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/task_status"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:layout_marginTop="3dp"
-                    android:textAppearance="@style/TextAppearance.Ami.Body2"
-                    app:layout_constraintStart_toEndOf="@+id/task_type"
-                    app:layout_constraintTop_toBottomOf="@+id/task_name"
-                    tools:text="Status" />
+                    app:layout_constraintTop_toBottomOf="@+id/task_category"
+                    android:text="@string/description" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/task_description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="1dp"
                     android:textAppearance="@style/TextAppearance.Ami.Caption"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/task_category"
@@ -118,54 +133,232 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/task_due_date" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/task_start_date"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:drawableStart="@drawable/ic_line_start_circle_24"
-                    android:drawablePadding="5dp"
-                    android:gravity="center"
-                    android:textAppearance="@style/TextAppearance.Ami.Overline"
-                    app:drawableTint="?attr/colorOnSurface"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/task_due_date"
-                    tools:text="start date" />
+                    android:orientation="horizontal">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/task_due_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="10dp"
-                    android:drawableStart="@drawable/ic_commit_24"
-                    android:drawablePadding="5dp"
-                    android:gravity="center"
-                    android:textAppearance="@style/TextAppearance.Ami.Overline"
-                    app:drawableTint="?attr/colorOnSurface"
-                    app:layout_constraintStart_toEndOf="@id/task_start_date"
-                    app:layout_constraintTop_toBottomOf="@+id/task_description"
-                    tools:text="Due date" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/task_start_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="@drawable/ic_line_start_circle_24"
+                        android:drawablePadding="5dp"
+                        android:gravity="center"
+                        android:textAppearance="@style/TextAppearance.Ami.Overline"
+                        app:drawableTint="?attr/colorOnSurface"
+                        tools:text="start date" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/task_deadline"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:drawableStart="@drawable/ic_line_end_circle_24"
-                    android:drawablePadding="5dp"
-                    android:gravity="center"
-                    android:textAppearance="@style/TextAppearance.Ami.Overline"
-                    app:drawableTint="?attr/colorOnSurface"
-                    app:layout_constraintStart_toEndOf="@id/task_due_date"
-                    app:layout_constraintTop_toTopOf="@+id/task_due_date"
-                    tools:text="deadline" />
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/task_due_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:drawableStart="@drawable/ic_commit_24"
+                        android:drawablePadding="5dp"
+                        android:gravity="center"
+                        android:textAppearance="@style/TextAppearance.Ami.Overline"
+                        app:drawableTint="?attr/colorOnSurface"
+                        app:layout_constraintStart_toEndOf="@id/task_start_date"
+                        app:layout_constraintTop_toBottomOf="@+id/task_description"
+                        tools:text="Due date" />
 
-                <!-- Task stats -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/task_deadline"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:drawableStart="@drawable/ic_line_end_circle_24"
+                        android:drawablePadding="5dp"
+                        android:gravity="center"
+                        android:textAppearance="@style/TextAppearance.Ami.Overline"
+                        app:drawableTint="?attr/colorOnSurface"
+                        tools:text="deadline" />
+
+                </LinearLayout>
+
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/stats_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="25dp"
+                    android:padding="5dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/divider">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/work_session_count"
+                        style="@style/Widget.Material3.CardView.Elevated"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="5dp"
+                        app:layout_constraintBottom_toBottomOf="@+id/mean_duration_view"
+                        app:layout_constraintEnd_toStartOf="@id/mean_duration_view"
+                        app:layout_constraintHorizontal_weight="2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/card_view_title_1"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="Work session count"
+                                android:textAppearance="@style/TextAppearance.Ami.Subtitle1.Day"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_sessions_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Ami.Headline5"
+                                app:layout_constraintEnd_toEndOf="@+id/card_view_title_1"
+                                app:layout_constraintStart_toStartOf="@+id/card_view_title_1"
+                                app:layout_constraintTop_toBottomOf="@+id/card_view_title_1"
+                                tools:text="2" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/mean_duration_view"
+                        style="@style/Widget.Material3.CardView.Elevated"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_weight="3"
+                        app:layout_constraintStart_toEndOf="@+id/work_session_count"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/card_view_title_2"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="Mean work session duration"
+                                android:textAppearance="@style/TextAppearance.Ami.Subtitle1.Day"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_mean_duration"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Ami.Headline5"
+                                app:layout_constraintEnd_toEndOf="@+id/card_view_title_2"
+                                app:layout_constraintStart_toStartOf="@+id/card_view_title_2"
+                                app:layout_constraintTop_toBottomOf="@+id/card_view_title_2"
+                                tools:text="1h32" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/effective_start_date"
+                        style="@style/Widget.Material3.CardView.Elevated"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="5dp"
+                        app:layout_constraintEnd_toStartOf="@id/priority_index"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/mean_duration_view">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/effective_start_date_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="Effective start date"
+                                android:textAppearance="@style/TextAppearance.Ami.Subtitle1.Day"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_effective_start_date"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Ami.Headline5"
+                                app:layout_constraintEnd_toEndOf="@+id/effective_start_date_title"
+                                app:layout_constraintStart_toStartOf="@+id/effective_start_date_title"
+                                app:layout_constraintTop_toBottomOf="@+id/effective_start_date_title"
+                                tools:text="03/04/2026" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/priority_index"
+                        style="@style/Widget.Material3.CardView.Elevated"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="10dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/effective_start_date"
+                        app:layout_constraintTop_toBottomOf="@id/mean_duration_view">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/priority_index_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="Priority index"
+                                android:textAppearance="@style/TextAppearance.Ami.Subtitle1.Day"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/tv_priority_index"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Ami.Headline5"
+                                app:layout_constraintEnd_toEndOf="@+id/priority_index_title"
+                                app:layout_constraintStart_toStartOf="@+id/priority_index_title"
+                                app:layout_constraintTop_toBottomOf="@+id/priority_index_title"
+                                tools:text="3 th" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- Recurring task stats -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/recurring_stats_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
                     android:padding="5dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -339,7 +532,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/total_duration_view"
                     style="@style/Widget.Material3.CardView.Elevated"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:layout_marginTop="15dp"
@@ -373,36 +566,16 @@
                             app:layout_constraintTop_toBottomOf="@+id/duration_title"
                             tools:text="1h 32m 56s" />
 
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/estimated_work_time_view"
-                    style="@style/Widget.Material3.CardView.Elevated"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginTop="15dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/total_duration_view">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:padding="10dp">
-
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/estimated_work_time_title"
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:text="@string/estimated_time"
                             android:textAppearance="@style/TextAppearance.Ami.Subtitle1.Day"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
+                            app:layout_constraintEnd_toEndOf="@id/tv_total_duration"
+                            app:layout_constraintStart_toStartOf="@id/tv_total_duration"
+                            app:layout_constraintTop_toBottomOf="@id/tv_total_duration" />
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/tv_estimated_work_time"
@@ -414,6 +587,17 @@
                             app:layout_constraintTop_toBottomOf="@+id/estimated_work_time_title"
                             tools:text="1h 00m 00s" />
 
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tv_work_time_dif"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.Ami.Headline6"
+                            app:layout_constraintBottom_toBottomOf="@+id/tv_estimated_work_time"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/estimated_work_time_title"
+                            app:layout_constraintTop_toBottomOf="@id/duration_title"
+                            tools:text="+ 50,7 %" />
+
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                 </com.google.android.material.card.MaterialCardView>
@@ -423,11 +607,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/estimated_work_time_view"
                     tools:text="Completion date : 25/07/2024" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </androidx.core.widget.NestedScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

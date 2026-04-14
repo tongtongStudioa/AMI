@@ -177,11 +177,11 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
         // do nothing
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View, position: Int) {
         sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView)
     }
 
-    override fun onTaskClick(thingToDo: Task, itemView: View) {
+    override fun onTaskClick(thingToDo: Task, itemView: View, position: Int) {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 

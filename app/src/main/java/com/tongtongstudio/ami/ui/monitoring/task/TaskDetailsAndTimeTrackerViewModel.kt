@@ -27,30 +27,16 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
     private val state: SavedStateHandle
 ) : ViewModel() {
 
-    data class DetailUiState(
-        val thingToDo: ThingToDo? = null,
-
-        // Relations
-        val taskCompletion: TaskCompletion? = null,
-        val workSessions: List<WorkSession> = emptyList(),
-        val currentTotalWorkTime: Long? = null,
-
-        // Stats recurring task
-        val successCount: Int? = null,
-        val completionRate: Float? = null,
-        val maxStreak: Int? = null,
-        val currentStreak: Int? = null
-    )
-
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
     val taskId = state.get<Long>("task_id")!!
+    val taskIndex = state.get<Long>("task_index")
 
     init {
         viewModelScope.launch {
             repository.getThingToDo(taskId)?.collect { thingToDo->
-                _uiState.update { it.copy(thingToDo = thingToDo) }
+                _uiState.update { it.copy(thingToDo = thingToDo, priorityIndex = taskIndex?.toInt()) }
             }
         }
 
@@ -62,10 +48,13 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             repository.getWorkSessions(taskId).collect { sessions ->
-                _uiState.update {
-                    it.copy(
+                _uiState.update { state ->
+                    state.copy(
                         workSessions = sessions,
-                        currentTotalWorkTime = sessions.sumOf { it.duration }
+                        currentTotalWorkTime = sessions.sumOf { it.duration },
+                        workSessionsCount = sessions.size,
+                        meanWorkSessionDuration = sessions.map { it.duration }.average(),
+                        effectiveStartDate = if (sessions.isNotEmpty()) sessions.minBy { it.date }.date else null
                     )
                 }
             }

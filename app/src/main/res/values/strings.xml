@@ -297,4 +297,11 @@
     <string name="help">Help</string>
     <string name="search">Search</string>
     <string name="edit_helper_text">Here you have all attributes of a thing to do !\n\nPriority of a task is calculate like the arithmetic mean between importance and urgency. It\'s why you can have difference between priority and importance.\nThe degree of urgency is calculated with a linear decrease based on the difference, if any, between the deadline and the due date, or between the due date and the current date.</string>
+    <string name="action_no_sub_tasks">You can add some with the right bottom button here</string>
+    <string name="explication_no_sub_tasks">No sub tasks for this project !</string>
+    <string name="save_file_name">Save file name</string>
+    <string name="error_valid_name">Enter valid name</string>
+    <string name="import_success_msg">Success import !</string>
+    <string name="export_success_msg">Database save under %1$s</string>
+    <string name="import_failure_msg">Error : %1$s</string>
 </resources>

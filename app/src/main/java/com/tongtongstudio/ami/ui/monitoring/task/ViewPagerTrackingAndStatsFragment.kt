@@ -93,8 +93,5 @@ class ViewPagerTrackingAndStatsFragment : Fragment(R.layout.fragment_view_pager)
 
         // to set hamburger menu work and open drawer layout
         binding.toolbar.setupWithNavController(navController, appBarConfiguration)
-        binding.toolbar.setNavigationOnClickListener {
-            navController.navigateUp(appBarConfiguration)
-        }
     }
 }

@@ -100,7 +100,7 @@ data class ThingToDo(
             set(Calendar.MINUTE, 0)
             timeInMillis
         }
-        return !taskRelations.mainTask.isDraft && lastCompletionStatus == false && (taskRelations.mainTask.dueDate ?: 0) < todayDate
+        return !taskRelations.mainTask.isDraft && (lastCompletionStatus == false || lastCompletionStatus == null) && (taskRelations.mainTask.dueDate ?: 0) < todayDate
     }
 
     fun getAdvancementStatus(): String {

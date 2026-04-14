@@ -154,7 +154,7 @@
                     app:drawableTint="?attr/colorOnPrimaryContainer"
                     app:layout_constraintStart_toEndOf="@+id/tv_deadline"
                     app:layout_constraintTop_toTopOf="@+id/tv_deadline"
-                    tools:text="@string/importance_thing_to_do" />
+                    tools:text="@string/thing_to_do_priority" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

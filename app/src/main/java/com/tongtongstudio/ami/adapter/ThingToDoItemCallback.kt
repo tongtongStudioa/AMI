@@ -24,7 +24,7 @@ abstract class ThingToDoItemCallback<T>(
         recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder
     ): Int {
-        val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
+        ItemTouchHelper.UP or ItemTouchHelper.DOWN
         return makeMovementFlags(0, swipeFlags)
     }
 
@@ -115,8 +115,6 @@ abstract class ThingToDoItemCallback<T>(
     override fun isItemViewSwipeEnabled(): Boolean {
         return true
     }
-
-    open fun actionOnTaskMove(thingToDo: ThingToDo, parentId: Long) {}
     open fun actionOnRightSwiped(thingToDo: ThingToDo, position: Int) {}
     open fun actionLeftSwiped(thingToDo: ThingToDo, position: Int) {}
 }

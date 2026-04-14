@@ -2,20 +2,16 @@ package com.tongtongstudio.ami.ui
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
-import android.util.AttributeSet
-import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
@@ -24,38 +20,31 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.tongtongstudio.ami.NavigationGraphDirections
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.receiver.ASSESSMENT_ID
-import com.tongtongstudio.ami.util.AppTutorial
-import com.tongtongstudio.ami.util.TutorialTrigger
 import dagger.hilt.android.AndroidEntryPoint
 import hotchemi.android.rate.AppRate
-import androidx.core.net.toUri
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), TutorialTrigger {
+class MainActivity : AppCompatActivity() { //, TutorialTrigger {
 
     private lateinit var navController: NavController
     private lateinit var drawerLayout: DrawerLayout
     lateinit var appBarConfiguration: AppBarConfiguration
     lateinit var toolbar: Toolbar
-    private val prefs by lazy { getSharedPreferences("tutorial_prefs", Context.MODE_PRIVATE) }
-    private lateinit var appTutorial: AppTutorial
+    //private val prefs by lazy { getSharedPreferences("tutorial_prefs", Context.MODE_PRIVATE) }
+    //private lateinit var appTutorial: AppTutorial
 
     val viewModel: MainViewModel by viewModels()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        appTutorial = AppTutorial(this, this, prefs)
+        //appTutorial = AppTutorial(this, this, prefs)
         setContentView(R.layout.activity_main)
 
 
@@ -63,7 +52,7 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
             .detectAll()
             .penaltyLog()
             .build()
-        StrictMode.setThreadPolicy(policy)
+        //StrictMode.setThreadPolicy(policy)
 
         AppRate.with(this)
             .setInstallDays(10) // 0 means install day.
@@ -96,6 +85,21 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
         )
         navView.setupWithNavController(navController)
 
+        //showWelcomeDialog(this)
+
+        // Check at the opening of the app
+        viewModel.lookForMissedRecurringTasks()
+
+        // TODO: update task urgency each time user open app and later once a day
+        //viewModel.updateTasksUrgency()
+
+        // Wait for intent from intermediate evaluation
+        intent?.let {
+            if (intent.hasExtra(ASSESSMENT_ID)) {
+                showCompleteAssessmentDialog(intent)
+            }
+        }
+
         // implementation for specific actions
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
@@ -127,26 +131,7 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
         }
     }
 
-    override fun onCreateView(name: String, context: Context, attrs: AttributeSet): View? {
-        showWelcomeDialog(this)
-
-        // Check at the opening of the app
-        viewModel.lookForMissedRecurringTasks()
-
-        // TODO: update task urgency each time user open app and later once a day
-        //viewModel.updateTasksUrgency()
-
-        // Wait for intent from intermediate evaluation
-        intent?.let {
-            if (intent.hasExtra(ASSESSMENT_ID)) {
-                showCompleteAssessmentDialog(intent)
-            }
-        }
-
-        return super.onCreateView(name, context, attrs)
-    }
-
-    private fun showWelcomeDialog(context: Context) {
+    /*private fun showWelcomeDialog(context: Context) {
         if (prefs.getBoolean(KEY_DIALOG_SHOWN, false)) return
         val dialog = MaterialAlertDialogBuilder(context)
             .setTitle(getString(R.string.welcome_title_msg))
@@ -160,7 +145,7 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
             .setCancelable(false)
             .create()
         dialog.show()
-    }
+    }*/
 
     // Check if app has been open with assessment notification
     override fun onNewIntent(intent: Intent) {
@@ -232,10 +217,10 @@ class MainActivity : AppCompatActivity(), TutorialTrigger {
         startActivity(intent)
     }
 
-    override fun triggerTutorialFor(fragment: Fragment) {
+    /*override fun triggerTutorialFor(fragment: Fragment) {
         val fragName = fragment::class.java.simpleName
         appTutorial.maybeShowTutorialFor(fragName, fragment)
-    }
+    }*/
 
     /*override fun onRequestPermissionsResult(
         requestCode: Int,

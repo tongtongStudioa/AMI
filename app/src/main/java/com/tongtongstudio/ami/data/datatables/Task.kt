@@ -100,7 +100,7 @@ data class Task(
          * Otherwise, if no deadline, delay between today date and due date.
          * @return Int : between 2 and 10
          */
-        fun calculusUrgency(todayDateMillis: Long, dueDate: Long?, deadline: Long?): Int {
+        fun calculusUrgency(dueDate: Long?, deadline: Long?, todayDateMillis: Long = System.currentTimeMillis()): Int {
             val delay =
                 if (deadline != null)
                     abs(deadline - todayDateMillis)
@@ -129,14 +129,14 @@ data class Task(
             priority: Int?,
             importance: Int? = null,
             urgency: Int? = null
-        ): Int {
+        ): Int? {
             return when {
                 importance != null && urgency != null ->
                     (importance + urgency) / 2
                 priority != null -> priority
                 importance != null -> importance
                 urgency != null -> urgency
-                else -> 5
+                else -> null
             }
         }
 

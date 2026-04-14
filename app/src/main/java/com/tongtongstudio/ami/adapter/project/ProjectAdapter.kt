@@ -19,7 +19,7 @@ class ProjectAdapter(private val listener: InteractionListener) :
 
     private val taskList: MutableList<ThingToDo> = mutableListOf()
 
-    enum class ViewType {TASK, PROJECT,}
+    enum class ViewType {TASK, PROJECT}
 
     fun submitList(tasks: List<ThingToDo>) {
         taskList.clear()
@@ -69,7 +69,7 @@ class ProjectAdapter(private val listener: InteractionListener) :
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
                         val project = taskList[position]
-                        listener.onProjectClick(project,itemView)
+                        listener.onProjectClick(project,itemView, position)
                     }
                 }
                 btnAddSubTask.setOnClickListener {

@@ -1,9 +1,6 @@
 package com.tongtongstudio.ami.ui.edit.thingtodo
 
 import android.Manifest
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -54,11 +51,6 @@ import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.TaskRecurrence
 import com.tongtongstudio.ami.data.datatables.TaskRecurrenceWithDays
 import com.tongtongstudio.ami.databinding.FragmentAddEditTaskBinding
-import com.tongtongstudio.ami.receiver.REMINDER_CUSTOM_INTERVAL
-import com.tongtongstudio.ami.receiver.REMINDER_DUE_DATE
-import com.tongtongstudio.ami.receiver.REMINDER_ID
-import com.tongtongstudio.ami.receiver.ReminderBroadcastReceiver
-import com.tongtongstudio.ami.receiver.TASK_NAME_KEY
 import com.tongtongstudio.ami.timer.TrackingTimeUtility
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
@@ -355,10 +347,10 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
             // edit Priority
             editTextImportance.bindTextTo { text ->
-                Log.i("EDIT IMPORTANCE", text)
-                Log.i("EDIT IMPORTANCE", InputValidation.isValidDigit(text).toString())
+                //Log.i("EDIT IMPORTANCE", text)
+                //Log.i("EDIT IMPORTANCE", InputValidation.isValidDigit(text).toString())
                 if (InputValidation.isValidDigit(text)) {
-                    Log.i("EDIT IMPORTANCE", "update text to int")
+                    //Log.i("EDIT IMPORTANCE", "update text to int")
                     viewModel.updateImportance(text.toInt())
                 }
             }

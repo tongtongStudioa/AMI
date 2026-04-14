@@ -75,7 +75,7 @@ class TrackingService : LifecycleService() {
         postInitialValues()
 
         // set up wake lock
-        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val pm = getSystemService(POWER_SERVICE) as PowerManager
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getString(R.string.app_name))
 
         // set up sonification

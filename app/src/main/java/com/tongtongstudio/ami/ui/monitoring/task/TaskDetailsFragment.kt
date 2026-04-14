@@ -94,14 +94,18 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
         }
     }
 
-    private fun renderUiState(uiState: TaskDetailsAndTimeTrackerViewModel.DetailUiState) {
+    private fun renderUiState(uiState: DetailUiState) {
         binding.apply {
             val mainTask = uiState.thingToDo?.taskRelations?.mainTask
             // task info
             taskName.text = mainTask?.title ?: ""
             taskCategory.text = uiState.thingToDo?.taskRelations?.category?.title ?: ""
+            taskNature.text = uiState.thingToDo?.getNature(requireContext())
+            taskStatus.text = uiState.thingToDo?.taskRelations?.mainTask?.status ?: ""
+            taskType.text = uiState.thingToDo?.getType()
             taskDescription.text = mainTask?.description
             taskDescription.isVisible = mainTask?.description != null
+            description.isVisible = mainTask?.description != null
             taskStartDate.text = Task.getDateFormatted(mainTask?.startDate)
             taskStartDate.isVisible = mainTask?.startDate != null
             taskDueDate.text =
@@ -121,12 +125,22 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
             tvEstimatedWorkTime.text =
                 TrackingTimeUtility.getFormattedEstimatedTime(mainTask?.estimatedWorkingTime)
                     ?: getString(R.string.no_information)
-            estimatedWorkTimeView.isVisible =
-                mainTask?.estimatedWorkingTime != null
 
             // stats view
+            tvSessionsCount.text = uiState.workSessionsCount.toString()
+            tvMeanDuration.text =
+                TrackingTimeUtility.getFormattedTimeWorked(uiState.meanWorkSessionDuration.toLong())
+                    ?: getString(R.string.no_information)
+            priorityIndex.isVisible = uiState.priorityIndex != -1 && uiState.priorityIndex != null
+            tvPriorityIndex.text = uiState.priorityIndex.toString()
+            effectiveStartDate.isVisible = uiState.effectiveStartDate != null
+            tvEffectiveStartDate.text =
+                Task.getDateFormatted(uiState.effectiveStartDate)
+                    ?: getString(R.string.no_information)
+
+            // recurring stats view
             val isRecurrentTask = uiState.thingToDo?.getType() != Type.UNIQUE.name
-            statsView.isVisible = isRecurrentTask
+            recurringStatsView.isVisible = isRecurrentTask
 
             // completion date
             btnCompletionDate.isVisible = uiState.taskCompletion?.isCompleted ?: false

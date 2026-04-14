@@ -16,6 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt
 import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt.STATE_BACK_BUTTON_PRESSED
+import androidx.core.content.edit
 
 /**
  * This class manage all the sub methods to display tutorial steps and guidance through the app.
@@ -61,7 +62,7 @@ class AppTutorial(val activity: FragmentActivity,
     private fun executeStep(fragment: Fragment, steps: List<FragmentSteps>,currentIndex: Int) {
         if (currentIndex >= steps.size) return
         val step = steps[currentIndex]
-        val isStepCompleted = sharedPreferences.getBoolean(step.key, false)
+        sharedPreferences.getBoolean(step.key, false)
 
         waitForViewInFragment(fragment, step.targetId) { targetId ->
             MaterialTapTargetPrompt.Builder(activity)
@@ -94,7 +95,7 @@ class AppTutorial(val activity: FragmentActivity,
 
     fun maybeShowTutorialFor(fragName: String, fragment: Fragment) {
         if (!sharedPreferences.getBoolean("tutorial_shown_$fragName", false) && sharedPreferences.getBoolean("tutorial_enabled", false)) {
-            sharedPreferences.edit().putBoolean("tutorial_shown_$fragName", true).apply()
+            sharedPreferences.edit { putBoolean("tutorial_shown_$fragName", true) }
             startTutorialForFragment(fragment)
         } else if (!sharedPreferences.getBoolean(KEY_DIALOG_SHOWN, false)) {
             // On retarde, en mémoire
@@ -103,10 +104,10 @@ class AppTutorial(val activity: FragmentActivity,
     }
 
     fun handleWelcomeResult(accepted: Boolean) {
-        sharedPreferences.edit()
-            .putBoolean(KEY_DIALOG_SHOWN, true)
-            .putBoolean("tutorial_enabled", accepted)
-            .apply()
+        sharedPreferences.edit {
+            putBoolean(KEY_DIALOG_SHOWN, true)
+                .putBoolean("tutorial_enabled", accepted)
+        }
 
         if (accepted) {
             playPendingSteps()
@@ -126,18 +127,18 @@ class AppTutorial(val activity: FragmentActivity,
      * Reset all preferences fragment's key.
      */
     fun resetTutorial(keys: List<String>) {
-        val editor = sharedPreferences.edit()
-        keys.forEach { key ->
-            editor.putBoolean(key, false)
+        sharedPreferences.edit {
+            keys.forEach { key ->
+                putBoolean(key, false)
+            }
         }
-        editor.apply()
     }
 
     /**
      * Reset state specific tutorial step.
      */
     fun resetStep(key: String) {
-        sharedPreferences.edit().putBoolean(key, false).apply()
+        sharedPreferences.edit { putBoolean(key, false) }
     }
 
     /**

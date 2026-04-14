@@ -12,7 +12,7 @@ import dagger.hilt.android.HiltAndroidApp
 import jakarta.inject.Inject
 
 @HiltAndroidApp
-class AmiApplication() : Application(), Configuration.Provider {
+class AmiApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var workerFactory: ReminderWorkerFactory
 

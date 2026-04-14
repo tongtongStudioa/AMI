@@ -20,7 +20,6 @@ import com.tongtongstudio.ami.databinding.ItemTaskBinding
 class ThingToDoAdapter(private val listener: InteractionListener, private val showDueDate: Boolean = true ) :
     BaseAdapter<ThingToDo>(), ItemTouchHelperAdapter {
 
-    enum class FragmentViewType {LATER, TODAY, COMPLETED, OTHERS}
     enum class ViewType {TASK, PROJECT}
 
     /*fun addTask(newTask: ThingToDo) {
@@ -87,7 +86,7 @@ class ThingToDoAdapter(private val listener: InteractionListener, private val sh
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
                         val task = elementsList[position].taskRelations.mainTask
-                        listener.onTaskClick(task, itemView)
+                        listener.onTaskClick(task, itemView, position)
                     }
                 }
             }
@@ -145,7 +144,7 @@ class ThingToDoAdapter(private val listener: InteractionListener, private val sh
                     val position = absoluteAdapterPosition
                     if (position != RecyclerView.NO_POSITION) {
                         val project = elementsList[position]
-                        listener.onProjectClick(project,itemView)
+                        listener.onProjectClick(project,itemView, position)
                     }
                 }
                 btnAddSubTask.setOnClickListener {

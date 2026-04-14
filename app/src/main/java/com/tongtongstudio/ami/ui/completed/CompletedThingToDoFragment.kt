@@ -1,10 +1,12 @@
 package com.tongtongstudio.ami.ui.completed
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuHost
@@ -13,7 +15,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.FragmentNavigatorExtras
@@ -43,43 +44,12 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
 
     private val viewModel: CompletedThingToDoViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
-    private lateinit var sharedViewModel: MainViewModel
+    private val sharedViewModel: MainViewModel by viewModels()
 
+    private lateinit var completedAdapter: ThingToDoAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
         enterTransition = MaterialFadeThrough().apply {
             duration = resources.getInteger(R.integer.middle_duration).toLong()
-        }
-        super.onCreate(savedInstanceState)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        binding = FragmentMainBinding.bind(view)
-
-        // to make toolbar appear
-        setUpToolbar()
-        binding.fabAddTask.isVisible = false
-
-        sharedViewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
-        val completedAdapter = ThingToDoAdapter(this)
-
-        binding.apply {
-            mainRecyclerView.apply {
-                layoutManager = LinearLayoutManager(requireContext())
-                adapter = completedAdapter
-            }
-
-            val callback = object : ThingToDoItemCallback<ThingToDoAdapter>(
-                completedAdapter,
-                ItemTouchHelper.RIGHT,
-                requireContext()
-            ) {
-                override fun actionOnRightSwiped(thingToDo: ThingToDo, position: Int) {
-                    sharedViewModel.deleteTask(thingToDo, requireContext())
-                }
-
-            }
-            ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
         }
 
         lifecycleScope.launch {
@@ -144,11 +114,46 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
             }
         }
 
-        /**
-         * The below code is required to animate correctly when the user returns from [TaskDetailsFragment].
-         */
-        //postponeEnterTransition()
-        //view.doOnPreDraw { startPostponedEnterTransition() }
+        completedAdapter = ThingToDoAdapter(this)
+
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        super.onCreateView(inflater, container, savedInstanceState)
+        binding = FragmentMainBinding.inflate(inflater)
+        // to make toolbar appear
+        setUpToolbar()
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.fabAddTask.isVisible = false
+
+        binding.apply {
+            mainRecyclerView.apply {
+                layoutManager = LinearLayoutManager(requireContext())
+                adapter = completedAdapter
+            }
+
+            val callback = object : ThingToDoItemCallback<ThingToDoAdapter>(
+                completedAdapter,
+                ItemTouchHelper.RIGHT,
+                requireContext()
+            ) {
+                override fun actionOnRightSwiped(thingToDo: ThingToDo, position: Int) {
+                    sharedViewModel.deleteTask(thingToDo, requireContext())
+                }
+
+            }
+            ItemTouchHelper(callback).attachToRecyclerView(mainRecyclerView)
+        }
 
         viewModel.thingsToDoCompleted.observe(viewLifecycleOwner) {
             if (it.isEmpty()) {
@@ -235,12 +240,12 @@ class CompletedThingToDoFragment : Fragment(R.layout.fragment_main),
         sharedViewModel.onCheckBoxChanged(thingToDo, isChecked)
     }
 
-    override fun onProjectClick(thingToDo: ThingToDo, itemView: View) {
+    override fun onProjectClick(thingToDo: ThingToDo, itemView: View, position: Int) {
         sharedViewModel.navigateToProjectDetailsScreen(thingToDo,itemView
         )
     }
 
-    override fun onTaskClick(thingToDo: Task, itemView: View) {
+    override fun onTaskClick(thingToDo: Task, itemView: View, position: Int) {
         sharedViewModel.navigateToTaskDetailsScreen(thingToDo, itemView)
     }
 

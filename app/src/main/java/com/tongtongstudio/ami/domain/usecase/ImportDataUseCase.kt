@@ -39,12 +39,4 @@ class ImportDatabaseUseCase @Inject constructor(
             assessmentDao.insertAssessments(assessments)
         }
     }
-
-    private suspend fun clearDatabase() {
-        /*taskDao.deleteAll()
-        categoryDao.deleteAll()
-        reminderDao.deleteAll()
-        workSessionDao.deleteAll()
-        assessmentDao.deleteAll()*/
-    }
 }

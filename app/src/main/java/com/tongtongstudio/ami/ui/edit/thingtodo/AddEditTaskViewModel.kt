@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -181,12 +180,12 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     fun updateDueDate(date: Long?) {
-        _addEditUiState.update { it.copy(dueDate = date) }
+        _addEditUiState.update { it.copy(dueDate = date, urgency = Task.calculusUrgency(it.dueDate, it.deadline)) }
         savedStateHandle["dueDate"] = date
     }
 
     fun updateDeadline(date: Long?) {
-        _addEditUiState.update { it.copy(deadline = date) }
+        _addEditUiState.update { it.copy(deadline = date, urgency = Task.calculusUrgency(it.dueDate, it.deadline)) }
         savedStateHandle["thingToDoDeadline"] = date
     }
 
@@ -357,17 +356,12 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     private fun buildTaskFromState(state: AddEditUiState, modeExtent: Boolean): Task {
-        val isDraft = state.priority == null || state.dueDate == null
+        val priority =  Task.calculatingPriority(state.priority, state.importance, state.urgency)
         val nature = getNature(state)
         return if (modeExtent) {
-            val urgency = Task.calculusUrgency(
-                Calendar.getInstance().timeInMillis,
-                state.dueDate,
-                state.deadline
-            )
             Task(
                 title = state.title,
-                priority = Task.calculatingPriority(state.priority, state.importance, urgency),
+                priority = priority,
                 dueDate = state.dueDate,
                 startDate = state.startDate,
                 deadline = state.deadline,
@@ -375,7 +369,7 @@ class AddEditTaskViewModel @Inject constructor(
                 nature = nature,
                 importance = state.importance,
                 urgency = state.urgency,
-                isDraft = isDraft,
+                isDraft = priority == null || state.dueDate == null,
                 estimatedEmotions = state.estimatedEmotions,
                 estimatedWorkingTime = state.estimatedWorkTime,
                 skillLevel = state.skillLevel,
@@ -387,10 +381,10 @@ class AddEditTaskViewModel @Inject constructor(
         } else {
             Task(
                 title = state.title,
-                priority = state.priority,
+                priority = priority,
                 dueDate = state.dueDate,
                 nature = nature,
-                isDraft = isDraft,
+                isDraft = priority == null || state.dueDate == null,
                 recurrenceInfosId = state.taskRecurrenceWithDays?.taskRecurrence?.recurrenceId,
             )
         }

@@ -1,10 +1,5 @@
 package com.tongtongstudio.ami.data
 
-import android.util.Log
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.tongtongstudio.ami.data.dao.AssessmentDao
 import com.tongtongstudio.ami.data.dao.CategoryDao
 import com.tongtongstudio.ami.data.dao.RecurrenceInfoDao
@@ -31,12 +26,10 @@ import com.tongtongstudio.ami.data.datatables.TtdAchieved
 import com.tongtongstudio.ami.data.datatables.TtdStreakInfo
 import com.tongtongstudio.ami.data.datatables.Type
 import com.tongtongstudio.ami.data.datatables.WorkSession
-import com.tongtongstudio.ami.notification.ReminderWorker
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class Repository @Inject constructor(
@@ -130,7 +123,7 @@ class Repository @Inject constructor(
         for (task in taskList) {
             if (task.dueDate == null)
                 return
-            val urgency = Task.calculusUrgency(todayDate, task.dueDate, task.deadline)
+            val urgency = Task.calculusUrgency(task.dueDate, task.deadline, todayDate)
             val priority = Task.calculatingPriority(task.priority, task.importance, task.urgency)
             taskDao.update(task.copy(urgency = urgency, priority = priority))
         }
@@ -214,6 +207,7 @@ class Repository @Inject constructor(
     /** ****** Work Sessions ******* **/
     suspend fun suppressWorkSession(workSession: WorkSession) {
         workSessionDao.delete(workSession)
+        updateTaskProgress(workSession.parentTaskId)
     }
 
     suspend fun insertWorkSession(workSession: WorkSession) {
@@ -349,11 +343,15 @@ class Repository @Inject constructor(
         val taskWorkTime = workSessionDao.getTaskTimeWorked(taskId)
         val directSubTasks = taskDao.getSubTasks(taskId)
         var totalWorkTime = taskWorkTime
-        directSubTasks.collect {
-            it.forEach { totalWorkTime = flowOf(totalWorkTime.first() + getThingToDoTimeWorked(it.id).first()) }
+        directSubTasks.collect { subTask ->
+            subTask.forEach {
+                totalWorkTime =
+                    flowOf(totalWorkTime.first() + getThingToDoTimeWorked(it.id).first())
+            }
         }
         return totalWorkTime
     }
+
     suspend fun getProjectTimeWorked(mainTaskId: Long?): Long {
         if (mainTaskId == null)
             return 0L
@@ -403,16 +401,26 @@ class Repository @Inject constructor(
             // Get old recurring task's due date
             val oldDueDate = task.dueDate!!
             // Get task recurrence informations
-            val taskRecurrenceWithDays = recurrenceInfoDao.getTaskRecurrenceWithDays(task.recurrenceInfosId!!)
+            val taskRecurrenceWithDays =
+                recurrenceInfoDao.getTaskRecurrenceWithDays(task.recurrenceInfosId!!)
             //Log.e("Inside toggleCompletion", "task recurrence is set : $taskRecurrenceWithDays!")
             // Insert TaskCompletion not complete for each due date before present day
-            val allDueDates = taskRecurrenceWithDays.calculateAllDueDatesBetween(oldDueDate, Calendar.getInstance().timeInMillis)
+            val allDueDates = taskRecurrenceWithDays.calculateAllDueDatesBetween(
+                oldDueDate,
+                Calendar.getInstance().timeInMillis
+            )
             allDueDates.forEach { dueDate ->
                 if (isChecked && dueDate == oldDueDate) {
                     val newCompletion = TaskCompletion(task.id, true, completionDate = dueDate)
                     taskCompletionDao.insert(newCompletion)
                 } else
-                    taskCompletionDao.insert(TaskCompletion(task.id, isCompleted = false, completionDate = dueDate))
+                    taskCompletionDao.insert(
+                        TaskCompletion(
+                            task.id,
+                            isCompleted = false,
+                            completionDate = dueDate
+                        )
+                    )
             }
             if (isChecked) {
                 val newCompletion = TaskCompletion(task.id, true, oldDueDate)
@@ -427,7 +435,8 @@ class Repository @Inject constructor(
             else if (isChecked) Status.IN_PROGRESS.name else Status.REVIEW.name,
         )
         if (type == Type.RECURRING.name) {
-            val taskRecurrenceWithDays = recurrenceInfoDao.getTaskRecurrenceWithDays(task.recurrenceInfosId!!)
+            val taskRecurrenceWithDays =
+                recurrenceInfoDao.getTaskRecurrenceWithDays(task.recurrenceInfosId!!)
             // Update task with new due date and complete task if new due date > end date or occurrence limit reached
             val newDueDate = taskRecurrenceWithDays.getNextOccurrenceDay(task.dueDate!!)
             updatedTask = updatedTask.copy(
@@ -509,7 +518,11 @@ class Repository @Inject constructor(
             taskRecurrence.recurrenceId
         } else {
             val newId = recurrenceInfoDao.insertRecurringInfo(taskRecurrence)
-            val crossRefForDays = createCrossRefForDays(taskRecurrenceWithDays.copy(taskRecurrenceWithDays.taskRecurrence.copy(recurrenceId = newId)))
+            val crossRefForDays = createCrossRefForDays(
+                taskRecurrenceWithDays.copy(
+                    taskRecurrenceWithDays.taskRecurrence.copy(recurrenceId = newId)
+                )
+            )
             recurrenceInfoDao.insertCrossRefForDays(crossRefForDays)
             newId
         }
@@ -559,13 +572,14 @@ class Repository @Inject constructor(
             return
         directSubTasks.forEach {
             taskDao.update(it.copy(categoryId = categoryId))
-            updateSubTasksCategory(it.id,categoryId)
+            updateSubTasksCategory(it.id, categoryId)
         }
     }
 
-    suspend fun updateTaskProgress(taskId:Long) {
+    suspend fun updateTaskProgress(taskId: Long) {
         val task = taskDao.getTask(taskId)
-        updateTask(task.copy(status = Status.IN_PROGRESS.name))
+        val workSessionCount = workSessionDao.getWorkSessionsCountByTaskId(taskId)
+        updateTask(task.copy(status = if (workSessionCount > 0) Status.IN_PROGRESS.name else Status.NOT_STARTED.name))
     }
 
     suspend fun getReminder(reminderId: Long): ReminderNotification? {

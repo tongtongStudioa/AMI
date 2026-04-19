@@ -304,4 +304,5 @@
     <string name="import_success_msg">Success import !</string>
     <string name="export_success_msg">Database save under %1$s</string>
     <string name="import_failure_msg">Error : %1$s</string>
+    <string name="assessment_delayed">Assessment is delayed in 3 days !</string>
 </resources>

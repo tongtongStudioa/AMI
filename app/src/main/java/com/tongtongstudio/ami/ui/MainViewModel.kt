@@ -1,9 +1,6 @@
 package com.tongtongstudio.ami.ui
 
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
@@ -15,7 +12,6 @@ import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.SortOrder
 import com.tongtongstudio.ami.data.datatables.Task
 import com.tongtongstudio.ami.data.datatables.ThingToDo
-import com.tongtongstudio.ami.receiver.ReminderBroadcastReceiver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -78,16 +74,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun cancelReminder(context: Context, reminderId: Long) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, ReminderBroadcastReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            reminderId.toInt(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        alarmManager.cancel(pendingIntent)
+        //TODO: cancel work for reminder
     }
 
     fun updateTask(thingToDo: ThingToDo) = viewModelScope.launch(Dispatchers.IO) {
@@ -108,6 +95,10 @@ class MainViewModel @Inject constructor(
 
     fun showConfirmationMessage(result: Int) = viewModelScope.launch {
         mainEventChannel.send(SharedEvent.ShowConfirmationMessage(result))
+    }
+
+    fun showIsAssessmentCompleted(result: Boolean) = viewModelScope.launch {
+        mainEventChannel.send(SharedEvent.ShowAssessmentCompleted(result))
     }
 
     fun updateSubTask(subTask: ThingToDo) = viewModelScope.launch {
@@ -176,6 +167,7 @@ class MainViewModel @Inject constructor(
         data class NavigateToProjectDetailsScreen(val project: ThingToDo, val sharedView: View, val position: Int = -1) :
             SharedEvent()
 
+        data class ShowAssessmentCompleted(val result: Boolean) : SharedEvent()
         data class ShowConfirmationMessage(val result: Int) : SharedEvent()
         data class ShowUndoDeleteTaskMessage(val thingToDo: Task) :
             SharedEvent()

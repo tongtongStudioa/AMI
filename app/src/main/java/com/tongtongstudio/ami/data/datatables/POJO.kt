@@ -369,6 +369,8 @@ data class TaskRecurrenceWithDays(
 }
 
 data class ReminderNotification(
+    @ColumnInfo(name = "parent_id")
+    val parentTaskId: Long,
     @ColumnInfo(name = "reminder_id")
     val reminderId: Long,
     val dueDate: Long,

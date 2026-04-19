@@ -1,7 +1,6 @@
 package com.tongtongstudio.ami.domain.usecase
 
 import android.content.Context
-import android.util.Log
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -17,10 +16,6 @@ class ScheduleRemindersUseCase @Inject constructor(
 ) {
     operator fun invoke(reminders: List<Reminder>) {
         reminders.forEach { reminder ->
-            Log.i(
-                "SEND REMINDER NOTIF",
-                "Test if due Date > current time = ${reminder.dueDate > System.currentTimeMillis()}"
-            )
             if (reminder.dueDate > System.currentTimeMillis()) {
                 scheduleReminder(reminder)
             }

@@ -8,6 +8,7 @@ import com.tongtongstudio.ami.data.MIGRATION_2_3
 import com.tongtongstudio.ami.data.MIGRATION_3_5
 import com.tongtongstudio.ami.data.MIGRATION_4_2
 import com.tongtongstudio.ami.data.ThingToDoDatabase
+import com.tongtongstudio.ami.domain.usecase.ScheduleAssessmentUseCase
 import com.tongtongstudio.ami.domain.usecase.ScheduleRemindersUseCase
 import dagger.Module
 import dagger.Provides
@@ -64,6 +65,11 @@ object DatabaseModule {
     fun provideScheduleRemindersUseCase(
         @ApplicationContext context: Context
     ) = ScheduleRemindersUseCase(context)
+
+    @Provides
+    fun provideScheduleAssessmentsUseCase(
+        @ApplicationContext context: Context
+    ) = ScheduleAssessmentUseCase(context)
 }
 
 @Retention(AnnotationRetention.RUNTIME)

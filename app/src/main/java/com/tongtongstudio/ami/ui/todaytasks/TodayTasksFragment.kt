@@ -1,16 +1,19 @@
 package com.tongtongstudio.ami.ui.todaytasks
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -51,7 +54,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     private val viewModel: TasksViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var mainTaskAdapter: ThingToDoAdapter
-    private val sharedViewModel: MainViewModel by viewModels()
+    private val sharedViewModel: MainViewModel by activityViewModels()
     private lateinit var soundPlayer: SoundPlayer
     private var menuProvider: MenuProvider? = null
 
@@ -127,7 +130,7 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
 
         // respond to event
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 sharedViewModel.mainEvent.collect { event ->
                     when (event) {
                         is MainViewModel.SharedEvent.NavigateToEditScreen -> {
@@ -220,10 +223,18 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
                                 TodayTasksFragmentDirections.actionTodayTasksFragmentToDraftsFragment()
                             findNavController().navigate(action)
                         }
+                        is MainViewModel.SharedEvent.ShowAssessmentCompleted -> {
+                            Snackbar.make(
+                                binding.fabAddTask,
+                                if (event.result) getString(R.string.assessment_completed) else getString(R.string.assessment_delayed),
+                                Toast.LENGTH_SHORT
+                            ).setAnchorView(binding.fabAddTask)
+                                .show()
+                        }
                         else -> {
                             // do nothing
                         }
-                    }.exhaustive
+                    }
                 }
             }
         }

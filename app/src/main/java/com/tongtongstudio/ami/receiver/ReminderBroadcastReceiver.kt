@@ -74,7 +74,6 @@ class ReminderBroadcastReceiver : BroadcastReceiver() {
         reminderId: Long
     ) {
         if (customReminderInterval != null) {
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val intent = Intent(context, ReminderBroadcastReceiver::class.java).apply {
                 putExtra(TASK_NAME_KEY, taskName)
                 putExtra(REMINDER_DUE_DATE, reminderDueDate)
@@ -92,7 +91,7 @@ class ReminderBroadcastReceiver : BroadcastReceiver() {
 
             val newReminderDueDate =
                 customReminderInterval.getNextOccurrenceDay(reminderDueDate)
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, newReminderDueDate, pendingIntent)
+            //alarmManager.setExact(AlarmManager.RTC_WAKEUP, newReminderDueDate, pendingIntent)
         }
     }
 }

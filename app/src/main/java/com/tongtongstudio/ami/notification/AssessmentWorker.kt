@@ -12,57 +12,52 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.Repository
-import com.tongtongstudio.ami.data.datatables.ReminderNotification
+import com.tongtongstudio.ami.data.datatables.Assessment
+import com.tongtongstudio.ami.receiver.ASSESSMENT_CHANNEL_ID
 import com.tongtongstudio.ami.receiver.REMINDER_CHANNEL_ID
 import com.tongtongstudio.ami.ui.MainActivity
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
 @HiltWorker
-class ReminderWorker @AssistedInject constructor(
+class AssessmentWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val repository: Repository
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        //Log.i("SEND REMINDER NOTIF", "Get reminder id in worker")
-        val reminderId = inputData.getLong("REMINDER_ID", -1)
-        if (reminderId == -1L) {
-            //Log.i("SEND REMINDER NOTIF", "Failure : no id")
+        //Log.i("SCHEDULE ASSESSMENT WORKER", "In assessment worker")
+        val assessmentId = inputData.getLong("ASSESSMENT_ID", -1)
+        //Log.i("SCHEDULE ASSESSMENT WORKER", assessmentId.toString())
+        if (assessmentId == -1L) {
             return Result.failure()
         }
-        //Log.i("SEND REMINDER NOTIF", "Get reminder (id=$reminderId)")
-        val reminderTask = repository.getReminderNotification(reminderId)
-        //Log.i("SEND REMINDER NOTIF", "Reminder id = ${reminderTask?.reminderId}")
-        if (reminderTask == null) {
-            //Log.i("SEND REMINDER NOTIF","bug no return :( !!")
-            return Result.failure()
-        }
-        //Log.i("SEND REMINDER NOTIF", "Test if now time greater than due date")
-        if (System.currentTimeMillis() >= reminderTask.dueDate) {
-            sendNotification(applicationContext, reminderTask)
+        val assessment = repository.getAssessment(assessmentId)
+
+
+        if (System.currentTimeMillis() >= assessment.dueDate) {
+            //Log.i("SCHEDULE ASSESSMENT WORKER", "Send notif")
+            sendNotification(applicationContext, assessment)
         }
         return Result.success()
     }
 
-    private fun sendNotification(context: Context, reminder: ReminderNotification) {
-        // TODO: Create notification helper
+    private fun sendNotification(context: Context, assessment: Assessment) {
         val pendingIntent = NavDeepLinkBuilder(applicationContext)
             .setComponentName(MainActivity::class.java)
             .setGraph(R.navigation.nav_graph)
-            .setDestination(R.id.viewPagerTrackingAndStatsFragment)
-            .setArguments(bundleOf("task_id" to reminder.parentTaskId))
+            .setDestination(R.id.completeAssessmentDialogFragment)
+            .setArguments(bundleOf("assessment" to assessment))
             .createPendingIntent()
 
-        //Log.i("SEND REMINDER NOTIF", "Parent task id : ${reminder.parentTaskId}")
         val notificationManager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                REMINDER_CHANNEL_ID,
-                "Reminders",
+                ASSESSMENT_CHANNEL_ID,
+                "Assessments",
                 NotificationManager.IMPORTANCE_HIGH
             )
             notificationManager.createNotificationChannel(channel)
@@ -70,13 +65,13 @@ class ReminderWorker @AssistedInject constructor(
 
         val notification = NotificationCompat.Builder(applicationContext, REMINDER_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_small_notif)
-            .setContentTitle(context.getString(R.string.reminder_title))
-            .setContentIntent(pendingIntent)
-            .setContentText(context.getString(R.string.reminder_content_text, reminder.taskTitle))
+            .setContentTitle(context.getString(R.string.assessment_notification_title))
+            .setContentText(context.getString(R.string.complete_assessment_notification_content, assessment.title))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
-        //Log.i("SEND REMINDER NOTIF", "Notify")
-        notificationManager.notify(reminder.reminderId.toInt(), notification)
+        //Log.i("SEND ASSESSMENT NOTIF", "Notify")
+        notificationManager.notify(assessment.id.toInt(), notification)
     }
 }

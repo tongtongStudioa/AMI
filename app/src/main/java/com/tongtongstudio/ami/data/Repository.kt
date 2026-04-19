@@ -582,8 +582,8 @@ class Repository @Inject constructor(
         updateTask(task.copy(status = if (workSessionCount > 0) Status.IN_PROGRESS.name else Status.NOT_STARTED.name))
     }
 
-    suspend fun getReminder(reminderId: Long): ReminderNotification? {
-        return reminderDao.getReminder(reminderId)
+    suspend fun getReminderNotification(reminderId: Long): ReminderNotification? {
+        return reminderDao.getReminderNotification(reminderId)
     }
     // ************* //
 }

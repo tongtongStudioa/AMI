@@ -3,7 +3,6 @@ package com.tongtongstudio.ami.data.dao
 import androidx.room.*
 import com.tongtongstudio.ami.data.datatables.Reminder
 import com.tongtongstudio.ami.data.datatables.ReminderNotification
-import com.tongtongstudio.ami.data.datatables.Task
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -29,9 +28,10 @@ interface ReminderDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertReminders(reminders: List<Reminder>)
 
-    @Query("SELECT reminder_id, dueDate, title as taskTitle " +
+    @RewriteQueriesToDropUnusedColumns
+    @Query("SELECT parent_id, reminder_id, dueDate, title as taskTitle " +
             "FROM reminder " +
             "LEFT JOIN task_table ON parent_id = task_id " +
             "WHERE reminder_id = :reminderId ")
-    suspend fun getReminder(reminderId: Long): ReminderNotification?
+    suspend fun getReminderNotification(reminderId: Long): ReminderNotification?
 }

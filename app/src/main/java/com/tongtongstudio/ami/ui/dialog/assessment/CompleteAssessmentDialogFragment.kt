@@ -5,18 +5,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import com.tongtongstudio.ami.R
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.databinding.DialogCompleteAssessmentBinding
+import com.tongtongstudio.ami.ui.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -25,7 +24,7 @@ class CompleteAssessmentDialogFragment : DialogFragment() {
 
     private lateinit var binding: DialogCompleteAssessmentBinding
     private val viewModel: CompleteAssessmentViewModel by viewModels()
-    private lateinit var positiveButton: Button
+    private val sharedViewModel: MainViewModel by activityViewModels()
     private val args: CompleteAssessmentDialogFragmentArgs by navArgs()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -43,7 +42,7 @@ class CompleteAssessmentDialogFragment : DialogFragment() {
                 .setNegativeButton(
                     R.string.cancel
                 ) { _, _ ->
-                    dialog?.cancel()
+                    onDialogNegativeButton(this)
                 }
             dialogBuilder.create()
             /*val alertDialog = dialogBuilder.create()
@@ -55,13 +54,15 @@ class CompleteAssessmentDialogFragment : DialogFragment() {
         } ?: throw IllegalStateException("Activity cannot be null")
     }
 
+    private fun onDialogNegativeButton(dialogFragment: CompleteAssessmentDialogFragment) {
+        viewModel.delayAssessment()
+        //Log.i("SHOW SNACK BAR COMPLETED", "launch event !")
+        sharedViewModel.showIsAssessmentCompleted(false)
+    }
+
     private fun onDialogPositiveClick(dialog: CompleteAssessmentDialogFragment) {
         viewModel.saveCompletedAssessment()
-        Snackbar.make(
-            dialog.requireView(),
-            getString(R.string.assessment_completed),
-            Toast.LENGTH_SHORT
-        ).show()
+        sharedViewModel.showIsAssessmentCompleted(true)
     }
 
     override fun onCreateView(

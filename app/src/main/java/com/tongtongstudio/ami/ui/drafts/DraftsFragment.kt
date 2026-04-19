@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -37,7 +38,7 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
 
     private val viewModel: DraftsViewModel by viewModels()
     private lateinit var binding: FragmentDraftsBinding
-    private lateinit var sharedViewModel: MainViewModel
+    private val sharedViewModel: MainViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enterTransition = MaterialFadeThrough().apply {
@@ -50,8 +51,6 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
         binding = FragmentDraftsBinding.bind(view)
 
         setUpToolbar()
-        sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-
         val draftAdapter = ThingToDoAdapter(this)
         binding.draftRecyclerView.apply {
             adapter = draftAdapter
@@ -100,16 +99,6 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
                             findNavController().navigate(action)
                         }
 
-                        is MainViewModel.SharedEvent.NavigateToAddScreen -> {
-                            val action =
-                                DraftsFragmentDirections.actionDraftsFragmentToAddEditTaskFragment(
-                                    getString(R.string.fragment_title_add_thing_to_do),
-                                    thingToDo = null,
-                                    parentTask = null
-                                )
-                            findNavController().navigate(action)
-                        }
-
                         is MainViewModel.SharedEvent.NavigateToAddScreenWithParentTask -> {
                             val action = DraftsFragmentDirections.actionDraftsFragmentToAddEditTaskFragment(
                                 title = getString(R.string.fragment_title_add_thing_to_do),
@@ -123,12 +112,6 @@ class DraftsFragment : Fragment(R.layout.fragment_drafts), InteractionListener {
                                 duration = resources.getInteger(R.integer.middle_duration).toLong()
                             }
                             findNavController().navigate(action)
-                        }
-                        is MainViewModel.SharedEvent.ShowConfirmationMessage -> {
-                            val msg = if (event.result == ADD_TASK_RESULT_OK)
-                                getString(R.string.task_added)
-                            else getString(R.string.task_updated)
-                            Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
                         }
 
                         is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {

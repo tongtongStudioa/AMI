@@ -10,6 +10,7 @@ import androidx.core.view.MenuProvider
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -45,7 +46,7 @@ import kotlinx.coroutines.launch
 class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
 
     private val viewModel: ProjectViewModel by viewModels()
-    private lateinit var sharedViewModel: MainViewModel
+    private val sharedViewModel: MainViewModel by activityViewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var projectAdapter: ProjectAdapter
 
@@ -60,7 +61,6 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
         binding = FragmentMainBinding.bind(view)
 
         setUpToolbar()
-        sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
         projectAdapter = ProjectAdapter(this)
 
         binding.apply {
@@ -172,15 +172,18 @@ class ProjectFragment : Fragment(R.layout.fragment_main), InteractionListener {
                                 ADD_DRAFT_TASK_OK -> getString(R.string.draft_task_created)
                                 else -> getString(R.string.task_updated)
                             }
-                            Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show()
+                            Snackbar.make(binding.fabAddTask, msg, Snackbar.LENGTH_SHORT)
+                                .setAnchorView(binding.fabAddTask)
+                                .show()
                         }
 
                         is MainViewModel.SharedEvent.ShowUndoDeleteTaskMessage -> {
                             Snackbar.make(
-                                requireView(),
+                                binding.fabAddTask,
                                 getString(R.string.msg_thing_to_do_deleted),
                                 Snackbar.LENGTH_LONG
                             )
+                                .setAnchorView(binding.fabAddTask)
                                 .setAction(getString(R.string.msg_action_undo)) {
                                     sharedViewModel.onUndoDeleteClick(event.thingToDo)
                                 }.show()

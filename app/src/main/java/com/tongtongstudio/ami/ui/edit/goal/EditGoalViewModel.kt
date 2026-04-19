@@ -1,5 +1,6 @@
 package com.tongtongstudio.ami.ui.edit.goal
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -8,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.datatables.Assessment
 import com.tongtongstudio.ami.data.datatables.AssessmentType
+import com.tongtongstudio.ami.domain.usecase.ScheduleAssessmentUseCase
 import com.tongtongstudio.ami.ui.ADD_GOAL_RESULT_OK
 import com.tongtongstudio.ami.ui.EDIT_GOAL_RESULT_OK
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class EditGoalViewModel @Inject constructor(
     private val repository: Repository,
-    private val state: SavedStateHandle
+    private val state: SavedStateHandle,
+    private val scheduleAssessmentUseCase: ScheduleAssessmentUseCase
 ) : ViewModel() {
 
 
@@ -132,6 +135,7 @@ class EditGoalViewModel @Inject constructor(
         )
         val objectiveId = repository.insertAssessment(newObjective)
         updateAssessmentsList(objectiveId)
+        scheduleAssessmentUseCase(assessments.value?.toList() ?: emptyList())
         editGoalEventChannel.send(EditGoalEvent.NavigateBackWithResult(ADD_GOAL_RESULT_OK))
     }
 
@@ -144,6 +148,7 @@ class EditGoalViewModel @Inject constructor(
             dueDate = dueDate!!
         )
         repository.updateAssessment(updatedObjective)
+        scheduleAssessmentUseCase(assessments.value?.toList() ?: emptyList())
         editGoalEventChannel.send(EditGoalEvent.NavigateBackWithResult(EDIT_GOAL_RESULT_OK))
     }
 

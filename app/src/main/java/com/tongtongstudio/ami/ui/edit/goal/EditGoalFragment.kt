@@ -345,24 +345,6 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
             return
 
         viewModel.saveGlobalGoal()
-        for (assessment in assessments) {
-            scheduleIntermediateAssessments(assessment, requireContext())
-        }
-    }
-
-    private fun scheduleIntermediateAssessments(assessment: Assessment, context: Context) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, AssessmentBroadcastReceiver::class.java).apply {
-            putExtra(ASSESSMENT_ID, assessment)
-        }
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            assessment.id.toInt(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, assessment.dueDate, pendingIntent)
     }
 
     // function to set up toolbar with collapse toolbar and link to drawer layout

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -35,12 +36,13 @@ import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import kotlin.getValue
 
 @AndroidEntryPoint
 class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), InteractionListener {
     lateinit var binding: FragmentProjectDetailsBinding
     private val viewModel: ProjectDetailsViewModel by viewModels()
-    private val sharedViewModel: MainViewModel by viewModels()
+    private val sharedViewModel: MainViewModel by activityViewModels()
     private lateinit var subTaskAdapter: ThingToDoAdapter
 
     private lateinit var uiState: DetailsProjectUiState

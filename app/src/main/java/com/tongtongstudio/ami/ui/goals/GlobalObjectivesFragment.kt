@@ -8,10 +8,10 @@ import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.FragmentNavigatorExtras
@@ -51,7 +51,7 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
 
     private val viewModel: GlobalObjectivesViewModel by viewModels()
     private lateinit var binding: FragmentMainBinding
-    private lateinit var sharedViewModel: MainViewModel
+    private val sharedViewModel: MainViewModel by activityViewModels()
     private lateinit var soundPlayer: SoundPlayer
     private lateinit var goalsAdapter: GoalsAdapter
 
@@ -73,8 +73,7 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
         binding = FragmentMainBinding.bind(view)
 
         setUpToolbar()
-        //view model, sound player and adapter
-        sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
+        //Sound player and adapter
         goalsAdapter = GoalsAdapter(requireContext(), this)
         soundPlayer = SoundPlayer(requireContext())
 
@@ -159,7 +158,7 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
             val msg = if (result == ADD_GOAL_RESULT_OK)
                 getString(R.string.goal_added)
             else getString(R.string.goal_updated)
-            Snackbar.make(view, msg, Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.fabAddTask, msg, Snackbar.LENGTH_SHORT).setAnchorView(binding.fabAddTask).show()
         }
 
         // adapt data in recycler view
@@ -236,13 +235,14 @@ class GlobalObjectivesFragment : Fragment(), GoalsListener {
                         }
                         is GlobalObjectivesViewModel.GoalsEvent.ShowUndoDeleteGlobalGoalMessage -> {
                             Snackbar.make(
-                                requireView(),
+                                binding.fabAddTask,
                                 getString(R.string.msg_global_goal_deleted),
                                 Snackbar.LENGTH_LONG
-                            )
-                                .setAction(getText(R.string.msg_action_undo)) {
+                            ).setAction(getText(R.string.msg_action_undo)) {
                                     viewModel.onUndoDeleteClick(event.goal)
-                                }.show()
+                                }
+                                .setAnchorView(binding.fabAddTask)
+                                .show()
                         }
                     }
                 }

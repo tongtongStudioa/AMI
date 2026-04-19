@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -42,13 +43,12 @@ import java.util.Locale
 class GoalDetailsFragment : Fragment(R.layout.fragment_goal_details) {
     lateinit var binding: FragmentGoalDetailsBinding
     private val viewModel: GoalDetailsViewModel by viewModels()
-    private lateinit var sharedViewModel: MainViewModel
+    private val sharedViewModel: MainViewModel by activityViewModels()
     private lateinit var lineChart: LineChart
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentGoalDetailsBinding.bind(view)
-        sharedViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
 
         sharedElementEnterTransition = MaterialContainerTransform().apply {
             drawingViewId = R.id.nav_host_fragment

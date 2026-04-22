@@ -542,7 +542,7 @@
                 android:layout_marginEnd="15dp"
                 android:hint="@string/mastery_level"
                 android:visibility="visible"
-                app:helperText="On scale on 1 to 9, to what extent do you possess the skills to accomplish this task ?"
+                app:helperText="@string/skill_input_helper_text"
                 app:startIconDrawable="@drawable/baseline_bolt_24">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -566,7 +566,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="15dp"
                 android:hint="@string/feelings"
-                app:helperText="What inspires you about the idea of accomplishing this task?"
+                app:helperText="@string/emotions_input_helper_text"
                 android:visibility="visible"
                 app:startIconDrawable="@drawable/baseline_emoji_emotions_24">
 

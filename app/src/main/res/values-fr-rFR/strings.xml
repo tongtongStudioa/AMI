@@ -268,7 +268,7 @@
     <string name="emotion_excellent">Excellent !</string>
     <string name="help">Aide</string>
     <string name="search">Recherche</string>
-    <string name="edit_helper_text">Ici vous retrouvez tous les attributs d\'une chose à faire !\\n\\nLa priorité d\'une tâche est calculé comme la moyenne arithmétique entre l\'importance et l\'urgence. C\'est pour cela que vous pouvez avoir des différences entre la valeur de l\'importance et de la priorité.\\nLe degré d\'urgence est calculé par une diminution linéaire basée sur la différence, le cas échéant, entre la date limite et la date d\'échéance, ou entre la date d\'échéance et la date actuelle.</string>
+    <string name="edit_helper_text">Ici vous retrouvez tous les attributs d\'une chose à faire !\nLa priorité d\'une tâche est calculé comme la moyenne arithmétique entre l\'importance et l\'urgence. C\'est pour cela que vous pouvez avoir des différences entre la valeur de l\'importance et de la priorité.\nLe degré d\'urgence est calculé par une diminution linéaire basée sur la différence, le cas échéant, entre la date limite et la date d\'échéance, ou entre la date d\'échéance et la date actuelle.</string>
     <string name="action_no_sub_tasks">Tu peux en ajouter avec le bouton en bas à droite.</string>
     <string name="explication_no_sub_tasks">Pas de sous tâches pour ce projet !</string>
     <string name="save_file_name">Nom du fichier de sauvegarde</string>
@@ -277,4 +277,6 @@
     <string name="export_success_msg">Base de données sauvegardée sous %1$s</string>
     <string name="import_failure_msg">Erreur : %1$s</string>
     <string name="assessment_delayed">L\'évaluation est reportée de 3 jours !</string>
+    <string name="emotions_input_helper_text">Qu\'est-ce que vous ressentez à l\'idée d\'accomplir cette tâche ?</string>
+    <string name="skill_input_helper_text">Sur une échelle de 1 à 9, dans quelle mesure possédez-vous les compétences nécessaires pour accomplir cette tâche ?</string>
 </resources>

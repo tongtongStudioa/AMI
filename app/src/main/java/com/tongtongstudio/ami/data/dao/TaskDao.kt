@@ -67,7 +67,7 @@ interface TaskDao {
     // TODO: add multiple sort after by dueDate, deadline and startDate : like Today's tasks
     @Transaction
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM thing_to_do_view t " +
+    @Query("SELECT * FROM ThingToDoView t " +
                 "WHERE (last_completion_status == 0 OR last_completion_status is NULL OR task_recurrence_id IS NOT NULL) AND NOT isDraft " +
                 "AND (task_due_date > :endOfDay OR startDate > :endOfDay) " +
                 "ORDER BY task_due_date/8640000 ASC, deadline/8640000 ASC, startDate ASC, priority DESC, estimatedWorkingTime DESC"
@@ -76,7 +76,7 @@ interface TaskDao {
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM thing_to_do_view t " +
+    @Query("SELECT * FROM ThingToDoView t " +
                 "WHERE (last_completion_status == 0 OR last_completion_status is NULL OR task_recurrence_id IS NOT NULL) AND NOT isDraft AND (task_due_date BETWEEN :endOfDay AND :endOfDayFilter OR startDate BETWEEN :endOfDay AND :endOfDayFilter) " +
                 "ORDER BY task_due_date/8640000 ASC, deadline/8640000 ASC, startDate ASC, priority DESC, estimatedWorkingTime DESC"
     )
@@ -85,7 +85,7 @@ interface TaskDao {
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT ttd.* " +
-                "FROM thing_to_do_view ttd " +
+                "FROM ThingToDoView ttd " +
                 //"LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
                 "WHERE (last_completion_status != :hideCompleted OR last_completion_status == 0 OR last_completion_status IS NULL OR task_recurrence_id IS NOT NULL) AND NOT ttd.isDraft " +
                 "AND (ttd.startDate BETWEEN :startOfDay AND :endOfDay " +
@@ -104,7 +104,7 @@ interface TaskDao {
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * " +
-                "FROM thing_to_do_view AS t " +
+                "FROM ThingToDoView AS t " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
                 "WHERE (last_completion_status != :hideCompleted OR (last_completion_status == 0 OR last_completion_status IS NULL OR task_recurrence_id IS NOT NULL) AND NOT isDraft) " +
                 "AND (startDate BETWEEN :startOfDay AND :endOfDay " +
@@ -123,7 +123,7 @@ interface TaskDao {
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * " +
-                "FROM thing_to_do_view t " +
+                "FROM ThingToDoView t " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
                 "WHERE (last_completion_status != :hideCompleted OR last_completion_status == 0 OR last_completion_status is NULL) AND NOT isDraft " +
                 "AND (startDate BETWEEN :startOfDay AND :endOfDay " +
@@ -140,7 +140,7 @@ interface TaskDao {
     ): Flow<List<ThingToDo>>
 
     @Transaction
-    @Query("SELECT * FROM thing_to_do_view t " +
+    @Query("SELECT * FROM ThingToDoView t " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
                 "WHERE (last_completion_status != :hideCompleted OR last_completion_status == 0 OR last_completion_status is NULL) AND NOT isDraft " +
                 "AND (startDate < :endOfDay AND (last_completion_status == 0 OR last_completion_status is NULL) AND is_active == 0 " +    //startDate BETWEEN :startOfDay AND :endOfDay
@@ -190,16 +190,16 @@ interface TaskDao {
     @Transaction
     @RewriteQueriesToDropUnusedColumns
     @Query(
-        "SELECT * FROM thing_to_do_view ttd " +
+        "SELECT * FROM ThingToDoView ttd " +
                 "LEFT JOIN task_recurrence_table tr ON ttd.task_recurrence_id = tr.recurrence_id " +
-                "LEFT JOIN latest_completion_view lc ON ttd.task_id = lc.parent_task_id " +
+                "LEFT JOIN LatestCompletionView lc ON ttd.task_id = lc.parent_task_id " +
                 "WHERE last_completion_status AND (NOT is_active OR is_active is NULL) " +
                 "ORDER BY last_completion_date DESC"
     )
     fun getCompletedTasks(): Flow<List<ThingToDo>>
 
     @Query("SELECT COUNT(task_id) FROM task_table t " +
-                "LEFT JOIN latest_completion_view AS c ON t.task_id = c.parent_task_id " +
+                "LEFT JOIN LatestCompletionView AS c ON t.task_id = c.parent_task_id " +
                 "LEFT JOIN task_recurrence_table AS rt ON (t.task_recurrence_id = rt.recurrence_id AND NOT rt.is_active) " +
                 "WHERE is_completed OR (task_recurrence_id IS NOT NULL AND NOT is_active AND is_completed)"
     )
@@ -208,7 +208,7 @@ interface TaskDao {
 
     @Query(
                 "SELECT COUNT(*) FROM task_table t " +
-                "LEFT JOIN latest_completion_view c ON t.task_id = c.parent_task_id " +
+                "LEFT JOIN LatestCompletionView c ON t.task_id = c.parent_task_id " +
                 "WHERE is_completed AND category_id = :categoryId "
     )
     suspend fun getCompletedTasksCount(categoryId: Long): Int
@@ -250,7 +250,7 @@ interface TaskDao {
     // TODO: Create test to check number of returns
     @Query(
         "SELECT round(1.0 * COUNT(CASE WHEN is_completed THEN 1 END) / COUNT(*) * 100,1) FROM task_table t " +
-                "LEFT JOIN latest_completion_view AS lc ON t.task_id = lc.parent_task_id " +
+                "LEFT JOIN LatestCompletionView AS lc ON t.task_id = lc.parent_task_id " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
                 "WHERE NOT rt.is_active OR rt.is_active IS NULL"
     )
@@ -684,7 +684,7 @@ ORDER BY period ASC
         SELECT 
             round(100.0 * COUNT(CASE WHEN last_completion_date <= task_due_date THEN 1 END) / COUNT(t.task_id),1) as completion_on_time_rate
         FROM task_table t
-        LEFT JOIN LATEST_COMPLETION_VIEW AS tc ON t.task_id = tc.parent_task_id
+        LEFT JOIN LatestCompletionView AS tc ON t.task_id = tc.parent_task_id
         WHERE is_completed
         """
     )
@@ -1019,7 +1019,7 @@ ORDER BY period ASC
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM thing_to_do_view t " +
+    @Query("SELECT * FROM ThingToDoView t " +
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
                 "WHERE (isCompleted != :hideCompleted OR isCompleted == 0 OR isCompleted IS NULL) " +
                 "AND nature = 'PROJECT' " +
@@ -1046,7 +1046,7 @@ ORDER BY period ASC
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM thing_to_do_view t " +
+    @Query("SELECT * FROM ThingToDoView t " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
                 "WHERE is_active " +
                 "ORDER BY estimatedWorkingTime ASC, priority ASC, skillLevel ASC, urgency DESC, importance DESC"
@@ -1058,11 +1058,11 @@ ORDER BY period ASC
     suspend fun getParentTask(parentTaskId: Long): ThingToDo
 
     @Transaction
-    @Query("SELECT * FROM thing_to_do_view WHERE isDraft")
+    @Query("SELECT * FROM ThingToDoView WHERE isDraft")
     fun getDraftTask(): Flow<List<ThingToDo>>
 
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM thing_to_do_view t " +
+    @Query("SELECT * FROM ThingToDoView t " +
                 "LEFT JOIN task_recurrence_table AS rt ON t.task_recurrence_id = rt.recurrence_id " +
                 "LEFT JOIN task_completion_table AS tc ON t.task_id = tc.parent_task_id " +
                 "WHERE isCompleted = 0 AND NOT (is_active OR is_active IS NULL)"
@@ -1164,7 +1164,7 @@ ORDER BY period ASC
                 "lc.is_completed as last_completion_status, " +
                 "SUM((case when lc.is_completed = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.is_completed * st.weight end) * 100.0 ) AS completion_rate " +
                 "FROM SubTasks st " +
-                "LEFT JOIN latest_completion_view AS lc ON st.task_id = lc.parent_task_id " +
+                "LEFT JOIN LatestCompletionView AS lc ON st.task_id = lc.parent_task_id " +
                 "GROUP BY st.rootTTd " +
                 "LIMIT 1"
     )

@@ -4,8 +4,19 @@ import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
 
 @DatabaseView(
-    viewName = "latest_completion_view",
-    value = LATEST_COMPLETION_VIEW
+    value = "SELECT " +
+            "tc.parent_task_id, " +
+           "tc.completionDate AS last_completion_date, " +
+           "tc.isCompleted AS is_completed " +
+        "FROM task_completion_table tc " +
+        "INNER JOIN ( "+
+            "SELECT parent_task_id, " +
+                   "MAX(completionDate) AS max_date " +
+            "FROM task_completion_table " +
+            "GROUP BY parent_task_id " +
+        ") latest " +
+        "ON tc.parent_task_id = latest.parent_task_id "+
+        "AND tc.completionDate = latest.max_date "
 )
 data class LatestCompletionView(
     @ColumnInfo(name = "parent_task_id")
@@ -17,10 +28,16 @@ data class LatestCompletionView(
 )
 
 const val LATEST_COMPLETION_VIEW = """
-        SELECT
-            parent_task_id,
-            MAX(completionDate) as last_completion_date,
-            isCompleted as is_completed 
-        FROM task_completion_table
-        GROUP BY parent_task_id
-    """
+        SELECT tc.parent_task_id,
+           tc.completionDate AS last_completion_date,
+           tc.isCompleted AS is_completed
+        FROM task_completion_table tc
+        INNER JOIN (
+            SELECT parent_task_id,
+                   MAX(completionDate) AS max_date
+            FROM task_completion_table
+            GROUP BY parent_task_id
+        ) latest
+        ON tc.parent_task_id = latest.parent_task_id
+        AND tc.completionDate = latest.max_date
+        """

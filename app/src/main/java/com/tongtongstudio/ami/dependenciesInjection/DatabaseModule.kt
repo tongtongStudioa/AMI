@@ -7,6 +7,7 @@ import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import com.tongtongstudio.ami.data.MIGRATION_2_3
 import com.tongtongstudio.ami.data.MIGRATION_3_5
 import com.tongtongstudio.ami.data.MIGRATION_4_2
+import com.tongtongstudio.ami.data.MIGRATION_5_6
 import com.tongtongstudio.ami.data.ThingToDoDatabase
 import com.tongtongstudio.ami.domain.usecase.ScheduleAssessmentUseCase
 import com.tongtongstudio.ami.domain.usecase.ScheduleRemindersUseCase
@@ -32,6 +33,7 @@ object DatabaseModule {
         .addMigrations(MIGRATION_4_2)
         .addMigrations(MIGRATION_2_3)
         .addMigrations(MIGRATION_3_5)
+        .addMigrations(MIGRATION_5_6)
         .openHelperFactory(FrameworkSQLiteOpenHelperFactory())
         .addCallback(callback)
         .build()

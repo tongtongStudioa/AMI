@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 5,
-    "identityHash": "c385167bc62ba6cba2137c7464616610",
+    "version": 6,
+    "identityHash": "ed3ad3e872cb2f4297adc03387cc3dbe",
     "entities": [
       {
         "tableName": "task_table",
@@ -715,9 +715,19 @@
         ]
       }
     ],
+    "views": [
+      {
+        "viewName": "LatestCompletionView",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT tc.parent_task_id, tc.completionDate AS last_completion_date, tc.isCompleted AS is_completed FROM task_completion_table tc INNER JOIN ( SELECT parent_task_id, MAX(completionDate) AS max_date FROM task_completion_table GROUP BY parent_task_id ) latest ON tc.parent_task_id = latest.parent_task_id AND tc.completionDate = latest.max_date"
+      },
+      {
+        "viewName": "ThingToDoView",
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS WITH RECURSIVE TaskH AS ( SELECT t.* , 0 as depth, t.task_id as rootTtd, 1.0  AS weight FROM task_table t JOIN task_table st ON t.task_id = st.task_id UNION ALL SELECT t.*, depth + 1, th.rootTtd, weight /(SELECT count(*) FROM task_table WHERE parent_task_id = th.task_id) FROM task_table t JOIN TaskH th ON t.parent_task_id = th.task_id ) SELECT t.*, COUNT(CASE WHEN st.depth = 1 THEN st.task_id END) AS total_main_sub_ttd, COUNT(case when st.depth >= 1  and st.nature == 'SUB_TASK' then st.task_id end) AS nb_sub_tasks, COUNT(case when lc.is_completed = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then st.task_id end) AS nb_sub_tasks_completed, lc.is_completed as last_completion_status, SUM((case when lc.is_completed = 1 and st.depth >= 1 and st.nature is not 'INTERMEDIATE_PROJECT' Then lc.is_completed * st.weight end) * 100.0 ) AS completion_rate FROM task_table t LEFT JOIN TaskH AS st ON st.task_id = t.task_id LEFT JOIN LatestCompletionView AS lc ON t.task_id = lc.parent_task_id GROUP by st.rootTtd"
+      }
+    ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c385167bc62ba6cba2137c7464616610')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ed3ad3e872cb2f4297adc03387cc3dbe')"
     ]
   }
 }

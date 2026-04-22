@@ -2,6 +2,7 @@ package com.tongtongstudio.ami.data.datatables
 
 import android.util.Log
 import androidx.room.Room
+import androidx.room.migration.Migration
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -9,6 +10,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.tongtongstudio.ami.data.MIGRATION_2_3
 import com.tongtongstudio.ami.data.MIGRATION_3_5
 import com.tongtongstudio.ami.data.MIGRATION_4_2
+import com.tongtongstudio.ami.data.MIGRATION_5_6
 import com.tongtongstudio.ami.data.ThingToDoDatabase
 import junit.framework.Assert.assertEquals
 import org.junit.Rule
@@ -116,6 +118,13 @@ class MigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate5To6_validateSchema() {
+        helper.createDatabase(TEST_DB, 5)
+        helper.runMigrationsAndValidate(TEST_DB, 6, true, MIGRATION_5_6)
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrateAll() {
         // Create earliest version of the database.
         helper.createDatabase(TEST_DB, 2).apply {
@@ -131,6 +140,7 @@ class MigrationTest {
         ).addMigrations(MIGRATION_4_2)
             .addMigrations(MIGRATION_2_3)
             .addMigrations(MIGRATION_3_5)
+            .addMigrations(MIGRATION_5_6)
             .build().apply {
                 openHelper.writableDatabase.close()
             }

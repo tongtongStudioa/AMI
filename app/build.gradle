@@ -15,21 +15,19 @@ android {
 
     sourceSets {
         // Adds exported schema location as test app assets.
-        //getByName("androidTest").assets.srcDir("$projectDir/schemas")
         androidTest.assets.srcDirs += files("$projectDir/db_schemas".toString())
     }
+    compileSdk 36
 
-    compileSdk 35
 
     defaultConfig {
         applicationId "com.tongtongstudio.ami"
         minSdkVersion 23
         targetSdk 35
-        versionCode 12
-        versionName '1.1.1'
+        versionCode 13
+        versionName '1.2.0'
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-        versionNameSuffix 'alpha'
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -58,7 +56,7 @@ android {
         freeCompilerArgs += "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
     }
     namespace 'com.tongtongstudio.ami'
-    buildToolsVersion '35.0.0'
+    buildToolsVersion '36.1.0'
 
 }
 
@@ -71,9 +69,8 @@ dependencies {
     implementation 'uk.co.samuelwall:material-tap-target-prompt:3.3.2'
     implementation 'androidx.databinding:databinding-adapters:8.12.0'
     implementation 'androidx.media3:media3-common-ktx:1.8.0'
-    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation 'androidx.work:work-testing:2.11.2'
-    implementation 'androidx.test.ext:junit-ktx:1.3.0'
 
     implementation "androidx.startup:startup-runtime:1.2.0"
     implementation 'androidx.hilt:hilt-work:1.3.0'
@@ -88,7 +85,7 @@ dependencies {
     // MPAndroidChart dependency
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // notification FLAG_IMMUTABLE on Android12
-    implementation 'androidx.work:work-runtime-ktx:2.10.3'
+    implementation 'androidx.work:work-runtime-ktx:2.11.2'
 
     // custom swipe view
     implementation 'it.xabaras.android:recyclerview-swipedecorator:1.4'
@@ -103,7 +100,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-service:2.9.2'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation "junit:junit:$junitVersion"
-    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit-ktx:1.3.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.4'
     androidTestImplementation "androidx.test.ext:junit:$testExtJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
@@ -125,10 +122,11 @@ dependencies {
     implementation "androidx.room:room-runtime:$roomVersion"
     ksp "androidx.room:room-compiler:$roomVersion"
     implementation "androidx.room:room-ktx:$roomVersion"
-    implementation 'androidx.sqlite:sqlite-ktx:2.5.2'
-    implementation 'androidx.sqlite:sqlite-framework:2.5.2'
+    implementation 'androidx.sqlite:sqlite-ktx:2.6.2'
+    implementation 'androidx.sqlite:sqlite-framework:2.6.2'
     // Test helpers
     androidTestImplementation "androidx.room:room-testing:$roomVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0"
 
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
@@ -140,5 +138,5 @@ dependencies {
 
     // DataStore
     implementation "androidx.datastore:datastore-preferences:$dataStoreVersion"
-    implementation "org.jetbrains.kotlin:kotlin-test:2.2.0"
+    implementation "org.jetbrains.kotlin:kotlin-test:2.3.0"
 }

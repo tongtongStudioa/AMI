@@ -192,8 +192,8 @@ class Repository @Inject constructor(
         else null
     }
 
-    suspend fun insertReminder(reminder: Reminder) {
-        reminderDao.insert(reminder)
+    suspend fun insertReminder(reminder: Reminder): Long {
+        return reminderDao.insert(reminder)
     }
 
     suspend fun deleteReminder(reminder: Reminder) {

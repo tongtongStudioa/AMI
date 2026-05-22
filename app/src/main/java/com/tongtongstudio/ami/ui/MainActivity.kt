@@ -5,7 +5,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.StrictMode
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -46,13 +45,6 @@ class MainActivity : AppCompatActivity() { //, TutorialTrigger {
         super.onCreate(savedInstanceState)
         //appTutorial = AppTutorial(this, this, prefs)
         setContentView(R.layout.activity_main)
-
-
-        val policy = StrictMode.ThreadPolicy.Builder()
-            .detectAll()
-            .penaltyLog()
-            .build()
-        //StrictMode.setThreadPolicy(policy)
 
         AppRate.with(this)
             .setInstallDays(10) // 0 means install day.

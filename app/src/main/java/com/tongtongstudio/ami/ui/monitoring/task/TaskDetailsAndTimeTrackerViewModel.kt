@@ -8,7 +8,6 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.tongtongstudio.ami.data.Repository
 import com.tongtongstudio.ami.data.datatables.TaskCompletion
-import com.tongtongstudio.ami.data.datatables.ThingToDo
 import com.tongtongstudio.ami.data.datatables.WorkSession
 import com.tongtongstudio.ami.timer.TimerType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,8 +33,13 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.getThingToDo(taskId)?.collect { thingToDo->
-                _uiState.update { it.copy(thingToDo = thingToDo, priorityIndex = taskIndex?.toInt()) }
+            repository.getThingToDo(taskId)?.collect { thingToDo ->
+                _uiState.update {
+                    it.copy(
+                        thingToDo = thingToDo,
+                        priorityIndex = taskIndex?.toInt()
+                    )
+                }
             }
         }
 
@@ -61,6 +64,7 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
         }
         loadInitialData()
     }
+
     val taskCompletion: LiveData<TaskCompletion?> =
         taskId.let { repository.getLastTaskCompletion(it).asLiveData() }
 
@@ -78,7 +82,7 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
                     completionRate = taskId.let { repository.getHabitCompletionRate(it) },
                     maxStreak = taskId.let { repository.getMaxStreak(it) },
                     currentStreak = taskId.let { repository.getCurrentStreak(it) },
-                    )
+                )
             }
         }
     }
@@ -115,7 +119,7 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
     fun updateFragmentPosition(position: Int) = updateState("fragment_pos", position)
 
     fun saveTrackingTime(newWorkTimeSession: Long, comment: String? = null) =
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             taskId.let { id ->
                 repository.insertWorkSession(
                     WorkSession(
@@ -123,6 +127,15 @@ class TaskDetailsAndTimeTrackerViewModel @Inject constructor(
                         newWorkTimeSession,
                         comment
                     )
+                )
+            }
+        }
+
+    fun saveWorkSession(workSession: WorkSession) =
+        viewModelScope.launch(Dispatchers.IO) {
+            taskId.let { id ->
+                repository.insertWorkSession(
+                    workSession.copy(parentTaskId = id)
                 )
             }
         }

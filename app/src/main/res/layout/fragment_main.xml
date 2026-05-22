@@ -18,7 +18,9 @@
             android:layout_width="match_parent"
             android:layout_height="150dp"
             app:layout_scrollFlags="snap|scroll|exitUntilCollapsed"
-            app:toolbarId="@id/toolbar">
+            app:toolbarId="@id/toolbar"
+            app:expandedTitleTextAppearance="@style/TextAppearance.Ami.HeadlineLarge"
+            app:expandedSubtitleTextAppearance="@style/TextAppearance.Ami.TitleMedium">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text_sup"
@@ -37,6 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
+                tools:subtitle="Test de sous titre"
                 app:title="@string/menu_drawer_today_s_tasks" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
@@ -49,10 +52,10 @@
         android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:transitionGroup="true"
         android:id="@+id/main_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:transitionGroup="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:itemCount="5"
         tools:listitem="@layout/item_task" />

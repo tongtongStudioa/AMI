@@ -111,4 +111,8 @@
         <item name="fontFamily">@font/montserrat_medium</item>
         <item name="android:fontFamily">@font/montserrat_medium</item>
     </style>
+
+    <style name="TextAppearance.Ami.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="fontFamily">@font/montserrat_medium</item>
+    </style>
 </resources>

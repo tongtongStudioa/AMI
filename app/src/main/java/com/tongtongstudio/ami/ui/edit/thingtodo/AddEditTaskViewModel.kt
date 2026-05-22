@@ -106,8 +106,7 @@ class AddEditTaskViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("Error loading task", e.message.toString())
                 _addEditUiState.update { it.copy(error = e.message) }
-            }
-            finally {
+            } finally {
                 _addEditUiState.update { it.copy(isLoading = false) }
             }
         }
@@ -180,12 +179,22 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     fun updateDueDate(date: Long?) {
-        _addEditUiState.update { it.copy(dueDate = date, urgency = Task.calculusUrgency(it.dueDate, it.deadline)) }
+        _addEditUiState.update {
+            it.copy(
+                dueDate = date,
+                urgency = Task.calculusUrgency(it.dueDate, it.deadline)
+            )
+        }
         savedStateHandle["dueDate"] = date
     }
 
     fun updateDeadline(date: Long?) {
-        _addEditUiState.update { it.copy(deadline = date, urgency = Task.calculusUrgency(it.dueDate, it.deadline)) }
+        _addEditUiState.update {
+            it.copy(
+                deadline = date,
+                urgency = Task.calculusUrgency(it.dueDate, it.deadline)
+            )
+        }
         savedStateHandle["thingToDoDeadline"] = date
     }
 
@@ -271,14 +280,12 @@ class AddEditTaskViewModel @Inject constructor(
         if (reminder.parentId != null) repository.deleteReminder(reminder)
     }
 
-    private suspend fun updateRemindersList(reminders: List<Reminder>, idTtd: Long) {
-        for (reminder in reminders) {
-            if (reminder.parentId == null || reminder.id == 0L) {
-                Log.i("SAVE REMINDER", "Saving reminder")
-                val newTaskReminder = reminder.copy(parentId = idTtd)
-                repository.insertReminder(newTaskReminder)
-            }
-        }
+    private suspend fun updateReminderId(reminder: Reminder, idTtd: Long): Long {
+        return if (reminder.parentId == null || reminder.id == 0L) {
+            Log.i("SAVE REMINDER", "Saving reminder")
+            val newTaskReminder = reminder.copy(parentId = idTtd)
+            repository.insertReminder(newTaskReminder)
+        } else reminder.id
     }
 
     fun setError(message: String?) {
@@ -334,9 +341,11 @@ class AddEditTaskViewModel @Inject constructor(
 
                 //Log.i("SAVE REMINDER", "Save reminder which hasn't yet saved !")
                 // Save and schedule reminders
-                updateRemindersList(currentState.reminders, taskId)
+                val savedReminders = currentState.reminders.map {
+                    it.copy(id = updateReminderId(it,taskId))
+                }
                 //Log.i("SEND REMINDER NOTIF", "Schedule reminders use case!")
-                scheduleReminders(currentState.reminders)
+                scheduleReminders(savedReminders)
                 //_events.send(AddEditTaskEvent.ScheduleReminders(currentState.reminders))
             }
         } catch (e: Exception) {
@@ -356,7 +365,7 @@ class AddEditTaskViewModel @Inject constructor(
     }
 
     private fun buildTaskFromState(state: AddEditUiState, modeExtent: Boolean): Task {
-        val priority =  Task.calculatingPriority(state.priority, state.importance, state.urgency)
+        val priority = Task.calculatingPriority(state.priority, state.importance, state.urgency)
         val nature = getNature(state)
         return if (modeExtent) {
             Task(

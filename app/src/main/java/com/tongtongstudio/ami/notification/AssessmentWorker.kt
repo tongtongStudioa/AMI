@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.os.bundleOf
 import androidx.hilt.work.HiltWorker
@@ -29,7 +30,7 @@ class AssessmentWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         //Log.i("SCHEDULE ASSESSMENT WORKER", "In assessment worker")
         val assessmentId = inputData.getLong("ASSESSMENT_ID", -1)
-        //Log.i("SCHEDULE ASSESSMENT WORKER", assessmentId.toString())
+        Log.i("SCHEDULE ASSESSMENT WORKER", assessmentId.toString())
         if (assessmentId == -1L) {
             return Result.failure()
         }

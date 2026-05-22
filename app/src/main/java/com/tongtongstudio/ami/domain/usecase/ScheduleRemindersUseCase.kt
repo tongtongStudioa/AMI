@@ -1,6 +1,7 @@
 package com.tongtongstudio.ami.domain.usecase
 
 import android.content.Context
+import android.util.Log
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -16,17 +17,16 @@ class ScheduleRemindersUseCase @Inject constructor(
 ) {
     operator fun invoke(reminders: List<Reminder>) {
         reminders.forEach { reminder ->
-            if (reminder.dueDate > System.currentTimeMillis()) {
-                scheduleReminder(reminder)
-            }
+            //if (reminder.dueDate > System.currentTimeMillis())
+            scheduleReminder(reminder)
         }
     }
 
     private fun scheduleReminder(reminder: Reminder) {
         val delay = reminder.dueDate - System.currentTimeMillis()
-        if (delay <= 0) return
+        if (delay < 0) return
 
-        //Log.i("SEND REMINDER NOTIF", "Create work request")
+        Log.i("SEND REMINDER NOTIF", "Create work request")
         val workRequest = OneTimeWorkRequestBuilder<ReminderWorker>()
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .setInputData(

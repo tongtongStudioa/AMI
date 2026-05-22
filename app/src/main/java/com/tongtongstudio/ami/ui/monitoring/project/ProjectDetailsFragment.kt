@@ -6,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -157,6 +159,21 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
     ): View? {
         binding = FragmentProjectDetailsBinding.inflate(inflater)
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.rvSubtasks) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin += insets.bottom
+            }
+            WindowInsetsCompat.CONSUMED
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.fabAddSubTask) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin += insets.bottom
+            }
+            WindowInsetsCompat.CONSUMED
+        }
+
         subTaskAdapter = ThingToDoAdapter(this)
         binding.rvSubtasks.apply {
             layoutManager = LinearLayoutManager(context)
@@ -192,7 +209,6 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
             }
             totalWorkTime.text = TrackingTimeUtility.getFormattedTimeWorked(uiState.workTime)
                 ?: getText(R.string.no_information)
-
         }
 
         val callback = object : ThingToDoItemCallback<ThingToDoAdapter>(
@@ -255,10 +271,14 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
             estimatedTime.text =
                 TrackingTimeUtility.getFormattedTimeWorked(project.taskRelations.mainTask.estimatedWorkingTime)
                     ?: getText(R.string.no_information)
+            val projectEstimatedTime = project.taskRelations.mainTask.estimatedWorkingTime
+            if (projectEstimatedTime != null && projectEstimatedTime < uiState.workTime) estimatedTime.setTextColor(
+                resources.getColor(R.color.design_default_color_error)
+            )
             val totalEstimatedWorkTime = uiState.totalEstimatedWorkTime
             totalEstimatedTime.text =
                 if (totalEstimatedWorkTime != null) "(" + TrackingTimeUtility.getFormattedTimeWorked(
-                    uiState.workTime
+                    totalEstimatedWorkTime
                 ) + ")"
                 else ""
             totalEstimatedTime.isVisible = totalEstimatedWorkTime != null
@@ -266,10 +286,6 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
             progressText.text =
                 getString(R.string.completion_rate_value, project.completionRate ?: 0F)
             projectProgress.progress = project.completionRate?.toInt() ?: 0
-            val projectEstimatedTime = project.taskRelations.mainTask.estimatedWorkingTime
-            if (projectEstimatedTime != null && projectEstimatedTime < uiState.workTime) estimatedTime.setTextColor(
-                resources.getColor(R.color.design_default_color_error)
-            )
             taskStartDate.text = Task.getDateFormatted(mainTask.startDate)
             taskStartDate.isVisible = mainTask.startDate != null
             taskDueDate.text = Task.getDateFormatted(mainTask.dueDate)

@@ -89,6 +89,14 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
             }
         }
 
+        viewModel.taskCompletion.observe(viewLifecycleOwner) {
+            if (it != null)
+                binding.btnCompletionDate.text = getString(
+                    R.string.completion_date,
+                    DateFormat.getDateInstance().format(it.completionDate)
+                )
+        }
+
         binding.btnCompletionDate.setOnClickListener {
             onCompletionDateBtnClicked()
         }
@@ -172,17 +180,16 @@ class TaskDetailsFragment : Fragment(R.layout.fragment_task_details) {
         val constraints =
             CalendarCustomFunction.buildConstraintsForStartDate(Calendar.getInstance().run {
                 set(Calendar.HOUR_OF_DAY, 23)
+                set(Calendar.MINUTE,59)
+                set(Calendar.SECOND,59)
                 timeInMillis
             })
         val datePicker = dateTimePicker.showDatePickerMaterial(
-            constraints
+            constraints,
+            viewModel.taskCompletion.value?.completionDate
         )
         datePicker.addOnPositiveButtonClickListener { newCompletionDate ->
             viewModel.updateTaskCompletionDate(newCompletionDate)
-            binding.btnCompletionDate.text = getString(
-                R.string.completion_date,
-                DateFormat.getDateInstance().format(newCompletionDate)
-            )
         }
     }
 

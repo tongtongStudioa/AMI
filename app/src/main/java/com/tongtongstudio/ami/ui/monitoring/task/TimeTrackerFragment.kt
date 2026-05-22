@@ -83,7 +83,6 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker), WorkS
             updateProgressBar(it ?: 0L)
         }
 
-        // In your Fragment
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { uiState ->
@@ -199,7 +198,7 @@ class TimeTrackerFragment : Fragment(R.layout.fragment_task_time_tracker), WorkS
                     Snackbar.LENGTH_SHORT
                 ).show()
             } else if (workSession != null) {
-                viewModel.saveTrackingTime(workSession.duration,workSession.comment)
+                viewModel.saveWorkSession(workSession)
                 Snackbar.make(
                     view,
                     getString(R.string.msg_work_session_saved),

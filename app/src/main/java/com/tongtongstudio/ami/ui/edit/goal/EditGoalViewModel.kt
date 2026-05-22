@@ -13,6 +13,7 @@ import com.tongtongstudio.ami.domain.usecase.ScheduleAssessmentUseCase
 import com.tongtongstudio.ami.ui.ADD_GOAL_RESULT_OK
 import com.tongtongstudio.ami.ui.EDIT_GOAL_RESULT_OK
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -76,26 +77,26 @@ class EditGoalViewModel @Inject constructor(
         }
     }
 
-    private fun updateAssessmentsList(id: Long) {
-        if (assessments.value != null) {
-            for (assessment in assessments.value!!) {
-                if (assessment.parentAssessmentId != id)
-                    insertNewAssessment(id, assessment)
+    private suspend fun updateAssessmentsList(parentId: Long): List<Assessment> {
+        return if (assessments.value != null) {
+            assessments.value!!.map {
+                if (it.parentAssessmentId != parentId) {
+                    val id = repository.insertAssessment( it.copy(parentId))
+                    // update current assessment with no id (id = 0)
+                    it.copy(id = id)
+                } else it
             }
-        }
+        } else emptyList()
     }
 
-    private fun insertNewAssessment(id: Long, newAssessment: Assessment) =
-        viewModelScope.launch {
-            repository.insertAssessment(newAssessment.copy(parentAssessmentId = id))
-        }
 
-    fun addNewAssessment(result: Assessment) {
+
+    fun addNewAssessment(result: Assessment) = viewModelScope.launch(Dispatchers.IO) {
         if (objective?.id == null) { // is a new global targetGoal ?
             val currentAssessments = assessments.value ?: mutableListOf()
             currentAssessments.add(result)
             _assessments.value = currentAssessments
-        } else insertNewAssessment(objective.id, result)
+        } else repository.insertAssessment( result.copy(objective.id))
     }
 
     fun updateAssessment(oldAssessment: Assessment, updateAssessment: Assessment) =
@@ -123,7 +124,7 @@ class EditGoalViewModel @Inject constructor(
         else insertGlobalObjective()
     }
 
-    private fun insertGlobalObjective() = viewModelScope.launch {
+    private fun insertGlobalObjective() = viewModelScope.launch(Dispatchers.IO) {
         val newObjective = Assessment(
             title = goalTitle,
             description = description,
@@ -134,12 +135,12 @@ class EditGoalViewModel @Inject constructor(
             type = AssessmentType.QUANTITY.name
         )
         val objectiveId = repository.insertAssessment(newObjective)
-        updateAssessmentsList(objectiveId)
-        scheduleAssessmentUseCase(assessments.value?.toList() ?: emptyList())
+        val savedAssessments = updateAssessmentsList(objectiveId)
+        scheduleAssessmentUseCase(savedAssessments)
         editGoalEventChannel.send(EditGoalEvent.NavigateBackWithResult(ADD_GOAL_RESULT_OK))
     }
 
-    private fun updateGlobalObjective() = viewModelScope.launch {
+    private fun updateGlobalObjective() = viewModelScope.launch(Dispatchers.IO) {
         val updatedObjective = objective!!.copy(
             title = goalTitle,
             description = description,
@@ -148,7 +149,8 @@ class EditGoalViewModel @Inject constructor(
             dueDate = dueDate!!
         )
         repository.updateAssessment(updatedObjective)
-        scheduleAssessmentUseCase(assessments.value?.toList() ?: emptyList())
+        val savedAssessments = updateAssessmentsList(objective.id)
+        scheduleAssessmentUseCase(savedAssessments)
         editGoalEventChannel.send(EditGoalEvent.NavigateBackWithResult(EDIT_GOAL_RESULT_OK))
     }
 

@@ -12,6 +12,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.PopupMenu
 import androidx.activity.result.ActivityResultLauncher
@@ -19,7 +20,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -125,6 +129,20 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
 
         binding = FragmentAddEditTaskBinding.bind(view)
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.fabSaveTask) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin += insets.bottom
+            }
+            WindowInsetsCompat.CONSUMED
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.addEditParentLayout) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin += insets.bottom
+            }
+            WindowInsetsCompat.CONSUMED
+        }
         // set toolbar with menu and navigate up icon
         setUpToolbar()
 

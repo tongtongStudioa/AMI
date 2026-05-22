@@ -22,7 +22,9 @@ interface WorkSessionDao {
     @Delete
     suspend fun delete(workSession: WorkSession)
 
-    @Query("SELECT * FROM worksession WHERE parentTaskId = :taskId")
+    @Query("SELECT * FROM worksession " +
+            "WHERE parentTaskId = :taskId " +
+            "ORDER BY date DESC")
     fun getWorkSessions(taskId: Long): Flow<List<WorkSession>>
 
     @Query("SELECT SUM(duration) FROM worksession WHERE parentTaskId = :taskId")

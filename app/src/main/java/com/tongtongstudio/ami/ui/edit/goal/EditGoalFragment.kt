@@ -11,13 +11,17 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ArrayAdapter
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
@@ -79,6 +83,16 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
         super.onViewCreated(view, savedInstanceState)
 
         binding = FragmentAddEditGoalBinding.bind(view)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.fabSaveGoal) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                topMargin += insets.top
+                bottomMargin += insets.bottom
+            }
+            WindowInsetsCompat.CONSUMED
+        }
+
         setUpToolbar()
 
         // Transition d'entrée avec MaterialSharedAxis

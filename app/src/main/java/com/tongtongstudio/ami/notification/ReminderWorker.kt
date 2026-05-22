@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.os.bundleOf
 import androidx.hilt.work.HiltWorker
@@ -26,21 +27,23 @@ class ReminderWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        //Log.i("SEND REMINDER NOTIF", "Get reminder id in worker")
+        Log.i("SEND REMINDER NOTIF", "Get reminder id in worker")
         val reminderId = inputData.getLong("REMINDER_ID", -1)
         if (reminderId == -1L) {
-            //Log.i("SEND REMINDER NOTIF", "Failure : no id")
+            Log.i("SEND REMINDER NOTIF", "Failure : no id")
             return Result.failure()
         }
-        //Log.i("SEND REMINDER NOTIF", "Get reminder (id=$reminderId)")
+        Log.i("SEND REMINDER NOTIF", "Get reminder (id=$reminderId)")
         val reminderTask = repository.getReminderNotification(reminderId)
-        //Log.i("SEND REMINDER NOTIF", "Reminder id = ${reminderTask?.reminderId}")
+        Log.i("SEND REMINDER NOTIF", "Reminder id = ${reminderTask?.reminderId}")
         if (reminderTask == null) {
-            //Log.i("SEND REMINDER NOTIF","bug no return :( !!")
+            Log.i("SEND REMINDER NOTIF","bug no return :( !!")
             return Result.failure()
         }
-        //Log.i("SEND REMINDER NOTIF", "Test if now time greater than due date")
-        if (System.currentTimeMillis() >= reminderTask.dueDate) {
+        Log.i("SEND REMINDER NOTIF", "Test if now time greater than due date")
+        Log.i("SEND REMINDER NOTIF", "${System.currentTimeMillis() >= reminderTask.dueDate - 5 * 1000}")
+
+        if (System.currentTimeMillis() >= reminderTask.dueDate - 5 * 1000) {
             sendNotification(applicationContext, reminderTask)
         }
         return Result.success()
@@ -55,7 +58,7 @@ class ReminderWorker @AssistedInject constructor(
             .setArguments(bundleOf("task_id" to reminder.parentTaskId))
             .createPendingIntent()
 
-        //Log.i("SEND REMINDER NOTIF", "Parent task id : ${reminder.parentTaskId}")
+        Log.i("SEND REMINDER NOTIF", "Parent task id : ${reminder.parentTaskId}")
         val notificationManager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 

@@ -29,6 +29,7 @@
         <item name="colorPrimaryInverse">@color/md_theme_dark_inversePrimary</item>
 
         <!--Typography-->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Ami.HeadlineLarge</item>
         <item name="textAppearanceHeadline1">@style/TextAppearance.Ami.Headline1</item>
         <item name="textAppearanceHeadline2">@style/TextAppearance.Ami.Headline2</item>
         <item name="textAppearanceHeadline3">@style/TextAppearance.Ami.Headline3</item>

@@ -3,10 +3,14 @@ package com.tongtongstudio.ami.ui.insights
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -63,6 +67,22 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentInsightsBinding.bind(view)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.insightsParentLayout) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            // Apply the insets as a margin to the view. This solution sets
+            // only the bottom, left, and right dimensions, but you can apply whichever
+            // insets are appropriate to your layout. You can also update the view padding
+            // if that's more appropriate.
+            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                topMargin += insets.top
+                bottomMargin += insets.bottom
+            }
+
+            // Return CONSUMED if you don't want the window insets to keep passing
+            // down to descendant views.
+            WindowInsetsCompat.CONSUMED
+        }
 
         setUpToolbar()
 

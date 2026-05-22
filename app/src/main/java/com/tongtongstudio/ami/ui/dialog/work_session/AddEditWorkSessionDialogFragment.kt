@@ -2,7 +2,7 @@ package com.tongtongstudio.ami.ui.dialog.work_session
 
 import android.app.Dialog
 import android.os.Bundle
-import android.text.Editable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,12 +12,12 @@ import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tongtongstudio.ami.R
-import com.tongtongstudio.ami.data.datatables.PATTERN_FORMAT_DATE
 import com.tongtongstudio.ami.data.datatables.WorkSession
 import com.tongtongstudio.ami.databinding.DialogAddEditWorkSessionBinding
 import com.tongtongstudio.ami.util.CalendarCustomFunction
 import com.tongtongstudio.ami.util.showDatePicker
 import dagger.hilt.android.AndroidEntryPoint
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -33,12 +33,12 @@ class AddEditWorkSessionDialogFragment : DialogFragment() {
     val args: AddEditWorkSessionDialogFragmentArgs by navArgs()
 
     lateinit var workSession: WorkSession
-    var sessionDate: Long? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        workSession = args.workSession ?: WorkSession(0,0L,null)
+        workSession = args.workSession ?: WorkSession(0, 0L, null)
         super.onCreate(savedInstanceState)
     }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             val dialog = MaterialAlertDialogBuilder(it)
@@ -84,16 +84,22 @@ class AddEditWorkSessionDialogFragment : DialogFragment() {
             val secondes = (workSession.duration / 1000 % 60).toInt()
             secondesPicker.value = secondes
             inputLayoutComment.editText?.setText(workSession.comment ?: "")
-            inputLayoutDate.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(workSession.date)
+            inputLayoutDate.text =
+                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(workSession.date)
             inputLayoutDate.setOnClickListener {
                 showDatePicker(
                     workSession.date,
-                    CalendarCustomFunction.buildConstraintsForStartDate(Calendar.getInstance().timeInMillis))
-                    {
-                        sessionDate = it
-                        inputLayoutDate.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(sessionDate)
-
-                    }
+                    CalendarCustomFunction.buildConstraintsForStartDate(Calendar.getInstance().timeInMillis)
+                ) {
+                    Log.i("WORK SESSION DIALOG", DateFormat.getDateInstance().format(it))
+                    workSession = workSession.copy(date = it)
+                    inputLayoutDate.text =
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(workSession.date)
+                    Log.i(
+                        "WORK SESSION DIALOG",
+                        DateFormat.getDateInstance().format(workSession.date)
+                    )
+                }
             }
         }
 
@@ -111,7 +117,7 @@ class AddEditWorkSessionDialogFragment : DialogFragment() {
 
         val comment = binding.inputLayoutComment.editText?.text.toString()
         //val date = binding.inputLayoutDate.editText?.text?.dateStringToLong()
-        workSession = workSession.copy(duration = duration, comment = comment, date = sessionDate ?: workSession.date)
+        workSession = workSession.copy(duration = duration, comment = comment)
         dialog.setFragmentResult(
             WORK_SESSION_LISTENER_REQUEST_KEY,
             bundleOf(WORK_SESSION_RESULT_KEY to workSession)

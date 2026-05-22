@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/insights_parent_layout"
     tools:context=".ui.insights.InsightsFragment">
 
     <com.google.android.material.appbar.AppBarLayout

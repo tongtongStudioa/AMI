@@ -1,7 +1,6 @@
 package com.tongtongstudio.ami.ui.todaytasks
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -9,9 +8,13 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -41,7 +44,6 @@ import com.tongtongstudio.ami.ui.ADD_TASK_RESULT_OK
 import com.tongtongstudio.ami.ui.MainActivity
 import com.tongtongstudio.ami.ui.MainViewModel
 import com.tongtongstudio.ami.ui.todaytasks.TodayTasksFragmentDirections.Companion.actionTodayTasksFragmentToAddEditTaskFragment
-import com.tongtongstudio.ami.util.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -102,6 +104,21 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
     ): View {
         binding = FragmentMainBinding.inflate(layoutInflater)
         recyclerView = binding.mainRecyclerView
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.mainRecyclerView) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin += insets.bottom
+            }
+            WindowInsetsCompat.CONSUMED
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(binding.fabAddTask) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin += insets.bottom
+            }
+            WindowInsetsCompat.CONSUMED
+        }
 
         // adapt data in recycler view
         viewModel.todayThingsToDo.observe(viewLifecycleOwner) {

@@ -307,4 +307,8 @@
     <string name="assessment_delayed">Assessment is delayed in 3 days !</string>
     <string name="emotions_input_helper_text">How do you feel about accomplishing this task?</string>
     <string name="skill_input_helper_text">On scale on 1 to 9, to what extent do you possess the skills to accomplish this task ?</string>
+    <string name="setting_section_manage_data">Manage your data</string>
+    <string name="btn_save_database">Save database in local</string>
+    <string name="btn_import_database">Import data</string>
+    <string name="btn_delete_data">Delete your data</string>
 </resources>

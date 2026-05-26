@@ -207,8 +207,6 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
                     sharedViewModel.addSubThingTodo(mainTask)
                 }
             }
-            totalWorkTime.text = TrackingTimeUtility.getFormattedTimeWorked(uiState.workTime)
-                ?: getText(R.string.no_information)
         }
 
         val callback = object : ThingToDoItemCallback<ThingToDoAdapter>(
@@ -268,6 +266,8 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
             tvProjectTitle.text = project.taskRelations.mainTask.title
             tvDescription.text = project.taskRelations.mainTask.description ?: ""
             tvNature.text = project.getNature(requireContext())
+            totalWorkTime.text = TrackingTimeUtility.getFormattedTimeWorked(uiState.workTime)
+                ?: getText(R.string.no_information)
             estimatedTime.text =
                 TrackingTimeUtility.getFormattedTimeWorked(project.taskRelations.mainTask.estimatedWorkingTime)
                     ?: getText(R.string.no_information)

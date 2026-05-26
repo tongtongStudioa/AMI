@@ -29,7 +29,7 @@
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Manage your data"
+                    android:text="@string/setting_section_manage_data"
                     style="@style/TextAppearance.Ami.TitleMedium"
                     android:layout_margin="10dp"/>
                 <com.google.android.material.divider.MaterialDivider
@@ -40,7 +40,7 @@
                     style="@style/Button.EditProperties.AMI.Style"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Sauvegarder la base de données" />
+                    android:text="@string/btn_save_database" />
 
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
@@ -51,7 +51,7 @@
                     style="@style/Button.EditProperties.AMI.Style"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Importer la base de données" />
+                    android:text="@string/btn_import_database" />
 
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
@@ -62,7 +62,7 @@
                     style="@style/Button.EditProperties.AMI.Style"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Supprimer vos données" />
+                    android:text="@string/btn_delete_data" />
 
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"

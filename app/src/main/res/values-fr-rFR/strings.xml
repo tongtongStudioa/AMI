@@ -279,4 +279,8 @@
     <string name="assessment_delayed">L\'évaluation est reportée de 3 jours !</string>
     <string name="emotions_input_helper_text">Qu\'est-ce que vous ressentez à l\'idée d\'accomplir cette tâche ?</string>
     <string name="skill_input_helper_text">Sur une échelle de 1 à 9, dans quelle mesure possédez-vous les compétences nécessaires pour accomplir cette tâche ?</string>
+    <string name="setting_section_manage_data">Gérer vos données</string>
+    <string name="btn_save_database">Sauvegarder la base de données</string>
+    <string name="btn_import_database">Importer la base de données</string>
+    <string name="btn_delete_data">Supprimer vos données</string>
 </resources>

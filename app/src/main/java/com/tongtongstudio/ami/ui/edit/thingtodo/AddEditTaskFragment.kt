@@ -130,16 +130,17 @@ class AddEditTaskFragment : Fragment(R.layout.fragment_add_edit_task) {
         binding = FragmentAddEditTaskBinding.bind(view)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.fabSaveTask) { v, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+                    or WindowInsetsCompat.Type.ime())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin += insets.bottom
+                bottomMargin = insets.bottom + 20
             }
             WindowInsetsCompat.CONSUMED
         }
         ViewCompat.setOnApplyWindowInsetsListener(binding.addEditParentLayout) { v, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin += insets.bottom
+                bottomMargin = insets.bottom
             }
             WindowInsetsCompat.CONSUMED
         }

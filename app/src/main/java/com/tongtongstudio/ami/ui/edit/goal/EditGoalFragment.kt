@@ -86,9 +86,10 @@ class EditGoalFragment : Fragment(R.layout.fragment_add_edit_goal) {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.fabSaveGoal) { v, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val insetsIme = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                topMargin += insets.top
-                bottomMargin += insets.bottom
+                //topMargin = insets.top
+                bottomMargin = insets.bottom + 25
             }
             WindowInsetsCompat.CONSUMED
         }

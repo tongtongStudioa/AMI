@@ -108,14 +108,14 @@ class TodayTasksFragment : Fragment(R.layout.fragment_main), InteractionListener
         ViewCompat.setOnApplyWindowInsetsListener(binding.mainRecyclerView) { v, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin += insets.bottom
+                bottomMargin = insets.bottom
             }
             WindowInsetsCompat.CONSUMED
         }
         ViewCompat.setOnApplyWindowInsetsListener(binding.fabAddTask) { v, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin += insets.bottom
+                bottomMargin = insets.bottom + 25
             }
             WindowInsetsCompat.CONSUMED
         }

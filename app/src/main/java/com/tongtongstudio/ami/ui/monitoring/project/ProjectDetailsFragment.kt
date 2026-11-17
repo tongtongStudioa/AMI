@@ -162,14 +162,14 @@ class ProjectDetailsFragment : Fragment(R.layout.fragment_project_details), Inte
         ViewCompat.setOnApplyWindowInsetsListener(binding.rvSubtasks) { v, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin += insets.bottom
+                bottomMargin = insets.bottom
             }
             WindowInsetsCompat.CONSUMED
         }
         ViewCompat.setOnApplyWindowInsetsListener(binding.fabAddSubTask) { v, windowInsets ->
             val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin += insets.bottom
+                bottomMargin += insets.bottom + 25
             }
             WindowInsetsCompat.CONSUMED
         }

@@ -75,8 +75,8 @@ class InsightsFragment : Fragment(R.layout.fragment_insights) {
             // insets are appropriate to your layout. You can also update the view padding
             // if that's more appropriate.
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                topMargin += insets.top
-                bottomMargin += insets.bottom
+                //topMargin += insets.top
+                bottomMargin = insets.bottom
             }
 
             // Return CONSUMED if you don't want the window insets to keep passing
